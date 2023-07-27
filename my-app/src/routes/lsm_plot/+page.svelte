@@ -1,7 +1,25 @@
 <script lang="ts">
     import type { lengthToDegrees } from "plotly.js-dist";
   import Plot from "svelte-plotly.js";
+  import UploadCSV from 'upload-csv-svelte';
+
   let text = "1\t2\n3\t4\n5\t1";
+  let files;
+  let csv;
+	$: if (files) {
+		// Note that `files` is of type `FileList`, not an Array:
+		// https://developer.mozilla.org/en-US/docs/Web/API/FileList
+		console.log(files);
+
+		for (const file of files) {
+			console.log(`${file.name}: ${file.size} bytes`);
+      const reader = new FileReaderSync();
+      reader.onload = () => {
+        let txt = await file.text();
+        console.log(txt);
+      };
+		}
+	}
 
   function load_data(text) {
     let data = { x: [], y: [] };
@@ -65,7 +83,8 @@
   $: fit_data = lsm_fit(data, xmin, xmax);
 
 </script>
-
+<label for="csv">Upload csv files</label>
+<input bind:files id="many" type="file" accept="csv" />
 <textarea bind:value={text} />
 <div>
 <label>xmin: <input type="number" step="0.01" bind:value={xmin} 
@@ -80,7 +99,7 @@
   fillParent="width"
   debounce={250}
 />
-
+<UploadCSV onUpload={(file) => console.log("this is the parsed file: ", file)} />
 <style>
   textarea {
     width: 100%;

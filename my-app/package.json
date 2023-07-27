@@ -25,6 +25,7 @@
 		"daisyui": "^3.2.1",
 		"execa": "^7.1.1",
 		"plotly.js-dist": "^2.24.3",
-		"svelte-plotly.js": "^0.3.2"
+		"svelte-plotly.js": "^0.3.2",
+		"upload-csv-svelte": "github:anderslatif/svelte-csv-upload"
 	}
 }
