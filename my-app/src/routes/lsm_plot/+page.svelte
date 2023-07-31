@@ -1,10 +1,10 @@
 <script lang="ts">
     import type { lengthToDegrees } from "plotly.js-dist";
   import Plot from "svelte-plotly.js";
-  import UploadCSV from 'upload-csv-svelte';
 
   let text = "1\t2\n3\t4\n5\t1";
   let files;
+  /*
   let csv;
 	$: if (files) {
 		// Note that `files` is of type `FileList`, not an Array:
@@ -20,6 +20,7 @@
       };
 		}
 	}
+  */
 
   function load_data(text) {
     let data = { x: [], y: [] };
@@ -99,7 +100,6 @@
   fillParent="width"
   debounce={250}
 />
-<UploadCSV onUpload={(file) => console.log("this is the parsed file: ", file)} />
 <style>
   textarea {
     width: 100%;
