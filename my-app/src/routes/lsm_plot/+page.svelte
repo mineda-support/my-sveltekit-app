@@ -1,4 +1,5 @@
 <script lang="ts">
+  //import { findBestTextLocation } from "plotly.js-dist";
   import Plot from "svelte-plotly.js";
 
   let files = [];
@@ -7,19 +8,22 @@
     console.log(files);
     for (const file of files) {
       console.log(`${file.name}: ${file.size} bytes`);
+      /*
       (async () => {
         //const text = await fetchText(file);
         let text = await file.text();
         texts.push(text);
         texts = texts; // necessary to make texts reactive
       })();
+      */
     }
   }
 
   let text_data = "1\t2\n3\t4\n5\t1";
   let start = 0;
   let stop = text_data.length;
-  let left; let right;
+  let left;
+  let right;
   function load_data(text, start, stop, left, right) {
     let data = { x: [], y: [] };
     let lines = text.split("\n");
@@ -32,7 +36,10 @@
       // console.log("line:" + line);
       //[a, b] = line.replace(/ +/, ' ').split(' ').map(a => Number(a));
       console.log(line);
-      [a, b] = line.split(/[\t ,]/).map((a) => Math.abs(Number(a))).slice(left, right+1);
+      [a, b] = line
+        .split(/[\t ,] */)
+        .map((a) => Math.abs(Number(a)))
+        .slice(left, right + 1);
       data.x.push(a);
       data.y.push(b);
     }
@@ -88,23 +95,20 @@
 
   let xmin;
   let xmax;
-  
+
   $: fit_data = lsm_fit(data, xmin, xmax);
+  async function do_lsm_fit() {
+    //console.log("start,stop,left,right"=[start,stop,left,right]);
+    text_data = await files[0].text();
+    console.log("text_data="+text_data);
+    data = load_data(text_data, start, stop, left, right);
+
+    return fit_data = lsm_fit(data, xmin, xmax);
+  }
 </script>
 
 <input type="file" bind:files />
-
-{#if files}
-  <h2>Selected files:</h2>
-  {#each Array.from(files) as file, i}
-    <p>{file.name} ({file.size} bytes)</p>
-    <p>
-      e: {`texts[$i]`}
-      i: {i}
-    </p>
-  {/each}
-  <p>files length: {files.length}</p>
-{/if}
+<button on:click={do_lsm_fit}>LSM FIT</button>
 
 <div>
   <label>start line: <input type="number" bind:value={start} /></label>
@@ -113,7 +117,37 @@
   <label>right column: <input type="number" bind:value={right} /></label>
 </div>
 
+{#if files}
+  <h2>Selected files:</h2>
+  {#each Array.from(files) as file, i}
+    <p>{file.name} ({file.size} bytes)</p>
+    {#await file.text() then text}
+      <p>e: {text} i: {i}</p>
+    {/await}
+  {/each}
+  <p>files length: {files.length}</p>
+{/if}
+
 <textarea bind:value={text_data} />
+
+<div>
+  <label
+    >xmin: <input
+      type="number"
+      step="0.01"
+      bind:value={xmin}
+      placeholder={data.x[0]}
+    /></label
+  >
+  <label
+    >xmax: <input
+      type="number"
+      step="0.01"
+      bind:value={xmax}
+      placeholder={data.x[data.x.length - 1]}
+    /></label
+  >
+</div>
 
 <label>is = {is} nvt = {nvt}</label>
 <Plot

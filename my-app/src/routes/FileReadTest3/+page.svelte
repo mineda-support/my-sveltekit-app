@@ -1,4 +1,6 @@
 <script>
+    //import { npm_lifecycle_event } from "$env/static/private";
+
     //import { onMount } from "svelte"
   
     let files;
@@ -10,6 +12,7 @@
         console.log(`${file.name}: ${file.size} bytes`);
         (async () => {
           //const text = await fetchText(file);
+          console.log(`Wait for ${file.name}`);
           text = await file.text();
           texts.push(text);
           texts = texts; // necessary to make texts reactive
@@ -17,6 +20,7 @@
           //texts.push(text);
           //file.data = text; // this did not work
           //console.log('text=' + file.data);
+          files = [];
         })()
           //console.log('result=' + result);
         //texts.push(result);
