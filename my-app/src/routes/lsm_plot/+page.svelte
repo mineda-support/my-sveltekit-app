@@ -101,13 +101,13 @@
     //console.log("start,stop,left,right"=[start,stop,left,right]);
     text_data = await files[0].text();
     console.log("text_data="+text_data);
-    data = load_data(text_data, start, stop, left, right);
+    data = load
+    _data(text_data, start, stop, left, right);
 
     return fit_data = lsm_fit(data, xmin, xmax);
   }
 </script>
-
-<input type="file" bind:files />
+<input bind:files id="many" multiple type="file" />
 <button on:click={do_lsm_fit}>LSM FIT</button>
 
 <div>
@@ -122,7 +122,7 @@
   {#each Array.from(files) as file, i}
     <p>{file.name} ({file.size} bytes)</p>
     {#await file.text() then text}
-      <p>e: {text} i: {i}</p>
+      <p>e: {"text"} i: {i}</p>
     {/await}
   {/each}
   <p>files length: {files.length}</p>

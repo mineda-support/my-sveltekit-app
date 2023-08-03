@@ -42,7 +42,7 @@
       <h2>Selected files:</h2>
       {#each Array.from(files) as file,i}
           <p>{file.name} ({file.size} bytes)</p>
-          <p>e: {texts[i]}              
+          <p>e: {`texts[${i}]`}              
              i: {i}</p>
       {/each}
       <p>files length: {files.length}</p>
