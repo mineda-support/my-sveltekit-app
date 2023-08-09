@@ -34,10 +34,17 @@ puts "got traces"
         alert('simulation!')
     }
 </script>
+
 <div><button on:click={simulate}>Simulate</button></div>
 <ul>
-<li> <input bind:value={dir}  /></li>
+<li> 
+    <!-- input bind:value={dir} type="file" id="folder" webkitdirectory="" directory="" multiple/-->
+    <input bind:value={path} type="file" id="folder" directory="" />
+    <!-- input bind:value={dir}  / -->
+    <!-- input bind:value={dir} type="file" id="folder" / -->
+</li>
 <li><input bind:value={ckt}  /></li>
 <li><input bind:value={traces}  /></li>
 </ul>
 <h1><pre>{program}</pre></h1>
+ 
