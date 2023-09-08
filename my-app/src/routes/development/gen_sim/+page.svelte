@@ -39,7 +39,7 @@ puts "got traces"
 <ul>
 <li> 
     <!-- input bind:value={dir} type="file" id="folder" webkitdirectory="" directory="" multiple/-->
-    <input bind:value={path} type="file" id="folder" directory="" />
+    <input bind:value={dir} type="file" id="folder" directory="" />
     <!-- input bind:value={dir}  / -->
     <!-- input bind:value={dir} type="file" id="folder" / -->
 </li>

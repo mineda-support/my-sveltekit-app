@@ -1,5 +1,4 @@
 <script lang="ts">
-  //import { findBestTextLocation } from "plotly.js-dist";
   import { onMount } from "svelte";
   import Lsm_fit from "./lsm_fit.svelte";
 
@@ -17,7 +16,6 @@
   let stop = text_data.length;
   let left = 0;
   let right = 1;
-  let xmin; let xmax;
   function load_data(text, start, stop, left, right) {
     let data = { x: [], y: [] };
     let lines = text.split("\n");
@@ -41,17 +39,14 @@
     return data;
   }
   //$: data = load_data(text_data, start, stop);
-  let data = [];
+  let data;
   $: if (files && files.size > 0) {
-    for (let i = 0; i < data.size; i++) {
-      text_data = texts[i];
-      data = [...data, load_data(text_data, start, stop, left, right)];
-    }
-    console.log("data size = " + data.length)
+    text_data = texts[0];
+    data = load_data(text_data, start, stop, left, right);
   } else {
-    data[0] = load_data(text_data, start, stop, left, right);
+    data = load_data(text_data, start, stop, left, right);
   }
-/*
+
   async function do_lsm_fit() {
     //console.log("start,stop,left,right"=[start,stop,left,right]);
     text_data = await files[0].text();
@@ -60,18 +55,10 @@
 
     return (fit_data = lsm_fit(data, xmin, xmax));
   }
-*/
-  let overlay = false;
 </script>
-<div>
 
-  <input bind:files id="many" multiple type="file" />
-  <label>
-    <input type="checkbox" bind:checked={overlay} />
-    overlay curves
-  </label>
-</div>
-<!-- button on:click={do_lsm_fit}>LSM FIT</button -->
+<input type="file" bind:files />
+<button on:click={do_lsm_fit}>LSM FIT</button>
 
 <div>
   <label>start line: <input type="number" bind:value={start} /></label>
@@ -79,42 +66,20 @@
   <label>left column: <input type="number" bind:value={left} /></label>
   <label>right column: <input type="number" bind:value={right} /></label>
 </div>
-<div>
-  <label
-    >global xmin: <input
-      type="number"
-      step="0.01"
-      bind:value={xmin}
-    /></label
-  >
-  <label
-    >global xmax: <input
-      type="number"
-      step="0.01"
-      bind:value={xmax}
-    /></label
-  >
-</div>
 
 {#if files}
   <h2>Selected files:</h2>
   {#each Array.from(files) as file, i}
     <p>{file.name} ({file.size} bytes)</p>
     {#await file.text() then text}
-      <p>e: {"text"+i} i: {i}</p>
-      {#if !overlay}
-        <Lsm_fit xmin={xmin} xmax={xmax}
-        data={load_data(text, start, stop, left, right)} />
-      {:else} 
-        data: {data = [...data, load_data(text, start, stop, left, right)]}
-      {/if}
+      <p>e: {"text"} i: {i}</p>
     {/await}
   {/each}
-  <p>files length: {files.length} data size: {data.size}</p>
+  <p>files length: {files.length}</p>
 {/if}
-<textarea bind:value={text_data} />
 
-<Lsm_fit data={data[0]} />
+<textarea bind:value={text_data} />
+<Lsm_fit data={data}/>
 
 <style>
   textarea {
