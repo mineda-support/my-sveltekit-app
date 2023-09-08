@@ -39,7 +39,7 @@ module Test
           ckt = LTspiceControl.new $ckt_name
           ckt.simulate
         }
-        {}
+        {"end": "end"}
       end
     end
   end
