@@ -1,5 +1,4 @@
 require 'grape'
-
 $:.unshift File.join(ENV['HOME'].gsub(/\\/, '/'), '/work/alb2/lib')
 $:.unshift '.'
 puts "hello world from ruby"
@@ -30,17 +29,17 @@ module Test
         Dir.chdir($work_dir){
           ckt = LTspiceControl.new $ckt_name
           ckt.open
+          {"ok" => "ok"}
         } 
-        {}
-      end
+        end
       desc 'Simulate'
       get :simulate do
         Dir.chdir($work_dir){
           ckt = LTspiceControl.new $ckt_name
           ckt.simulate
+          {"end" => "end"}
         }
-        {"end": "end"}
-      end
+    end
     end
   end
 end
