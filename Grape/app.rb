@@ -27,7 +27,7 @@ module Test
       desc 'Open LTspice'
       get :open do
         Dir.chdir($work_dir){
-          ckt = LTspiceControl.new $ckt_name
+          ckt = LTspiceControl.new(params[:file] || $ckt_name)
           ckt.open
           {"ok" => "ok"}
         } 
