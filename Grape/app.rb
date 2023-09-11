@@ -5,9 +5,6 @@ puts "hello world from ruby"
 # puts $:
 require 'j_pack'
 
-$work_dir = ENV['HOMEPATH'] + '/Seafile/PTS06_2022_8/BGR_TEG/'
-$ckt_name = 'tsd_TEG_tb.asc'
-
 module Test
   class API < Grape::API
     format :json
@@ -26,20 +23,24 @@ module Test
     resource :ltspctl do
       desc 'Open LTspice'
       get :open do
+        $work_dir = params[:dir] || ENV['HOMEPATH'] + '/Seafile/PTS06_2022_8/BGR_TEG/'
+        $ckt_name = File.join($work_dir, params[:file] || 'tsd_TEG_tb.asc')
         Dir.chdir($work_dir){
-          ckt = LTspiceControl.new(params[:file] || $ckt_name)
+          ckt = LTspiceControl.new(File.basename $ckt_name)
           ckt.open
-          {"ok" => "ok"}
+          {"elements" => ckt.elements, "info" => ckt.info}
         } 
         end
       desc 'Simulate'
       get :simulate do
+        $work_dir = params[:dir] || ENV['HOMEPATH'] + '/Seafile/PTS06_2022_8/BGR_TEG/'
+        $ckt_name = File.join($work_dir, params[:file] || 'tsd_TEG_tb.asc')
         Dir.chdir($work_dir){
-          ckt = LTspiceControl.new $ckt_name
+          ckt = LTspiceControl.new(File.basename $ckt_name)
           ckt.simulate
           {"end" => "end"}
         }
-    end
+       end
     end
   end
 end
