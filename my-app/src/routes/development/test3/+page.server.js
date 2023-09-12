@@ -5,8 +5,9 @@ import path from 'path';
 export function load({ url }) {
     const home = process.env.HOME.replaceAll('\\', '/');
     home + '/Seafile/PTS06_2022_8/BGR_TEG/';
-    const wdir = url.searchParams.get('wdir') || home + '/Seafile/PTS06_2022_8/BGR_TEG/';
+    let wdir = url.searchParams.get('wdir') || home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     console.log(`wdir: ${wdir}`);
+    if (!wdir.endsWith('/')) wdir = wdir + '/';
     fs.readdir(wdir, (err, files) => {
         files.forEach(file => {
             //console.log(file);
