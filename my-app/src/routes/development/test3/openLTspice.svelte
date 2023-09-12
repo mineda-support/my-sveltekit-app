@@ -1,8 +1,12 @@
 <script>
+  	import {ckt_name, dir_name} from './stores.js';
     async function openLTspice(dir, file) {
+        ckt_name.set(file.replace(/\.*$/, ''));
+        dir_name.set(dir);
         console.log(`openLTspice dir='${dir}' file='${file}'`);
+        const encoded_params = `dir=${encodeURIComponent(dir)}&file=${encodeURIComponent(file)}`;
         let response = await fetch(
-            `http://localhost:9292/api/ltspctl/open?dir=${dir}&file=${file}`,
+            `http://localhost:9292/api/ltspctl/open?${encoded_params}`,
             {}
         );
         let res2 = await response.json();
@@ -17,6 +21,35 @@
     }
     let scoops;
     let ckt;
+    let ckt_store;
+    ckt_name.subscribe((value) => {
+      ckt_store = value;
+    })
+    export let program;
+    let traces = '';
+    $: program = `
+$:.unshift File.join(ENV['HOME'], '/work/alb2/lib')
+$:.unshift '.'
+puts "hello world from ruby"
+puts $0
+work_dir = File.dirname $0
+Dir.chdir(work_dir){
+puts Dir.pwd
+require 'compact_model'
+require 'lib_util'
+require 'ltspice'
+require 'postprocess'
+require 'ltspctl'
+ckt = LTspiceControl.new '${ckt}.asc'
+#ckt.open
+puts "simulate '${ckt}.asc'"
+ckt.simulate
+puts "simulation done"
+vars, traces = ckt.get_traces ${traces}
+ckt.save_traces vars, traces, '${ckt}.json'
+puts "got traces"
+}
+    `;    
 </script>
 <h2>
 	Work directory: {data.props.wdir}
