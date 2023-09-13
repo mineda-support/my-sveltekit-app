@@ -13,7 +13,7 @@
     const dispatch = createEventDispatcher();
     
     async function goLTspice() {
-        console.log(`openLTspice dir='${dir}' ckt='${file}'`);
+        console.log(`openLTspice dir='${dir}' file='${file}'`);
         const encoded_params = `dir=${encodeURIComponent(dir)}&file=${encodeURIComponent(file)}`;
         let response = await fetch(
             `http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
