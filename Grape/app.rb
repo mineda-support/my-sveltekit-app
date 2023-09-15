@@ -33,6 +33,15 @@ module Test
       end
     end
 
+    resource :misc do
+      desc 'Load program'
+      get :load do
+        dir, file = Utils::get_params(params)
+        load File.join(dir, file)
+        {}
+      end
+    end
+    
     resource :ltspctl do
       desc 'Open LTspice'
       get :open do
