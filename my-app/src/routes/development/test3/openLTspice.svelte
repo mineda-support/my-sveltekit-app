@@ -36,6 +36,13 @@
     })
     let traces = '';
     let showup = false;
+    function get_control(props){
+      if (Array.isArray(props)){
+        return props[0].control;
+      } else {
+        return props.value;
+      }
+    }
 </script>
 
 <h2>
@@ -61,7 +68,7 @@
 {#if ckt != undefined}
   <div style="border:red solid 5px;">
     {#each Object.entries(ckt.elements) as [elm, props]}
-      <div>{elm}:{props.value}</div>
+      <div>{elm}:{get_control(props)}</div>
     {/each}
   </div>
   <div class="sample">
