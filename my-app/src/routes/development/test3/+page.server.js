@@ -7,6 +7,8 @@ export function load({ url }) {
     const home = process.env.HOME.replaceAll('\\', '/');
     home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     let wdir = url.searchParams.get('wdir') || home + '/Seafile/PTS06_2022_8/BGR_TEG/';
+    let ckt = url.searchParams.get('ckt');
+    let probes = url.searchParams.get('probes');
     console.log(`wdir: ${wdir}`);
     if (!wdir.endsWith('/')) wdir = wdir + '/';
     fs.readdir(wdir, (err, files) => {
@@ -22,7 +24,7 @@ export function load({ url }) {
 
     return {
         props: {
-          wdir: wdir, files: files.map(a => path.basename(a)) //, probes: probes
+          wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)) //, probes: probes
         }
     };
 }
