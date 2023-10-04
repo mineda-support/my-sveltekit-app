@@ -70,19 +70,21 @@
     }
 */
 	export let data;
-	let probes = data.props.probes;
+	export let probes = data.props.probes;
+	$: probes = probes;
+	// $: probes = data.props.probes;
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
 </script>
 
-<OpenLTspice {data} on:open_end={plot_result}/>
+<OpenLTspice {data} {probes} on:open_end={plot_result}/>
 <Simulate on:sim_end={plot_result} />
 <!-- div>
 	<button on:click={goLTspice}>
 		Click here to Start LTspice simulation</button>
 </div -->
 <!-- Testplot / -->
-<button on:click={plot_result}
+<button on:click={plot_result} class="button-1"
 	>Plot simulation result with probes setting:</button
 >
 <input bind:value={probes} />
@@ -144,3 +146,12 @@
 		debounce={250}
 	/>
 {/if}
+<style>
+	.button-1 {
+	  /* width: 25%; */
+	  background: lightblue;
+	  text-align: left;
+	  padding: 5px 10px;
+	  border: 5px solid #ddd;
+	}
+  </style>

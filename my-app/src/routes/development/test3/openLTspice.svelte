@@ -28,7 +28,6 @@
     );
     let res2 = await response.json();
     console.log(res2);
-    let probes = data.props.probes;
     console.log(`probes: ${probes}`);
     if (probes != undefined) {
       // goLTspice();
@@ -40,6 +39,7 @@
   }
   let files;
   export let data;
+  export let probes; // = data.props.probes;
   function fakeOpen(file) {
     alert(`you have chosen ${file}`);
   }
@@ -61,6 +61,10 @@
       return props.value;
     }
   }
+  function push_button(node) {
+    console.log(`${probes}, ${node}`);
+    probes = probes + ", " + node;
+  }
 </script>
 
 <h2>
@@ -75,7 +79,10 @@
   {/each}
 </div>
 <div>
-  <button on:click={openLTspice(data.props.wdir, scoops, showup)}>
+  <button
+    on:click={openLTspice(data.props.wdir, scoops, showup)}
+    class="button-1"
+  >
     Click here to Open LTspice</button
   >
   <label>
@@ -91,7 +98,7 @@
   </div>
   <div class="sample">
     {#each ckt.info as node}
-      <div>{node}</div>
+      <button on:click={push_button(node)} class="button-item">{node}</button>
     {/each}
   </div>
 {/if}
@@ -100,7 +107,7 @@
   .sample {
     display: flex;
     flex-wrap: wrap;
-    border: green solid 5px;
+    /* border: green solid 5px; */
     height: 200px;
     /* background:yellow; */
     overflow: scroll;
@@ -108,6 +115,20 @@
   .box-item {
     width: 25%;
     background: orange;
+    text-align: left;
+    padding: 5px 10px;
+    border: 5px solid #ddd;
+  }
+  .button-item {
+    /* width: 25%; */
+    background: lightblue;
+    text-align: left;
+    padding: 2px 3px;
+    border: 2px solid yellow;
+  }
+  .button-1 {
+    /* width: 25%; */
+    background: lightblue;
     text-align: left;
     padding: 5px 10px;
     border: 5px solid #ddd;

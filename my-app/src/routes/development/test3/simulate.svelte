@@ -28,7 +28,17 @@
 </script>
 
 <div>
-    <button on:click={goLTspice}>
+    <button on:click={goLTspice} class="button-1">
         Click here to Start LTspice simulation</button
     >
 </div>
+
+<style>
+	.button-1 {
+	  /* width: 25%; */
+	  background: lightblue;
+	  text-align: left;
+	  padding: 5px 10px;
+	  border: 5px solid #ddd;
+	}
+  </style>
