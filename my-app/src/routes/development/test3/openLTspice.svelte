@@ -68,8 +68,12 @@
   }
   function push_button(node) {
     console.log(`${probes}, ${node}`);
-    probes = probes + ", " + node;
-    probes_name.set(probes);
+    if ( probes == null || probes == undefined || probes == "" ){
+      probes = node;
+    } else {
+      probes = probes + ", " + node;
+    }
+     probes_name.set(probes);
   }
 </script>
 

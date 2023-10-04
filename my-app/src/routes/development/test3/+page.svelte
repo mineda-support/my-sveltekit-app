@@ -79,7 +79,9 @@
 	
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
-
+    function clear_plot(){
+		plotdata = undefined;
+	}
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result}/>
@@ -100,6 +102,9 @@
 <label>
 	<input type="checkbox" bind:checked={yaxis_is_log} />
 	yaxis is log
+</label>
+<label>
+	<button on:click={clear_plot} class="button-1">clear</button>
 </label>
 {#if plotdata !== undefined}
 	<Plot
