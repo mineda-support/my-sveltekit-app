@@ -1,6 +1,6 @@
 <script>
   import { end_hydrating } from "svelte/internal";
-  import { ckt_name, dir_name } from "./stores.js";
+  import { ckt_name, dir_name, probes_name } from "./stores.js";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -39,15 +39,20 @@
   }
   let files;
   export let data;
-  export let probes; // = data.props.probes;
   function fakeOpen(file) {
     alert(`you have chosen ${file}`);
   }
   let scoops = data.props.ckt;
   let ckt;
+  /*
   let ckt_store;
   ckt_name.subscribe((value) => {
     ckt_store = value;
+  });
+  */
+  let probes;
+  probes_name.subscribe((value) => {
+    probes = value;
   });
   let traces = "";
   let showup = false;
@@ -64,6 +69,7 @@
   function push_button(node) {
     console.log(`${probes}, ${node}`);
     probes = probes + ", " + node;
+    probes_name.set(probes);
   }
 </script>
 

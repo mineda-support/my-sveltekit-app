@@ -21,15 +21,19 @@
 		plotdata = await response.json();
 	}
 */
-	import { ckt_name, dir_name } from "./stores.js";
+	import { ckt_name, dir_name, probes_name } from "./stores.js";
 	let file;
 	let dir;
+	let probes;
 	ckt_name.subscribe((value) => {
 		file = value;
 	});
 	dir_name.subscribe((value) => {
 		dir = value;
 	});
+	probes_name.subscribe((value) => {
+		probes = value;
+	});	
 	async function plot_result(event) {
 		// cookies.et('probes', probes, { path: '/'});
 		console.log(
@@ -70,14 +74,15 @@
     }
 */
 	export let data;
-	export let probes = data.props.probes;
-	$: probes = probes;
-	// $: probes = data.props.probes;
+    probes_name.set(data.props.probes);
+	$: probes_name.set(probes);
+	
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
+
 </script>
 
-<OpenLTspice {data} {probes} on:open_end={plot_result}/>
+<OpenLTspice {data} on:open_end={plot_result}/>
 <Simulate on:sim_end={plot_result} />
 <!-- div>
 	<button on:click={goLTspice}>
