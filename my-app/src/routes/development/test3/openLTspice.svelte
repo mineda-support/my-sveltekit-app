@@ -35,6 +35,13 @@
       dispatch("open_end", { text: "fake simulation ended!" });
     }
     ckt = res2;
+    if (ckt != undefined) {
+      for (const [elm, props] of Object.entries(ckt.elements)) {
+        if (elm != "") {
+          elements_text = elements_text + elm + ":" + get_control(props) + "\n";
+        }
+      }
+    }
     return res2;
   }
   let files;
@@ -68,20 +75,24 @@
   }
   function push_button(node) {
     console.log(`${probes}, ${node}`);
-    if ( probes == null || probes == undefined || probes == "" ){
+    if (probes == null || probes == undefined || probes == "") {
       probes = node;
     } else {
       probes = probes + ", " + node;
     }
-     probes_name.set(probes);
+    probes_name.set(probes);
   }
-  $: {
-    let elements_text = '';
-    ckt.elements.each{ |elm, props|
-      elements_text = elements_text + elm +':' + get_control(props);
+  let elements_text = "";
+  /* $: {
+    if (ckt != undefined) {
+      for (const [elm, props] of Object.entries(ckt.elements)) {
+        if (elm != '') {
+          elements_text = elements_text + elm + ":" + get_control(props) + "\n";
+        }
+      }
     }
-  }
-    </script>
+  } */
+</script>
 
 <h2>
   Work directory: {data.props.wdir}
@@ -107,13 +118,13 @@
   </label>
 </div>
 {#if ckt != undefined}
-  <div style="border:red solid 2px;">
+  <!-- div style="border:red solid 2px;">
     {#each Object.entries(ckt.elements) as [elm, props]}
       <div>{elm}:{get_control(props)}</div>
     {/each}
-  </div>
+  </div -->
   <div class="grid">
-    <textarea bind:elements_text></textarea>
+    <textarea bind:value={elements_text} />
   </div>
   <div class="sample">
     {#each ckt.info as node}
