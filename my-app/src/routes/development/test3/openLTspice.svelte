@@ -75,7 +75,13 @@
     }
      probes_name.set(probes);
   }
-</script>
+  $: {
+    let elements_text = '';
+    ckt.elements.each{ |elm, props|
+      elements_text = elements_text + elm +':' + get_control(props);
+    }
+  }
+    </script>
 
 <h2>
   Work directory: {data.props.wdir}
@@ -101,10 +107,13 @@
   </label>
 </div>
 {#if ckt != undefined}
-  <div style="border:red solid 5px;">
+  <div style="border:red solid 2px;">
     {#each Object.entries(ckt.elements) as [elm, props]}
       <div>{elm}:{get_control(props)}</div>
     {/each}
+  </div>
+  <div class="grid">
+    <textarea bind:elements_text></textarea>
   </div>
   <div class="sample">
     {#each ckt.info as node}
