@@ -1,14 +1,34 @@
 <script context="module">
-  export function update_elements(){
-    console.log('Let me update elements here!');
+  let elements = {};
+  let elements_orig;
+
+  export function update_elements() {
+    console.log(`let me update elements=${elements} here!`);
+    for (const [elm] of Object.entries(elements)) {
+      console.log(`${elm}: ${elements_orig[elm]}->${elements[elm]}`);
+      if (elements[elm] != elements_orig[elm]) {
+        
+      }
+    }
   }
 </script>
+
 <script>
   import { end_hydrating } from "svelte/internal";
   import { ckt_name, dir_name, probes_name } from "./stores.js";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
+  /*
+  export function update_elements() {
+    console.log("Let me update elements here!");
+    for (const [elm] of Object.entries(elements)) {
+      if (elements[elm] != elements_orig[elm]) {
+        console.log(`${elm}: ${elements_orig[elm]}->${elements[elm]}`);
+      }
+    }
+  }
+  */
   async function openLTspice(dir, file, showup) {
     if (file == undefined) {
       alert("Please choose circuit to open");
@@ -43,10 +63,12 @@
     if (ckt != undefined) {
       for (const [elm, props] of Object.entries(ckt.elements)) {
         if (elm != "") {
-          elements_text = elements_text + elm + ":" + get_control(props) + "\n";
+          // elements_text = elements_text + elm + ":" + get_control(props) + "\n";
+          elements[elm] = get_control(props);
         }
       }
     }
+    elements_orig = elements;
     return res2;
   }
   let files;
@@ -128,9 +150,20 @@
       <div>{elm}:{get_control(props)}</div>
     {/each}
   </div -->
-  <div class="grid">
-    <textarea bind:value={elements_text} />
+  <div style="border:red solid 2px;">
+    {#each Object.entries(elements) as [elm]}
+      <label
+        >{elm}:
+        <input
+          style="border:darkgray solid 1px;"
+          bind:value={elements[elm]}
+        /><br /></label
+      >
+    {/each}
   </div>
+  <!-- div class="grid">
+    <textarea bind:value={elements_text} />
+  </div -->
   <div class="sample">
     {#each ckt.info as node}
       <button on:click={push_button(node)} class="button-item">{node}</button>
