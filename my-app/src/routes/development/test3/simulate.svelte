@@ -12,6 +12,8 @@
     const dispatch = createEventDispatcher();
     export async function goLTspice() {
         console.log(`openLTspice dir='${dir}' file='${file}'`);
+        dispatch("elm_update", { text: "Update elements" });
+
         const encoded_params = `dir=${encodeURIComponent(
             dir
         )}&file=${encodeURIComponent(file)}`;

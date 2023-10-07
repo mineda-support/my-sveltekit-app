@@ -5,6 +5,7 @@
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
 	import OpenLTspice from "./openLTspice.svelte";
+	import {update_elements} from "./openLTspice.svelte"
 	import Plot from "svelte-plotly.js";
 
 	export let plotdata;
@@ -85,7 +86,7 @@
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result}/>
-<Simulate on:sim_end={plot_result} />
+<Simulate on:sim_end={plot_result} on:elm_update={update_elements}/>
 <!-- div>
 	<button on:click={goLTspice}>
 		Click here to Start LTspice simulation</button>

@@ -1,3 +1,8 @@
+<script context="module">
+  export function update_elements(){
+    console.log('Let me update elements here!');
+  }
+</script>
 <script>
   import { end_hydrating } from "svelte/internal";
   import { ckt_name, dir_name, probes_name } from "./stores.js";
