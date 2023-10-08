@@ -1,5 +1,6 @@
 require 'grape'
-$:.unshift File.join(ENV['HOME'].gsub(/\\/, '/'), '/work/alb2/lib')
+#$:.unshift File.join(ENV['HOME'].gsub(/\\/, '/'), '/work/alb2/lib')
+$:.unshift File.join('..', 'j_pack')
 $:.unshift '.'
 puts "hello world from ruby"
 # puts $:
@@ -92,6 +93,17 @@ module Test
           else
             {"log" => ckt.sim_log}
           end
+        }
+      end
+      desc 'Updates'
+      get :update do
+        work_dir, ckt_name = Utils::get_params(params)
+        updates = eval params[:updates]
+        puts "updates: #{updates}"
+        Dir.chdir(work_dir){
+          ckt = LTspiceControl.new(File.basename ckt_name)
+          ckt.set updates
+          {"elements" => ckt.elements, "info" => ckt.info}
         }
       end
     end

@@ -1,13 +1,35 @@
 <script context="module">
   let elements = {};
-  let elements_orig;
+  let ckt;
 
-  export function update_elements() {
-    console.log(`let me update elements=${elements} here!`);
-    for (const [elm] of Object.entries(elements)) {
-      console.log(`${elm}: ${elements_orig[elm]}->${elements[elm]}`);
-      if (elements[elm] != elements_orig[elm]) {
-        
+  export async function update_elements(dir, file) {
+    console.log(
+      `let me update elements=${elements} here @ dir= ${dir} file=${file}`
+    );
+    let update_elms = "";
+    for (const [elm, props] of Object.entries(ckt.elements)) {
+      if (elm != "") {
+        if (elements[elm] != get_control(props)) {
+          // console.log(`${elm}: ${get_control(props)}->${elements[elm]}`);
+          update_elms = update_elms + elm + ":'" + elements[elm] + "',";
+        }
+      }
+    }
+    if (update_elms != "") {
+      update_elms = encodeURIComponent(`{${update_elms}}`);
+      let encoded_params = `dir=${encodeURIComponent(
+        dir
+      )}&file=${encodeURIComponent(file)}`;
+      const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
+      console.log(command);
+      let response = await fetch(command, {});
+      let ckt = await response.json();
+      for (const [elm, props] of Object.entries(ckt.elements)) {
+        if (elm != "") {
+          if (elements[elm] != get_control(props)) {
+            console.log(`Update error! ${elm}: ${get_control(props)}vs.${elements[elm]}`);
+          }
+        }
       }
     }
   }
@@ -19,16 +41,6 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
-  /*
-  export function update_elements() {
-    console.log("Let me update elements here!");
-    for (const [elm] of Object.entries(elements)) {
-      if (elements[elm] != elements_orig[elm]) {
-        console.log(`${elm}: ${elements_orig[elm]}->${elements[elm]}`);
-      }
-    }
-  }
-  */
   async function openLTspice(dir, file, showup) {
     if (file == undefined) {
       alert("Please choose circuit to open");
@@ -68,7 +80,6 @@
         }
       }
     }
-    elements_orig = elements;
     return res2;
   }
   let files;
@@ -77,7 +88,6 @@
     alert(`you have chosen ${file}`);
   }
   let scoops = data.props.ckt;
-  let ckt;
   /*
   let ckt_store;
   ckt_name.subscribe((value) => {
@@ -109,8 +119,8 @@
     }
     probes_name.set(probes);
   }
-  let elements_text = "";
-  /* $: {
+  /* let elements_text = "";
+    $: {
     if (ckt != undefined) {
       for (const [elm, props] of Object.entries(ckt.elements)) {
         if (elm != '') {
@@ -145,11 +155,11 @@
   </label>
 </div>
 {#if ckt != undefined}
-  <!-- div style="border:red solid 2px;">
+  <div style="border:red solid 2px;">
     {#each Object.entries(ckt.elements) as [elm, props]}
-      <div>{elm}:{get_control(props)}</div>
+      <div>{elm}:{get_control(props)}({elements[elm]})</div>
     {/each}
-  </div -->
+  </div>
   <div style="border:red solid 2px;">
     {#each Object.entries(elements) as [elm]}
       <label

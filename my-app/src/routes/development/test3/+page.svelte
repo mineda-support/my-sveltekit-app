@@ -4,8 +4,7 @@
 	// import Testplot, {handleMessage} from "./test_plot.svelte";
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
-	import OpenLTspice from "./openLTspice.svelte";
-	import {update_elements} from "./openLTspice.svelte"
+	import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import Plot from "svelte-plotly.js";
 
 	export let plotdata;
@@ -86,7 +85,7 @@
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result}/>
-<Simulate on:sim_end={plot_result} on:elm_update={update_elements}/>
+<Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir, file)}/>
 <!-- div>
 	<button on:click={goLTspice}>
 		Click here to Start LTspice simulation</button>
@@ -95,7 +94,7 @@
 <button on:click={plot_result} class="button-1"
 	>Plot simulation result with probes setting:</button
 >
-<input bind:value={probes} />
+<input bind:value={probes} style="border:darkgray solid 1px;"/>
 <label>
 	<input type="checkbox" bind:checked={xaxis_is_log} />
 	xaxis is log
