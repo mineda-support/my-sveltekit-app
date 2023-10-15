@@ -1,43 +1,14 @@
 <script context="module">
-  let elements = {};
-  let ckt;
-
-  export async function update_elements(dir, file) {
-    console.log(
-      `let me update elements=${elements} here @ dir= ${dir} file=${file}`
-    );
-    let update_elms = "";
-    for (const [elm, props] of Object.entries(ckt.elements)) {
-      if (elm != "") {
-        if (elements[elm] != get_control(props)) {
-          // console.log(`${elm}: ${get_control(props)}->${elements[elm]}`);
-          update_elms = update_elms + elm + ":'" + elements[elm] + "',";
-        }
-      }
-    }
-    if (update_elms != "") {
-      update_elms = encodeURIComponent(`{${update_elms}}`);
-      let encoded_params = `dir=${encodeURIComponent(
-        dir
-      )}&file=${encodeURIComponent(file)}`;
-      const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
-      console.log(command);
-      let response = await fetch(command, {});
-      let ckt = await response.json();
-      for (const [elm, props] of Object.entries(ckt.elements)) {
-        if (elm != "") {
-          if (elements[elm] != get_control(props)) {
-            console.log(`Update error! ${elm}: ${get_control(props)}vs.${elements[elm]}`);
-          }
-        }
-      }
+  export function get_control(props) {
+    if (Array.isArray(props)) {
+      return props[0].control;
+    } else {
+      return props.value;
     }
   }
 </script>
-
 <script>
   import { end_hydrating } from "svelte/internal";
-  import { ckt_name, dir_name, probes_name } from "./stores.js";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -68,18 +39,23 @@
     console.log(`probes: ${probes}`);
     if (probes != undefined) {
       // goLTspice();
-      //plot_result();
+      // plot_result();
       dispatch("open_end", { text: "fake simulation ended!" });
     }
     ckt = res2;
+    console.log(`ckt=${ckt}`)
     if (ckt != undefined) {
+      elements = {};
       for (const [elm, props] of Object.entries(ckt.elements)) {
         if (elm != "") {
           // elements_text = elements_text + elm + ":" + get_control(props) + "\n";
           elements[elm] = get_control(props);
         }
       }
+      console.log(`elements=${elements}`)
     }
+    ckt_store.set(ckt);
+    elements_store.set(elements);
     return res2;
   }
   let files;
@@ -88,27 +64,24 @@
     alert(`you have chosen ${file}`);
   }
   let scoops = data.props.ckt;
-  /*
-  let ckt_store;
-  ckt_name.subscribe((value) => {
-    ckt_store = value;
-  });
-  */
+  import { ckt_name, dir_name, probes_name, ckt_store, elements_store } from "./stores.js";
   let probes;
   probes_name.subscribe((value) => {
     probes = value;
   });
+  let ckt;
+  ckt_store.subscribe((value) => {
+    ckt = value;
+  });
+  let elements = {};
+  elements_store.subscribe((value) => {
+    elements = value;
+  });
+  
   let traces = "";
   let showup = false;
   if (scoops != undefined) {
     openLTspice(data.props.wdir, scoops, showup);
-  }
-  function get_control(props) {
-    if (Array.isArray(props)) {
-      return props[0].control;
-    } else {
-      return props.value;
-    }
   }
   function push_button(node) {
     console.log(`${probes}, ${node}`);
@@ -119,16 +92,7 @@
     }
     probes_name.set(probes);
   }
-  /* let elements_text = "";
-    $: {
-    if (ckt != undefined) {
-      for (const [elm, props] of Object.entries(ckt.elements)) {
-        if (elm != '') {
-          elements_text = elements_text + elm + ":" + get_control(props) + "\n";
-        }
-      }
-    }
-  } */
+
 </script>
 
 <h2>
@@ -155,11 +119,11 @@
   </label>
 </div>
 {#if ckt != undefined}
-  <div style="border:red solid 2px;">
+  <!-- div style="border:red solid 2px;">
     {#each Object.entries(ckt.elements) as [elm, props]}
       <div>{elm}:{get_control(props)}({elements[elm]})</div>
     {/each}
-  </div>
+  </div -->
   <div style="border:red solid 2px;">
     {#each Object.entries(elements) as [elm]}
       <label

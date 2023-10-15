@@ -106,6 +106,14 @@ module Test
           {"elements" => ckt.elements, "info" => ckt.info}
         }
       end
+      desc 'Info'
+      get :info do
+        work_dir, ckt_name = Utils::get_params(params)
+        Dir.chdir(work_dir){
+          ckt = LTspiceControl.new(File.basename ckt_name)
+          {"info" => ckt.info}
+        }
+      end
     end
   end
 end
