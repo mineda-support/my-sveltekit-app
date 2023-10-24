@@ -9,6 +9,7 @@
 </script>
 <script>
   import { end_hydrating } from "svelte/internal";
+  import ConvertSchematic from "./convertSchematic.svelte";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -117,6 +118,7 @@
     <input type="checkbox" bind:checked={showup} />
     show up schematic
   </label>
+  <ConvertSchematic />
 </div>
 {#if ckt != undefined}
   <!-- div style="border:red solid 2px;">

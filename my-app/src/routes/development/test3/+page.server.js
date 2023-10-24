@@ -2,6 +2,15 @@ import fs from 'fs';
 import glob from 'glob';
 import path from 'path';
 
+/*
+import { goto } from '$app/navigation';
+export const actions = {
+    default: async (event) => {
+        console.log('form sent'); //alert('form sent');
+        goto('/development/test3/');
+    }
+};    
+*/
 export function load({ url }) {
     // const probes = cookies.get('probes')
     const home = process.env.HOME.replaceAll('\\', '/');
@@ -13,7 +22,7 @@ export function load({ url }) {
     if (!wdir.endsWith('/')) wdir = wdir + '/';
     fs.readdir(wdir, (err, files) => {
         files.forEach(file => {
-            //console.log(file);
+            console.log(file);
         });
     });
 

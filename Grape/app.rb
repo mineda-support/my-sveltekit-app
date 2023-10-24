@@ -114,6 +114,16 @@ module Test
           {"info" => ckt.info}
         }
       end
+      desc 'Convert_from_LTspice'
+      post :convert_from_LTspice do
+        # puts params
+        # puts params.keys
+        work_dir, ckt_name = Utils::get_params(params)
+        Dir.chdir(work_dir){
+          puts params[:program]
+          eval params[:program]
+        }
+      end
     end
   end
 end
