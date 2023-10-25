@@ -1,4 +1,5 @@
 <script>
+    import { enhance, applyAction } from '$app/forms';
     import { goto } from '$app/navigation';
     import { dir_name } from "./stores.js";
     let dir;
@@ -37,6 +38,16 @@ cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./xschem')
 <!-- form method="POST" on:submit={handleSubmit} class='button-2'></form -->
 <form
     method="POST"
+    use:enhance={({ formElement, formData, action, cancel }) => {
+		return async ({ result }) => {
+			// `result` is an `ActionResult` object
+			if (result.type === 'redirect') {
+				goto(result.location);
+			} else {
+				await applyAction(result);
+			}
+		};
+	}}
     class="button-2"
     action={`http://localhost:9292/api/ltspctl/convert_from_LTspice?${encoded_params(dir)}`}
 

@@ -4,8 +4,9 @@
 	// import Testplot, {handleMessage} from "./test_plot.svelte";
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
+	import Experiment from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
-	import OpenLTspice, {get_control} from "./openLTspice.svelte";
+	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Plot from "svelte-plotly.js";
 
 	export let plotdata;
@@ -194,6 +195,7 @@
 		debounce={250}
 	/>
 {/if}
+<Experiment />
 
 <style>
 	.button-1 {

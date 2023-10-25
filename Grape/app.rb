@@ -124,6 +124,17 @@ module Test
           eval params[:program]
         }
       end
+      desc 'Execute program'
+      post :execute do
+        # puts params
+        # puts params.keys
+        work_dir, ckt_name = Utils::get_params(params)
+        Dir.chdir(work_dir){
+          puts params[:body]
+          new_traces = eval params[:body]
+          {"traces" => new_traces}
+        }
+      end
     end
   end
 end
