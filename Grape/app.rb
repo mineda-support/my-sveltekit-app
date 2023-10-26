@@ -120,6 +120,7 @@ module Test
         # puts params.keys
         work_dir, ckt_name = Utils::get_params(params)
         Dir.chdir(work_dir){
+          puts 'execute under' + work_dir
           puts params[:program]
           eval params[:program]
         }
@@ -127,7 +128,7 @@ module Test
       desc 'Execute program'
       post :execute do
         # puts params
-        # puts params.keys
+        puts params.keys
         work_dir, ckt_name = Utils::get_params(params)
         Dir.chdir(work_dir){
           puts params[:body]

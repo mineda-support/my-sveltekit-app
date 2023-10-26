@@ -56,15 +56,15 @@ new_traces
 		const encoded_params = `dir=${encodeURIComponent(
 			dir
 		)}&file=${encodeURIComponent(file)}`;
-		const body = program;
+		const body = 'fake body' //program;
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/execute?${encoded_params}`,
 			{
 				method: "POST",
 				headers: {
-					Accept: "application/json",
+					'Content-Type': "application/json",
 				},
-				body: program, // JSON.stringify(body),
+				body: JSON.stringify(body),
 			}
 		);
 		console.log(await res.json());
