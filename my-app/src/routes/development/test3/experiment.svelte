@@ -1,4 +1,5 @@
 <script>
+	import Plot from "svelte-plotly.js";
 	import {
 		ckt_name,
 		dir_name,
@@ -56,7 +57,7 @@ new_traces
 		const encoded_params = `dir=${encodeURIComponent(
 			dir
 		)}&file=${encodeURIComponent(file)}`;
-		const body = 'fake body' //program;
+		// console.log(`program to send: ${program}`);
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/execute?${encoded_params}`,
 			{
@@ -64,11 +65,13 @@ new_traces
 				headers: {
 					'Content-Type': "application/json",
 				},
-				body: JSON.stringify(body),
+				body: JSON.stringify({program: program}),
 			}
 		);
-		console.log(await res.json());
+		plot_data = await res.json();
+		console.log(plot_data);
 	}
+	let plot_data;
 </script>
 
 <div>Make Experiments</div>
@@ -116,3 +119,16 @@ width: 90%;"
 		border: 5px solid #ddd;
 	}
 </style>
+{#if plot_data !== undefined}
+	<Plot 
+		data={plot_data.traces} 
+		layout={{
+			title: 'title',
+			xaxis: { title: 'time', autorange: "true" },
+			yaxis: { title: 'voltage', autorange: "true" },
+			
+		}}
+		fillParent="width"
+		debounce={250}
+	/>
+{/if}		

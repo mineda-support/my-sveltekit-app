@@ -127,12 +127,13 @@ module Test
       end
       desc 'Execute program'
       post :execute do
+        # puts params.keys
         # puts params
-        puts params.keys
         work_dir, ckt_name = Utils::get_params(params)
         Dir.chdir(work_dir){
-          puts params[:body]
-          new_traces = eval params[:body]
+          puts params[:program]
+          ckt = LTspiceControl.new(File.basename ckt_name)
+          new_traces = eval params[:program]
           {"traces" => new_traces}
         }
       end
