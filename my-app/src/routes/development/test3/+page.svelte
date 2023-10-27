@@ -121,6 +121,28 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
+	async function submit_equation(program, dir, file, plotdata) {
+		const encoded_params = `dir=${encodeURIComponent(
+			dir
+		)}&file=${encodeURIComponent(file)}`;
+		// console.log(`program to send: ${program}`);
+		const res = await fetch(
+			`http://localhost:9292/api/ltspctl/measure?${encoded_params}`,
+			{
+				method: "POST",
+				headers: {
+					'Content-Type': "application/json",
+				},
+				body: JSON.stringify({equation: equation, plotdata: plotdata}),
+			}
+		);
+		let result = await res.json();
+		console.log(result);
+		return result.calculated_value;
+	}
+	let equation;
+	let calculated_value;
+    $: calculated_value = calculated_value;
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result} />
@@ -195,6 +217,18 @@
 		debounce={250}
 	/>
 {/if}
+
+<div>
+	<label
+		>Measure
+		<input bind:value={equation} style="border:darkgray solid 1px;" />
+		<button on:click={calculated_value = submit_equation(equation, dir, file, plotdata)} class="button-1">
+			Calculate</button
+		>
+		=> {calculated_value}
+	</label>
+</div>
+
 <Experiment />
 
 <style>

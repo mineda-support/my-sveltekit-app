@@ -5,6 +5,7 @@ $:.unshift '.'
 puts "hello world from ruby"
 # puts $:
 require 'j_pack'
+require 'byebug'
 
 module Test
   class Utils
@@ -135,6 +136,26 @@ module Test
           ckt = LTspiceControl.new(File.basename ckt_name)
           new_traces = eval params[:program]
           {"traces" => new_traces}
+        }
+      end
+      desc 'Measurement'
+      post :measure do
+        require 'json'
+        # puts params.keys
+        # puts params
+        work_dir, ckt_name = Utils::get_params(params)
+        Dir.chdir(work_dir){
+          puts params[:equation]
+          ckt = LTspiceControl.new(File.basename ckt_name)
+          # puts params[:plotdata].inspect
+          plotdata = params[:plotdata][0]
+          # debugger
+          puts plotdata[:x]
+          puts plotdata[:y]
+          x = Array_with_interpolation.new plotdata[:x]
+          y = Array_with_interpolation.new plotdata[:y]
+          calculated_value = eval params[:equation]
+          {"calculated_value" => calculated_value}
         }
       end
     end
