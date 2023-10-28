@@ -78,7 +78,13 @@ new_traces
 <div>
 	<label
 		>1st source
-		<input bind:value={src1} style="border:darkgray solid 1px;" />
+		<!--input bind:value={src1} style="border:darkgray solid 1px;" / -->
+		<select bind:value={src1} style="border:darkgray solid 1px;">
+		  <!---> {#each Object.keys(elements).filter((a) => a != '') as elm} -->	 
+		  {#each Object.keys(elements) as elm}		
+		    <option value=elm>{elm}</option>
+		  {/each}
+		</select> 
 		values
 		<input
 			bind:value={src1_values}

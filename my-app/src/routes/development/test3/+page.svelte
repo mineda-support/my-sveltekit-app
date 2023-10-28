@@ -138,11 +138,11 @@
 		);
 		let result = await res.json();
 		console.log(result);
-		return result.calculated_value;
+		calculated_value = result.calculated_value;
 	}
-	let equation;
+	let equation = 'x.where(y, 2.5){|x, y| x > 1e-6}';
 	let calculated_value;
-    $: calculated_value = calculated_value;
+    // $: calculated_value = calculated_value;
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result} />
@@ -222,7 +222,7 @@
 	<label
 		>Measure
 		<input bind:value={equation} style="border:darkgray solid 1px;" />
-		<button on:click={calculated_value = submit_equation(equation, dir, file, plotdata)} class="button-1">
+		<button on:click={submit_equation(equation, dir, file, plotdata)} class="button-1">
 			Calculate</button
 		>
 		=> {calculated_value}
