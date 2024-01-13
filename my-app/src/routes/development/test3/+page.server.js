@@ -20,20 +20,21 @@ export function load({ url }) {
     let probes = url.searchParams.get('probes');
     console.log(`wdir: ${wdir}`);
     if (!wdir.endsWith('/')) wdir = wdir + '/';
-    fs.readdir(wdir, (err, files) => {
+    if (fs.existsSync(wdir)) {
+        fs.readdir(wdir, (err, files) => {
+            files.forEach(file => {
+                console.log(file);
+            });
+        });
+
+        const files = glob.sync(wdir + '*.asc');
         files.forEach(file => {
             console.log(file);
         });
-    });
-
-    const files = glob.sync(wdir + '*.asc');
-    files.forEach(file => {
-        console.log(file);
-    });
-
-    return {
-        props: {
-          wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)) //, probes: probes
-        }
-    };
+        return {
+            props: {
+                wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)) //, probes: probes
+            }
+        };
+    }
 }

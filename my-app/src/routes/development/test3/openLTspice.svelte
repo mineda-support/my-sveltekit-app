@@ -1,4 +1,5 @@
 <script context="module">
+	import { goto } from "$app/navigation";
   export function get_control(props) {
     if (Array.isArray(props)) {
       return props[0].control;
@@ -93,11 +94,14 @@
     }
     probes_name.set(probes);
   }
-
+  function switch_wdir(wdir){
+    goto('/development/test3?wdir=' + wdir);
+  }
 </script>
 
 <h2>
-  Work directory: {data.props.wdir}
+  Work directory: <input bind:value={data.props.wdir} style="border:darkgray solid 1px;width: 50%;"/>
+  <button on:click={switch_wdir(data.props.wdir)} class="button-1">Switch Wdir</button>
 </h2>
 <div class="sample">
   {#each data.props.files as file}
