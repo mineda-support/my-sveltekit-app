@@ -12,3 +12,12 @@ export function GET() {
     return json(plotdata);
 }
 
+export async function POST({ request, cookies }) {
+    // console.log(request);
+	const props = await request.json();
+    const wdir = props.wdir;
+    console.log(wdir);
+    fs.writeFileSync(wdir+'default_settings.json', JSON.stringify(props));
+    console.log(props);
+	return json({ status: 201 });
+}

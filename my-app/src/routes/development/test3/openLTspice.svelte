@@ -97,6 +97,18 @@
   function switch_wdir(wdir){
     goto('/development/test3?wdir=' + wdir);
   }
+  async function save_settings(data){
+    const props = data.props
+    console.log("gave up");
+    console.log(JSON.stringify({props}));
+    const response = await fetch('/development/test3/settings', {
+      method: 'POST',
+      body: JSON.stringify(props),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
 </script>
 
 <h2>
@@ -122,6 +134,10 @@
     <input type="checkbox" bind:checked={showup} />
     show up schematic
   </label>
+  <button
+    on:click = {save_settings(data)}
+    class="button-1">
+    Save settings</button>
   <ConvertSchematic />
 </div>
 {#if ckt != undefined}

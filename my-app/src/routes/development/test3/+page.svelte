@@ -48,7 +48,7 @@
 	ckt_store.set(undefined);
 
 	async function plot_result(event) {
-		// cookies.et('probes', probes, { path: '/'});
+		// cookies.et('probes', probes, { path: '/conditions'});
 		console.log(
 			`Plot results@dir='${dir}' file='${file}' probes=${probes}`
 		);
