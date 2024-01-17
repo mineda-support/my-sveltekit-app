@@ -1,4 +1,6 @@
 import fs from 'fs';
+import glob from 'glob';
+import path from 'path';
 import { json } from '@sveltejs/kit';
 
 export function GET() {
@@ -16,8 +18,10 @@ export async function POST({ request, cookies }) {
     // console.log(request);
 	const props = await request.json();
     const wdir = props.wdir;
+    const settings_file = props.settings_file;
     console.log(wdir);
-    fs.writeFileSync(wdir+'default_settings.json', JSON.stringify(props));
+    fs.writeFileSync(wdir+`${settings_file}_settings.json`, JSON.stringify(props));
     console.log(props);
-	return json({ status: 201 });
+    const setting_files = glob.sync(wdir + '*_settings.json');
+	return json(setting_files.map(a => path.basename(a).replace('_settings.json', '')), { status: 201 });
 }

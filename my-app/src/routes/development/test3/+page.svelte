@@ -141,8 +141,10 @@
 		calculated_value = result.calculated_value;
 	}
 	let equation = 'x.where(y, 2.5){|x, y| x > 1e-6}';
+	$:  data.props.equation = equation;
 	let calculated_value;
     // $: calculated_value = calculated_value;
+	$: data.props.probes = probes;
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result} />

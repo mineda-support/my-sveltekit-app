@@ -1,5 +1,5 @@
 <script context="module">
-	import { goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
   export function get_control(props) {
     if (Array.isArray(props)) {
       return props[0].control;
@@ -8,6 +8,7 @@
     }
   }
 </script>
+
 <script>
   import { end_hydrating } from "svelte/internal";
   import ConvertSchematic from "./convertSchematic.svelte";
@@ -25,16 +26,16 @@
     let encoded_params;
     if (showup) {
       encoded_params = `dir=${encodeURIComponent(
-        dir
+        dir,
       )}&file=${encodeURIComponent(file)}&showup=true`;
     } else {
       encoded_params = `dir=${encodeURIComponent(
-        dir
+        dir,
       )}&file=${encodeURIComponent(file)}`;
     }
     let response = await fetch(
       `http://localhost:9292/api/ltspctl/open?${encoded_params}`,
-      {}
+      {},
     );
     let res2 = await response.json();
     console.log(res2);
@@ -45,7 +46,7 @@
       dispatch("open_end", { text: "fake simulation ended!" });
     }
     ckt = res2;
-    console.log(`ckt=${ckt}`)
+    console.log(`ckt=${ckt}`);
     if (ckt != undefined) {
       elements = {};
       for (const [elm, props] of Object.entries(ckt.elements)) {
@@ -54,7 +55,7 @@
           elements[elm] = get_control(props);
         }
       }
-      console.log(`elements=${elements}`)
+      console.log(`elements=${elements}`);
     }
     ckt_store.set(ckt);
     elements_store.set(elements);
@@ -66,7 +67,13 @@
     alert(`you have chosen ${file}`);
   }
   let scoops = data.props.ckt;
-  import { ckt_name, dir_name, probes_name, ckt_store, elements_store } from "./stores.js";
+  import {
+    ckt_name,
+    dir_name,
+    probes_name,
+    ckt_store,
+    elements_store,
+  } from "./stores.js";
   let probes;
   probes_name.subscribe((value) => {
     probes = value;
@@ -79,7 +86,7 @@
   elements_store.subscribe((value) => {
     elements = value;
   });
-  
+
   let traces = "";
   let showup = false;
   if (scoops != undefined) {
@@ -94,26 +101,34 @@
     }
     probes_name.set(probes);
   }
-  function switch_wdir(wdir){
-    goto('/development/test3?wdir=' + wdir);
+  function switch_wdir(wdir) {
+    goto("/development/test3?wdir=" + wdir);
   }
-  async function save_settings(data){
-    const props = data.props
-    console.log("gave up");
-    console.log(JSON.stringify({props}));
-    const response = await fetch('/development/test3/settings', {
-      method: 'POST',
+  async function save_settings(data, settings_file, ckt) {
+    const props = data.props;
+    props.settings_file = settings_file;
+    props.ckt = ckt;
+    // props.probes = probes;
+    console.log(JSON.stringify({ props }));
+    const response = await fetch("/development/test3/settings", {
+      method: "POST",
       body: JSON.stringify(props),
       headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+        "Content-Type": "application/json",
+      },
+    });
   }
+  let settings_file = 'default'
 </script>
 
 <h2>
-  Work directory: <input bind:value={data.props.wdir} style="border:darkgray solid 1px;width: 50%;"/>
-  <button on:click={switch_wdir(data.props.wdir)} class="button-1">Switch Wdir</button>
+  Work directory: <input
+    bind:value={data.props.wdir}
+    style="border:darkgray solid 1px;width: 50%;"
+  />
+  <button on:click={switch_wdir(data.props.wdir)} class="button-1"
+    >Switch Wdir</button
+  >
 </h2>
 <div class="sample">
   {#each data.props.files as file}
@@ -132,12 +147,23 @@
   >
   <label>
     <input type="checkbox" bind:checked={showup} />
-    show up schematic
+    show schematic
   </label>
-  <button
-    on:click = {save_settings(data)}
-    class="button-1">
-    Save settings</button>
+  <div>
+    <button on:click={save_settings(data, settings_file, ckt)} class="button-1">
+      Save settings in:</button
+    >
+    <label>
+      <input bind:value={settings_file} style="border:darkgray solid 1px;" />
+    </label>
+    <label>Load settings from:
+      <select bind:value={settings_file} style="border:darkgray solid 1px;">
+        {#each data.props.settings as setting}
+          <option value={setting}>{setting}</option>
+        {/each}
+    </select>
+    </label>
+  </div>
   <ConvertSchematic />
 </div>
 {#if ckt != undefined}

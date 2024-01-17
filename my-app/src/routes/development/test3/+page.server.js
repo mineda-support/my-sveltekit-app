@@ -31,9 +31,12 @@ export function load({ url }) {
         files.forEach(file => {
             console.log(file);
         });
+        const setting_files = glob.sync(wdir + '*_settings.json');
+        console.log(setting_files);
         return {
             props: {
-                wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)) //, probes: probes
+                wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)), //, probes: probes
+                settings: setting_files.map(a => path.basename(a).replace('_settings.json', ''))
             }
         };
     }
