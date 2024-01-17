@@ -10,6 +10,7 @@
 	import Plot from "svelte-plotly.js";
 
 	export let plotdata;
+	$: data.props.plotdata = plotdata;
 	let db;
 	let phase;
 	export function handleMessage(event) {
@@ -145,6 +146,7 @@
 	let calculated_value;
     // $: calculated_value = calculated_value;
 	$: data.props.probes = probes;
+	let title, title_x, title_y;
 </script>
 
 <OpenLTspice {data} on:open_end={plot_result} />
@@ -155,7 +157,7 @@
 </div -->
 <!-- Testplot / -->
 <button on:click={plot_result} class="button-1"
-	>Plot simulation result with probes setting:</button
+	>Plot with probes:</button
 >
 <input bind:value={probes} style="border:darkgray solid 1px;" />
 <label>
@@ -169,17 +171,31 @@
 <label>
 	<button on:click={clear_plot} class="button-1">clear</button>
 </label>
+<div>
+<label>Title
+		<input bind:value={title} style="border:darkgray solid 1px;" />
+</label>
+<label>X title
+		<input bind:value={title_x} style="border:darkgray solid 1px;" />
+</label>
+<label>Y title
+		<input bind:value={title_y} style="border:darkgray solid 1px;" />
+</label>
+</div>
 {#if plotdata !== undefined}
 	<Plot
 		data={plotdata}
 		layout={{
-			xaxis: xaxis_is_log
-				? { type: "log", autorange: "true" }
-				: { autorange: "true" },
-			yaxis: yaxis_is_log
-				? { type: "log", autorange: "true" }
-				: { autorange: "true" },
-			margin: { t: 0 },
+			title: title,
+			xaxis: {type: xaxis_is_log ? "log":'',
+			       autorange: "true" ,
+				   title: title_x
+				   },
+			yaxis: {type: yaxis_is_log ? "log":'',
+			       autorange: "true" ,
+				   title: title_y
+				   },
+			margin: { t: 30 },
 		}}
 		fillParent="width"
 		debounce={250}
@@ -196,7 +212,7 @@
 				mirror: true,
 			},
 			yaxis: { autorange: "true", linewidth: 1, mirror: true },
-			margin: { t: 0 },
+			margin: { t: 30 },
 			linewidth: 1,
 			mirror: true,
 		}}
@@ -213,7 +229,7 @@
 				mirror: true,
 			},
 			yaxis: { autorange: "true", linewidth: 1, mirror: true },
-			margin: { t: 0 },
+			margin: { t: 30 },
 		}}
 		fillParent="width"
 		debounce={250}
