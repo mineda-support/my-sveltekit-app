@@ -1,10 +1,27 @@
 <script>
+  import {
+		probes_name,
+		equation_name,
+    settings_store,
+	} from "./stores.js";
+  let probes, equation, settings;
+  probes_name.subscribe((value) => {
+		probes = value;
+	});
+  equation_name.subscribe((value) => {
+		equation = value;
+	});
+  settings_store.subscribe((value) => {
+		settings = value;
+	});
+
  async function save_settings(data, settings_name, ckt) {
     const props = data.props;
     props.settings_name = settings_name;
     props.ckt = ckt;
-    // props.probes = probes;
-    // console.log(JSON.stringify({ props }));
+    for (const [item, value] of Object.entries(settings)) {
+      props[item] = value;
+    }
     const response = await fetch("/development/test3/settings", {
       method: "POST",
       body: JSON.stringify(props),
@@ -12,34 +29,31 @@
         "Content-Type": "application/json",
       },
     });
-    const settings = await response.json();
+    const setting_names = await response.json();
     console.log("settings:");
-    console.log(settings);
-    if (settings.includes(settings_name)) {
+    console.log(setting_names);
+    if (setting_names.includes(settings_name)) {
       alert(`${settings_name} saved`);
-      data.props.settings = settings;
+      data.props.setting_names = setting_names;
     }
   }
-
-  import {
-		probes_name,
-		equation_name,
-	} from "./stores.js";
 
   async function load_settings(settings_name, dir){
     // alert(`load ${settings_name}`)
     const response = await fetch(`/development/test3/settings?dir=${encodeURIComponent(dir)}&settings_name=${settings_name}`);
     // const result = await response.json();
-    const settings = await response.json();
+    const new_settings = await response.json();
     // probes_name.set(probes);
     console.log('result');
-    // console.log(settings);
-    console.log([settings.equation, settings.probes]);
-    equation_name.set(settings.equation);
-    probes_name.set(settings.probes);
-    // equation = settings.equation;
-    //console.log(result);
-    //return {result};
+    // console.log(new_settings);
+    console.log([new_settings.equation, new_settings.probes]);
+    equation_name.set(new_settings.equation);
+    probes_name.set(new_settings.probes);
+    for (const [item, value] of Object.entries(settings)) {
+      settings[item] = new_settings[item];
+    }
+    settings_store.set(settings);
+    console.log(settings);
   }
   let settings_name = "default";
   export let data, ckt;
@@ -64,7 +78,7 @@
   </label>
   <button on:click={() =>load_settings(settings_name, data.props.wdir)} class="button-1">Load settings from: </button>
   <select bind:value={settings_name} style="border:darkgray solid 1px;">
-    {#each data.props.settings as setting}
+    {#each data.props.setting_names as setting}
       <option value={setting}>{setting}</option>
     {/each}
   </select>

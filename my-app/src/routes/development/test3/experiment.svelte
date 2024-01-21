@@ -6,30 +6,28 @@
 		probes_name,
 		ckt_store,
 		elements_store,
+	    settings_store
 	} from "./stores.js";
-	let file;
-	let dir;
 	let ckt;
-	let probes;
-	let elements;
+	let file, dir;
 	ckt_name.subscribe((value) => {
 		file = value;
 	});
 	dir_name.subscribe((value) => {
 		dir = value;
 	});
-	probes_name.subscribe((value) => {
-		probes = value;
-	});
-	ckt_store.subscribe((value) => {
-		ckt = value;
-	});
+	let probes;
+	let elements;
 	elements_store.subscribe((value) => {
 		elements = value;
 	});
-
-	let src1 = "V2";
-	let src1_values =
+	let settings = {};
+    settings_store.subscribe((value) => {
+		settings = value;
+	});
+    
+	settings.src1 = "V2";
+	settings.src1_values =
 		"PULSE(2.4 2.6 200n 100n 100n 200n 700n), PULSE(2.45 2.55 200n 100n 100n 200n 700n), PULSE(2.475 2.525 200n 100n 100n 200n 700n)";
 	let src2, src2_values;
 	function wrap_with_apostrophe(a) {
@@ -40,12 +38,11 @@
 				.join(", ");
 		}
 	}
-	let program;
-	$: program = `new_traces = []
-src1_values = [${wrap_with_apostrophe(src1_values)}]
-src1_values.each{|p|
+	$: settings.program = `new_traces = []
+settings.src1_values = [${wrap_with_apostrophe(settings.src1_values)}]
+settings.src1_values.each{|p|
   ckt.set V2: p
-  puts "${src1} = #{ckt.get('${src1}')}"
+  puts "${settings.src1} = #{ckt.get('${settings.src1}')}"
   ckt.simulate
   vars, traces =ckt.get_traces ${wrap_with_apostrophe(probes)}
   traces[0][:name] = p.sub ' 200n 100n 100n 200n 700n', ''
@@ -78,16 +75,14 @@ new_traces
 <div>
 	<label
 		>1st source
-		<!--input bind:value={src1} style="border:darkgray solid 1px;" / -->
-		<select bind:value={src1} style="border:darkgray solid 1px;">
-		  <!---> {#each Object.keys(elements).filter((a) => a != '') as elm} -->	 
+		<select bind:value={settings.src1} style="border:darkgray solid 1px;">
 		  {#each Object.keys(elements) as elm}		
 		    <option value=elm>{elm}</option>
 		  {/each}
 		</select> 
 		values
 		<input
-			bind:value={src1_values}
+			bind:value={settings.src1_values}
 			style="border:darkgray solid 1px;width: 50%;"
 		/>
 	</label>
@@ -95,21 +90,21 @@ new_traces
 <div>
 	<label
 		>2nd source
-		<input bind:value={src2} style="border:darkgray solid 1px;" />
+		<input bind:value={settings.src2} style="border:darkgray solid 1px;" />
 		values
 		<input
-			bind:value={src2_values}
+			bind:value={settings.src2_values}
 			style="border:darkgray solid 1px;width: 50%;"
 		/>
 	</label>
 </div>
 <div>
 	<label>
-		<button on:click={submit_program(program, dir, file)} class="button-1">
+		<button on:click={submit_program(settings.program, dir, file)} class="button-1">
 			Submit below program</button
 		>
 		<textarea
-			bind:value={program}
+			bind:value={settings.program}
 			style="border:darkgray solid 1px; height: 200px; 
 width: 90%;"
 		/>
