@@ -31,7 +31,7 @@
 	let file;
 	let dir;
 	let probes;
-	// let equation;
+	let equation;
 	let ckt;
 	let elements;
 	ckt_name.subscribe((value) => {
@@ -150,15 +150,16 @@
 		console.log(result);
 		calculated_value = result.calculated_value;
 	}
-	let equation = 'x.where(y, 2.5){|x, y| x > 1e-6}';
+	equation = 'x.where(y, 2.5){|x, y| x > 1e-6}';
 	$:  data.props.equation = equation;
 	let calculated_value;
     // $: calculated_value = calculated_value;
-	let title, title_x, title_y;
+	let settings = {}; //let title, title_x, title_y;
 </script>
 
 <ConvertSchematic />
 <OpenLTspice {data} on:open_end={plot_result} />
+<Settings {data} {ckt}/>
 <Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir, file)} />
 <!-- div>
 	<button on:click={goLTspice}>
@@ -182,27 +183,27 @@
 </label>
 <div>
 <label>Title
-		<input bind:value={title} style="border:darkgray solid 1px;" />
+		<input bind:value={settings.title} style="border:darkgray solid 1px;" />
 </label>
 <label>X title
-		<input bind:value={title_x} style="border:darkgray solid 1px;" />
+		<input bind:value={settings.title_x} style="border:darkgray solid 1px;" />
 </label>
 <label>Y title
-		<input bind:value={title_y} style="border:darkgray solid 1px;" />
+		<input bind:value={settings.title_y} style="border:darkgray solid 1px;" />
 </label>
 </div>
 {#if plotdata !== undefined}
 	<Plot
 		data={plotdata}
 		layout={{
-			title: title,
+			title: settings.title,
 			xaxis: {type: xaxis_is_log ? "log":'',
 			       autorange: "true" ,
-				   title: title_x
+				   title: settings.title_x
 				   },
 			yaxis: {type: yaxis_is_log ? "log":'',
 			       autorange: "true" ,
-				   title: title_y
+				   title: settings.title_y
 				   },
 			margin: { t: 30 },
 		}}

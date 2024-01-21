@@ -4,7 +4,7 @@
 <!-- div data-theme="garden" -->
 <!-- ヘッダー -->
 <!-- https://daisyui.com/components/navbar/#navbar-with-dropdown-center-logo-and-icon -->
-<div class="navbar bg-base-200">
+<!-- div class="navbar bg-base-200">
 	<div class="navbar-start">
 		<div class="dropdown">
 			<label tabindex="0" class="btn btn-ghost btn-circle">
@@ -70,17 +70,17 @@
 			</div>
 		</button>
 	</div>
-</div>
+</div -->
 
 <!-- パンくずリスト -->
 <!-- https://daisyui.com/components/breadcrumbs/#breadcrumbs -->
-<div class="text-sm breadcrumbs">
+<!-- div class="text-sm breadcrumbs">
 	<ul>
 		<li><a>Home</a></li>
 		<li><a>Documents</a></li>
 		<li>Add Document</li>
 	</ul>
-</div>
+</div -->
 
 <!-- コンテンツ -->
 <div class="w-full p-5">
@@ -89,7 +89,7 @@
 
 <!-- フッター -->
 <!-- https://daisyui.com/components/footer/#two-footer -->
-<footer class="footer p-10 bg-base-200 text-base-content">
+<!-- footer class="footer p-10 bg-base-200 text-base-content">
 	<div>
 		<span class="footer-title">Services</span>
 		<a class="link link-hover">Branding</a>
@@ -110,8 +110,8 @@
 		<a class="link link-hover">Privacy policy</a>
 		<a class="link link-hover">Cookie policy</a>
 	</div>
-</footer>
-<footer class="footer px-10 py-4 border-t bg-base-200 text-base-content border-base-300">
+</footer -->
+<!-- footer class="footer px-10 py-4 border-t bg-base-200 text-base-content border-base-300">
 	<div class="items-center grid-flow-col">
 		<svg
 			width="24"
@@ -167,4 +167,4 @@
 			>
 		</div>
 	</div>
-</footer>
+</footer -->

@@ -1,5 +1,5 @@
 <script>
-  async function save_settings(data, settings_name, ckt) {
+ async function save_settings(data, settings_name, ckt) {
     const props = data.props;
     props.settings_name = settings_name;
     props.ckt = ckt;
@@ -21,6 +21,11 @@
     }
   }
 
+  import {
+		probes_name,
+		equation_name,
+	} from "./stores.js";
+
   async function load_settings(settings_name, dir){
     // alert(`load ${settings_name}`)
     const response = await fetch(`/development/test3/settings?dir=${encodeURIComponent(dir)}&settings_name=${settings_name}`);
@@ -30,6 +35,8 @@
     console.log('result');
     // console.log(settings);
     console.log([settings.equation, settings.probes]);
+    equation_name.set(settings.equation);
+    probes_name.set(settings.probes);
     // equation = settings.equation;
     //console.log(result);
     //return {result};
