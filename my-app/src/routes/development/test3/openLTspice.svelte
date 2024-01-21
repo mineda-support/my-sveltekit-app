@@ -11,7 +11,7 @@
 
 <script>
   import { end_hydrating } from "svelte/internal";
-  import ConvertSchematic from "./convertSchematic.svelte";
+  // import ConvertSchematic from "./convertSchematic.svelte";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 
@@ -104,37 +104,7 @@
   function switch_wdir(wdir) {
     goto("/development/test3?wdir=" + wdir);
   }
-  async function save_settings(data, settings_name, ckt) {
-    const props = data.props;
-    props.settings_name = settings_name;
-    props.ckt = ckt;
-    // props.probes = probes;
-    // console.log(JSON.stringify({ props }));
-    const response = await fetch("/development/test3/settings", {
-      method: "POST",
-      body: JSON.stringify(props),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const settings = await response.json();
-    console.log("settings:");
-    console.log(settings);
-    if (settings.includes(settings_name)) {
-      alert(`${settings_name} saved`);
-      data.props.settings = settings;
-    }
-  }
-  async function load_settings(settings_name, dir){
-    // alert(`load ${settings_name}`)
-    const response = await fetch(`/development/test3/settings?dir=${encodeURIComponent(dir)}&settings_name=${settings_name}`);
-    const result = await response.json();
-    console.log('result');
-    console.log(result);
-    return {result};
-  }
-  let settings_name = "default";
-  let equation;
+
 </script>
 
 <h2>
@@ -165,31 +135,7 @@
     <input type="checkbox" bind:checked={showup} />
     show schematic
   </label>
-  <div>
-    <button on:click={save_settings(data, settings_name, ckt)} class="button-1">
-      Save settings in:</button
-    >
-    <label>
-      <input
-        type="text"
-        autocomplete="off"
-        on:keydown={async (e) => {
-          if (e.key == "Enter") {
-            save_settings(data, settings_name, ckt);
-          }
-        }}
-        bind:value={settings_name}
-        style="border:darkgray solid 1px;"
-      />
-    </label>
-    <button on:click={[equation, probes] = load_settings(settings_name, data.props.wdir)} class="button-1">Load settings from: </button>
-    <select bind:value={settings_name} style="border:darkgray solid 1px;">
-      {#each data.props.settings as setting}
-        <option value={setting}>{setting}</option>
-      {/each}
-    </select>
-  </div>
-  <ConvertSchematic />
+  <!-- ConvertSchematic / -->
 </div>
 {#if ckt != undefined}
   <!-- div style="border:red solid 2px;">

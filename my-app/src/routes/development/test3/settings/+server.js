@@ -9,7 +9,7 @@ export function GET({ url }) {
     const json_file = dir + settings_name + '_settings.json';
     console.log(json_file);
     const settings = JSON.parse(fs.readFileSync(json_file));
-    return json([settings.equation, settings.probes]);
+    return json(settings);
 }
 
 export async function POST({ request, cookies }) {

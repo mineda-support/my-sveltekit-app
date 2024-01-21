@@ -23,13 +23,13 @@ export function load({ url }) {
     if (fs.existsSync(wdir)) {
         fs.readdir(wdir, (err, files) => {
             files.forEach(file => {
-                console.log(file);
+                // console.log(file);
             });
         });
 
         const files = glob.sync(wdir + '*.asc');
         files.forEach(file => {
-            console.log(file);
+            // console.log(file);
         });
         const setting_files = glob.sync(wdir + '*_settings.json');
         console.log(setting_files);

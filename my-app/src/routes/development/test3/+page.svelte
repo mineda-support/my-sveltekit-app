@@ -4,12 +4,14 @@
 	// import Testplot, {handleMessage} from "./test_plot.svelte";
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
+    import ConvertSchematic from "./convertSchematic.svelte";
 	import Experiment from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Plot from "svelte-plotly.js";
+	import Settings from "./settings.svelte";
 
-	export let plotdata;
+	let plotdata;
 	$: data.props.plotdata = plotdata;
 	let db;
 	let phase;
@@ -22,12 +24,14 @@
 		ckt_name,
 		dir_name,
 		probes_name,
+		equation_name,
 		ckt_store,
 		elements_store,
 	} from "./stores.js";
 	let file;
 	let dir;
 	let probes;
+	// let equation;
 	let ckt;
 	let elements;
 	ckt_name.subscribe((value) => {
@@ -39,6 +43,9 @@
 	probes_name.subscribe((value) => {
 		probes = value;
 	});
+	equation_name.subscribe((value) => {
+		equation = value;
+	});
 	ckt_store.subscribe((value) => {
 		ckt = value;
 	});
@@ -47,6 +54,7 @@
 	});
 	elements_store.set({});
 	ckt_store.set(undefined);
+	// settings_name.set({equation: equation, probes: probes})
 
 	async function plot_result(event) {
 		// cookies.et('probes', probes, { path: '/conditions'});
@@ -75,8 +83,9 @@
 		return res2;
 	}
 	export let data;
-	probes_name.set(data.props.probes);
+	//probes_name.set(data.props.probes);
 	$: probes_name.set(probes);
+	$: data.props.probes = probes;
 
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
@@ -122,11 +131,11 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-	async function submit_equation(program, dir, file, plotdata) {
+	async function submit_equation(equation, dir, file, plotdata) {
 		const encoded_params = `dir=${encodeURIComponent(
 			dir
 		)}&file=${encodeURIComponent(file)}`;
-		// console.log(`program to send: ${program}`);
+		// console.log(`program to send: ${equation}`);
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/measure?${encoded_params}`,
 			{
@@ -145,10 +154,10 @@
 	$:  data.props.equation = equation;
 	let calculated_value;
     // $: calculated_value = calculated_value;
-	$: data.props.probes = probes;
 	let title, title_x, title_y;
 </script>
 
+<ConvertSchematic />
 <OpenLTspice {data} on:open_end={plot_result} />
 <Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir, file)} />
 <!-- div>
