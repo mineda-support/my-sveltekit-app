@@ -76,7 +76,8 @@
       style="border:darkgray solid 1px;"
     />
   </label>
-  <button on:click={() =>load_settings(settings_name, data.props.wdir)} class="button-1">Load settings from: </button>
+  <button on:click={() =>load_settings(settings_name, data.props.wdir)} 
+          class="button-1">Load settings from: </button>
   <select bind:value={settings_name} style="border:darkgray solid 1px;">
     {#each data.props.setting_names as setting}
       <option value={setting}>{setting}</option>

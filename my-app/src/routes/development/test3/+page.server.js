@@ -36,7 +36,7 @@ export function load({ url }) {
         return {
             props: {
                 wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)), //, probes: probes
-                settings: setting_files.map(a => path.basename(a).replace('_settings.json', ''))
+                setting_names: setting_files.map(a => path.basename(a).replace('_settings.json', ''))
             }
         };
     }
