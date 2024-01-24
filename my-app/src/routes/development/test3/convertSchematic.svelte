@@ -1,22 +1,22 @@
 <script>
-    import { enhance, applyAction } from '$app/forms';
-    import { goto } from '$app/navigation';
+    import { enhance, applyAction } from "$app/forms";
+    import { goto } from "$app/navigation";
     import { dir_name } from "./stores.js";
     let dir;
     dir_name.subscribe((value) => {
         dir = value;
     });
 
-    function convertSchematic(selected) {
-        alert("conversion to " + selected);
-    }
+    // function convertSchematic(selected) {
+    //    alert("conversion to " + selected);
+    // }
     let selected;
     let program;
     $: if (selected == "Xschem") {
         program = `
 create_cdraw()
 dir = Dir.pwd
-cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./xschem')
+cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./Xschem')
 `;
     }
     /*
@@ -30,28 +30,30 @@ cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./xschem')
         console.log(`dir=${encodeURIComponent(dir)}`);
         return `dir=${encodeURIComponent(dir)}`;
     }
-    function handleSubmit(){
-        goto('/development/test3/');
+    function handleSubmit() {
+        goto("/development/test3/");
     }
 </script>
 
-<!-- form method="POST" on:submit={handleSubmit} class='button-2'></form -->
+8<!-- form method="POST" on:submit={handleSubmit} class='button-2'></form -->
 <form
     method="POST"
     use:enhance={({ formElement, formData, action, cancel }) => {
-		return async ({ result }) => {
-			// `result` is an `ActionResult` object
-			if (result.type === 'redirect') {
-				goto(result.location);
-			} else {
-				await applyAction(result);
-			}
-		};
-	}}
+        return async ({ result }) => {
+            // `result` is an `ActionResult` object
+            if (result.type === "redirect") {
+                goto(result.location);
+            } else {
+                await applyAction(result);
+            }
+        alert(`Xschem folder created under ${dir}`);
+        };
+    }}
     class="button-2"
-    action={`http://localhost:9292/api/ltspctl/convert_from_LTspice?${encoded_params(dir)}`}
-
-    >
+    action={`http://localhost:9292/api/ltspctl/convert_from_LTspice?${encoded_params(
+        dir,
+    )}`}
+>
     <button>Convert schematic</button> to
     <!--input name={selected} / -->
     <input name="program" value={program} type="hidden" />

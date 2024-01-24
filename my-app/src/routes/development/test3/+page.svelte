@@ -4,7 +4,7 @@
 	// import Testplot, {handleMessage} from "./test_plot.svelte";
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
-    import ConvertSchematic from "./convertSchematic.svelte";
+	import ConvertSchematic from "./convertSchematic.svelte";
 	import Experiment from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
@@ -59,16 +59,16 @@
 	async function plot_result(event) {
 		// cookies.et('probes', probes, { path: '/conditions'});
 		console.log(
-			`Plot results@dir='${dir}' file='${file}' probes=${probes}`
+			`Plot results@dir='${dir}' file='${file}' probes=${probes}`,
 		);
 		const encoded_params = `dir=${encodeURIComponent(
-			dir
+			dir,
 		)}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
-			probes
+			probes,
 		)}`;
 		let response = await fetch(
 			`http://localhost:9292/api/ltspctl/results?${encoded_params}`,
-			{}
+			{},
 		);
 		let res2 = await response.json();
 		console.log(res2);
@@ -95,7 +95,7 @@
 
 	async function update_elements(dir, file) {
 		console.log(
-			`let me update elements=${elements} here @ dir= ${dir} file=${file}`
+			`let me update elements=${elements} here @ dir= ${dir} file=${file}`,
 		);
 		let update_elms = "";
 		for (const [elm, props] of Object.entries(ckt.elements)) {
@@ -110,7 +110,7 @@
 		if (update_elms != "") {
 			update_elms = encodeURIComponent(`{${update_elms}}`);
 			let encoded_params = `dir=${encodeURIComponent(
-				dir
+				dir,
 			)}&file=${encodeURIComponent(file)}`;
 			const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
 			console.log(command);
@@ -122,7 +122,7 @@
 						console.log(
 							`Update error! ${elm}: ${get_control(props)}vs.${
 								elements[elm]
-							}`
+							}`,
 						);
 					}
 				}
@@ -133,7 +133,7 @@
 	}
 	async function submit_equation(equation, dir, file, plotdata) {
 		const encoded_params = `dir=${encodeURIComponent(
-			dir
+			dir,
 		)}&file=${encodeURIComponent(file)}`;
 		// console.log(`program to send: ${equation}`);
 		const res = await fetch(
@@ -141,34 +141,35 @@
 			{
 				method: "POST",
 				headers: {
-					'Content-Type': "application/json",
+					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({equation: equation, plotdata: plotdata}),
-			}
+				body: JSON.stringify({
+					equation: equation,
+					plotdata: plotdata,
+				}),
+			},
 		);
 		let result = await res.json();
 		console.log(result);
 		calculated_value = result.calculated_value;
 	}
-	equation = 'x.where(y, 2.5){|x, y| x > 1e-6}';
-	$:  data.props.equation = equation;
+	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
+	$: data.props.equation = equation;
 	let calculated_value;
-    // $: calculated_value = calculated_value;
+	// $: calculated_value = calculated_value;
 	let settings = {}; //let title, title_x, title_y;
 </script>
 
 <ConvertSchematic />
 <OpenLTspice {data} on:open_end={plot_result} />
-<Settings {data} {ckt}/>
+<Settings {data} {ckt} />
 <Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir, file)} />
 <!-- div>
 	<button on:click={goLTspice}>
 		Click here to Start LTspice simulation</button>
 </div -->
 <!-- Testplot / -->
-<button on:click={plot_result} class="button-1"
-	>Plot with probes:</button
->
+<button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
 <label>
 	<input type="checkbox" bind:checked={xaxis_is_log} />
@@ -182,29 +183,40 @@
 	<button on:click={clear_plot} class="button-1">clear</button>
 </label>
 <div>
-<label>Title
+	<label
+		>Title
 		<input bind:value={settings.title} style="border:darkgray solid 1px;" />
-</label>
-<label>X title
-		<input bind:value={settings.title_x} style="border:darkgray solid 1px;" />
-</label>
-<label>Y title
-		<input bind:value={settings.title_y} style="border:darkgray solid 1px;" />
-</label>
+	</label>
+	<label
+		>X title
+		<input
+			bind:value={settings.title_x}
+			style="border:darkgray solid 1px;"
+		/>
+	</label>
+	<label
+		>Y title
+		<input
+			bind:value={settings.title_y}
+			style="border:darkgray solid 1px;"
+		/>
+	</label>
 </div>
 {#if plotdata !== undefined}
 	<Plot
 		data={plotdata}
 		layout={{
 			title: settings.title,
-			xaxis: {type: xaxis_is_log ? "log":'',
-			       autorange: "true" ,
-				   title: settings.title_x
-				   },
-			yaxis: {type: yaxis_is_log ? "log":'',
-			       autorange: "true" ,
-				   title: settings.title_y
-				   },
+			xaxis: {
+				type: xaxis_is_log ? "log" : "",
+				autorange: "true",
+				title: settings.title_x,
+			},
+			yaxis: {
+				type: yaxis_is_log ? "log" : "",
+				autorange: "true",
+				title: settings.title_y,
+			},
 			margin: { t: 30 },
 		}}
 		fillParent="width"
@@ -250,7 +262,10 @@
 	<label
 		>Measure
 		<input bind:value={equation} style="border:darkgray solid 1px;" />
-		<button on:click={submit_equation(equation, dir, file, plotdata)} class="button-1">
+		<button
+			on:click={submit_equation(equation, dir, file, plotdata)}
+			class="button-1"
+		>
 			Calculate</button
 		>
 		=> {calculated_value}

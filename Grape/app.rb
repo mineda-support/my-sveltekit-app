@@ -58,7 +58,7 @@ module Test
       get :simulate do
         work_dir, ckt_name = Utils::get_params(params)
         probes = params[:probes] 
-        Dir.chdir(work_dir){
+        Dir.chdir(work_dir){:
           ckt = LTspiceControl.new(File.basename ckt_name)
           ckt.simulate
           if probes
