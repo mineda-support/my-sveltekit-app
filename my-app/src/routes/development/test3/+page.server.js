@@ -27,7 +27,7 @@ export function load({ url }) {
             });
         });
 
-        const files = glob.sync(wdir + '*.asc');
+        const files = glob.sync(wdir + '*.asc').concat(glob.sync(wdir + '*.sch'));
         files.forEach(file => {
             // console.log(file);
         });
