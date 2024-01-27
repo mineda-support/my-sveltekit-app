@@ -273,7 +273,7 @@
 	</label>
 </div>
 
-<Experiment />
+<Experiment {probes}/>
 
 <style>
 	.button-1 {

@@ -3,8 +3,8 @@
 	import {
 		ckt_name,
 		dir_name,
-		probes_name,
-		ckt_store,
+		// probes_name,
+		// ckt_store,
 		elements_store,
 	    settings_store
 	} from "./stores.js";
@@ -16,7 +16,7 @@
 	dir_name.subscribe((value) => {
 		dir = value;
 	});
-	// let probes;
+	export let probes;
 	let elements;
 	elements_store.subscribe((value) => {
 		elements = value;
@@ -44,7 +44,7 @@ src1_values.each{|p|
   ckt.set V2: p
   puts "${settings.src1} = #{ckt.get('${settings.src1}')}"
   ckt.simulate
-  vars, traces =ckt.get_traces ${wrap_with_apostrophe(settings.probes)}
+  vars, traces =ckt.get_traces ${wrap_with_apostrophe(probes)}
   traces[0][:name] = p.sub ' 200n 100n 100n 200n 700n', ''
   new_traces << traces[0]
 }
