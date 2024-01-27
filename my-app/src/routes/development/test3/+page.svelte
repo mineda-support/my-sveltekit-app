@@ -158,6 +158,7 @@
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	let settings = {}; //let title, title_x, title_y;
+	$: settings.probes = probes;
 </script>
 
 <ConvertSchematic />

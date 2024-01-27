@@ -16,7 +16,7 @@
 	dir_name.subscribe((value) => {
 		dir = value;
 	});
-	let probes;
+	// let probes;
 	let elements;
 	elements_store.subscribe((value) => {
 		elements = value;
@@ -39,12 +39,12 @@
 		}
 	}
 	$: settings.program = `new_traces = []
-settings.src1_values = [${wrap_with_apostrophe(settings.src1_values)}]
-settings.src1_values.each{|p|
+src1_values = [${wrap_with_apostrophe(settings.src1_values)}]
+src1_values.each{|p|
   ckt.set V2: p
   puts "${settings.src1} = #{ckt.get('${settings.src1}')}"
   ckt.simulate
-  vars, traces =ckt.get_traces ${wrap_with_apostrophe(probes)}
+  vars, traces =ckt.get_traces ${wrap_with_apostrophe(settings.probes)}
   traces[0][:name] = p.sub ' 200n 100n 100n 200n 700n', ''
   new_traces << traces[0]
 }
@@ -69,13 +69,15 @@ new_traces
 		console.log(plot_data);
 	}
 	let plot_data;
+	let src1;
+	$: settings.src1 = src1;
 </script>
 
 <div>Make Experiments</div>
 <div>
 	<label
 		>1st source
-		<select bind:value={settings.src1} style="border:darkgray solid 1px;">
+		<select bind:value={src1} style="border:darkgray solid 1px;">
 		  {#each Object.keys(elements) as elm}		
 		    <option value=elm>{elm}</option>
 		  {/each}

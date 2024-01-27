@@ -35,7 +35,7 @@ cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./Xschem')
     }
 </script>
 
-8<!-- form method="POST" on:submit={handleSubmit} class='button-2'></form -->
+<!-- form method="POST" on:submit={handleSubmit} class='button-2'></form -->
 <form
     method="POST"
     use:enhance={({ formElement, formData, action, cancel }) => {
