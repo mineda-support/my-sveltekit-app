@@ -41,7 +41,7 @@
 	$: settings.program = `new_traces = []
 src1_values = [${wrap_with_apostrophe(settings.src1_values)}]
 src1_values.each{|p|
-  ckt.set V2: p
+  ckt.set ${settings.src1}: p
   puts "${settings.src1} = #{ckt.get('${settings.src1}')}"
   ckt.simulate
   vars, traces =ckt.get_traces ${wrap_with_apostrophe(probes)}
@@ -77,9 +77,9 @@ new_traces
 <div>
 	<label
 		>1st source
-		<select bind:value={src1} style="border:darkgray solid 1px;">
+		<select bind:value={settings.src1} style="border:darkgray solid 1px;">
 		  {#each Object.keys(elements) as elm}		
-		    <option value=elm>{elm}</option>
+		    <option value={elm}>{elm}</option>
 		  {/each}
 		</select> 
 		values
