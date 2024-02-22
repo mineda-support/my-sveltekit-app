@@ -71,6 +71,11 @@ new_traces
 	let plot_data;
 	let src1;
 	$: settings.src1 = src1;
+
+	function postprocess(settings){
+	  eval(settings.postprocess);
+	}
+	let result_data;
 </script>
 
 <div>Make Experiments</div>
@@ -134,4 +139,29 @@ width: 90%;"
 		fillParent="width"
 		debounce={250}
 	/>
-{/if}		
+{/if}	
+<div>
+	<label>
+		<button on:click={postprocess(settings)} class="button-1">
+			Postprocess</button
+		>
+		<textarea
+			bind:value={settings.postprocess}
+			style="border:darkgray solid 1px; height: 200px; 
+width: 90%;"
+		/>
+	</label>
+</div>
+{#if result_data !== undefined}
+	<Plot 
+		data={result_data.traces} 
+		layout={{
+			title: 'title',
+			xaxis: { title: 'time', autorange: "true" },
+			yaxis: { title: 'voltage', autorange: "true" },
+			
+		}}
+		fillParent="width"
+		debounce={250}
+	/>
+{/if}
