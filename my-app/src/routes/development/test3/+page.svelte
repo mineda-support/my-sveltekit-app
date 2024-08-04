@@ -11,7 +11,7 @@
 	import Plot from "svelte-plotly.js";
 	import Settings from "./settings.svelte";
 
-	let measdata = {};
+	let measdata = [];
 
 	let plotdata;
 	$: data.props.plotdata = plotdata;
@@ -120,7 +120,15 @@
 	function clear_plot() {
 		plotdata = undefined;
 	}
-
+	function clear_measdata() {
+		measdata = [];
+	}
+    function checkall_measdata() {
+		console.log(measdata);
+		for (const trace of measdata) {
+			trace.checked = true;
+		}
+	}
 	async function update_elements(dir, file) {
 		console.log(
 			`let me update elements=${elements} here @ dir= ${dir} file=${file}`,
@@ -197,12 +205,10 @@
 		on:sim_end={plot_result}
 		on:elm_update={update_elements(dir, file)}
 	/>
-	<!-- div>
-	<button on:click={goLTspice}>
-		Click here to Start LTspice simulation</button>
-</div -->
 	<!-- Testplot / -->
-	<button on:click={measurement_results(data.props.measfile)} class="button-1"
+</div>
+<div>
+	<button on:click={measurement_results(data.props.measfile.trim())} class="button-1"
 		>Get measured data:</button
 	>
 	<input bind:value={data.props.measfile}
@@ -244,7 +250,7 @@
 </div>
 {#if plotdata !== undefined}
 	<Plot
-		data={plotdata.concat(measdata)}
+		data={plotdata.concat(measdata.filter((trace) => trace.checked))}
 		layout={{
 			title: settings.title,
 			xaxis: {
@@ -296,6 +302,21 @@
 		fillParent="width"
 		debounce={250}
 	/>
+{/if}
+
+{#if measdata !=undefined && measdata != '' && measdata != []}
+<div style="border:red solid 2px;">
+    {#each measdata as trace}
+      <label>{trace.name}
+        <input
+          style="border:darkgray solid 1px;"
+          type="checkbox" bind:checked={trace.checked}
+		  />
+	  </label>
+    {/each}
+	<button on:click={checkall_measdata} class="button-1">check all</button>	
+	<button on:click={clear_measdata} class="button-1">clear all</button>
+  </div>
 {/if}
 
 <div>
