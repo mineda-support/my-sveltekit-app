@@ -6,6 +6,7 @@ puts "hello world from ruby"
 # puts $:
 require 'j_pack'
 require 'byebug'
+require './csv_read'
 
 module Test
   class Utils
@@ -42,6 +43,14 @@ module Test
         load File.join(dir, file)
         {}
       end
+      desc 'Get measured data'
+      get :measured_data do
+        measfile = params[:file]
+        puts "Get measured data from #{measfile}"
+        c = CSV.read(measfile)
+        d = valid_data c
+        {"traces" => d}
+      end      
     end
     
     resource :ltspctl do

@@ -11,6 +11,8 @@
 	import Plot from "svelte-plotly.js";
 	import Settings from "./settings.svelte";
 
+	let measdata = {};
+
 	let plotdata;
 	$: data.props.plotdata = plotdata;
 	let db;
@@ -55,6 +57,33 @@
 	elements_store.set({});
 	ckt_store.set(undefined);
 	// settings_name.set({equation: equation, probes: probes})
+	const options = {
+		types: [
+			{
+				description: "CSV Files",
+				accept: {
+					"text/plain": [".csv", ".txt", ".text"],
+				},
+			},
+		],
+	};
+	async function measurement_results(measfile) {
+		if (measfile == undefined || measfile == '') {
+     		const [handle] = await window.showOpenFilePicker(options);
+		}
+		console.log(measfile);
+		//console.log(handle.name);
+		//const file = await handle.getFile();
+		//console.log(file);
+		const encoded_params = `dir=&file=${encodeURIComponent(measfile)}`;
+		let response = await fetch(
+			`http://localhost:9292/api/misc/measured_data?${encoded_params}`,
+			{},
+		);
+		let res2 = await response.json();
+		measdata = res2.traces;
+		console.log(measdata);
+	}
 
 	async function plot_result(event) {
 		// cookies.et('probes', probes, { path: '/conditions'});
@@ -79,7 +108,6 @@
 			db = res2.db;
 			console.log(`db=${db}`);
 		}
-
 		return res2;
 	}
 	export let data;
@@ -164,12 +192,23 @@
 <ConvertSchematic />
 <OpenLTspice {data} on:open_end={plot_result} />
 <Settings {data} {ckt} />
-<Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir, file)} />
-<!-- div>
+<div>
+	<Simulate
+		on:sim_end={plot_result}
+		on:elm_update={update_elements(dir, file)}
+	/>
+	<!-- div>
 	<button on:click={goLTspice}>
 		Click here to Start LTspice simulation</button>
 </div -->
-<!-- Testplot / -->
+	<!-- Testplot / -->
+	<button on:click={measurement_results(data.props.measfile)} class="button-1"
+		>Get measured data:</button
+	>
+	<input bind:value={data.props.measfile}
+    style="border:darkgray solid 1px;width: 50%;"
+  />
+</div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
 <label>
@@ -205,7 +244,7 @@
 </div>
 {#if plotdata !== undefined}
 	<Plot
-		data={plotdata}
+		data={plotdata.concat(measdata)}
 		layout={{
 			title: settings.title,
 			xaxis: {
@@ -273,7 +312,7 @@
 	</label>
 </div>
 
-<Experiment {probes}/>
+<Experiment {probes} />
 
 <style>
 	.button-1 {

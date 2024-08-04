@@ -52,11 +52,9 @@
     }
 </script>
 
-<div>
-    <button on:click={goLTspice} class="button-1">
-        Click here to Start LTspice simulation</button
-    >
-</div>
+<button on:click={goLTspice} class="button-1">
+    Click here to Start LTspice simulation</button
+>
 
 <style>
     .button-1 {
