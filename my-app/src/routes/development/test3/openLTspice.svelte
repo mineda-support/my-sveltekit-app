@@ -102,6 +102,8 @@
     probes_name.set(probes);
   }
   function switch_wdir(wdir) {
+    //const handle = await window.showDirectoryPicker();
+    //wdir = handle.name; # does not return path
     goto("/development/test3?wdir=" + wdir);
   }
 

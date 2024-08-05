@@ -1,20 +1,21 @@
 require 'csv'
 
-def valid_data c
+def valid_data c, ignore=[]
   start = stop = nil
   dd = []
   ddd = []
   remarks = []
   c.each_with_index{|l, i|
+    # puts "#{i}: #{l}"
     if l[0] == 'MetaData' && l[1] == ' TestRecord.Remarks'
       remarks << l[2]
       next
     end
     start, stop = numbers_range(l, start, stop)
-    if start && stop && stop > start
-      if start >= 0 && i > 1
+    if start && stop && stop > start && i > 1 && c[i][start].to_f > c[i-1][start].to_f
+      if start >= 0 # && i > 1
         flag = true
-        (0..start-1).each{|j| flag = false if c[i, j] != c[i-1, j]}
+        (0..start-1).each{|j| flag = false if c[i][j] != c[i-1][j]}
         dd << l[start..stop] if flag
       end
     else

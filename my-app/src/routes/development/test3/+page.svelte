@@ -67,21 +67,25 @@
 			},
 		],
 	};
-	async function measurement_results(measfile) {
-		if (measfile == undefined || measfile == '') {
-     		const [handle] = await window.showOpenFilePicker(options);
+	async function measurement_results(measfile, reject_list) {
+		if (measfile == undefined || measfile == "") {
+			const [handle] = await window.showOpenFilePicker(options);
 		}
 		console.log(measfile);
 		//console.log(handle.name);
 		//const file = await handle.getFile();
 		//console.log(file);
-		const encoded_params = `dir=&file=${encodeURIComponent(measfile)}`;
+		const encoded_params = `dir=&file=${encodeURIComponent(measfile)}&reject=${reject_list}`;
 		let response = await fetch(
 			`http://localhost:9292/api/misc/measured_data?${encoded_params}`,
 			{},
 		);
 		let res2 = await response.json();
 		measdata = res2.traces;
+		for (const trace of measdata) {
+			trace.checked = true;
+			trace.mode = 'line+markers';
+		}
 		console.log(measdata);
 	}
 
@@ -123,7 +127,7 @@
 	function clear_measdata() {
 		measdata = [];
 	}
-    function checkall_measdata() {
+	function checkall_measdata() {
 		console.log(measdata);
 		for (const trace of measdata) {
 			trace.checked = true;
@@ -208,12 +212,15 @@
 	<!-- Testplot / -->
 </div>
 <div>
-	<button on:click={measurement_results(data.props.measfile.trim())} class="button-1"
-		>Get measured data:</button
+	<button
+		on:click={measurement_results(data.props.measfile.trim(), data.props.reject)}
+		class="button-1">Get measured data:</button
 	>
-	<input bind:value={data.props.measfile}
-    style="border:darkgray solid 1px;width: 50%;"
-  />
+	<input
+		bind:value={data.props.measfile}
+		style="border:darkgray solid 1px;width: 50%;"
+	/>
+	<label>Reject:<input bind:value={data.props.reject} style="border:darkgray solid 1px;"/></label>
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
@@ -304,19 +311,21 @@
 	/>
 {/if}
 
-{#if measdata !=undefined && measdata != '' && measdata != []}
-<div style="border:red solid 2px;">
-    {#each measdata as trace}
-      <label>{trace.name}
-        <input
-          style="border:darkgray solid 1px;"
-          type="checkbox" bind:checked={trace.checked}
-		  />
-	  </label>
-    {/each}
-	<button on:click={checkall_measdata} class="button-1">check all</button>	
-	<button on:click={clear_measdata} class="button-1">clear all</button>
-  </div>
+{#if measdata != undefined && measdata != "" && measdata != []}
+	<div style="border:green solid 2px;">
+		{#each measdata as trace}
+			<label
+				>{trace.name}
+				<input
+					style="border:darkgray solid 1px;"
+					type="checkbox"
+					bind:checked={trace.checked}
+				/>
+			</label>
+		{/each}
+		<button on:click={checkall_measdata} class="button-1">check all</button>
+		<button on:click={clear_measdata} class="button-1">clear all</button>
+	</div>
 {/if}
 
 <div>

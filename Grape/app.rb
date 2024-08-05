@@ -46,9 +46,10 @@ module Test
       desc 'Get measured data'
       get :measured_data do
         measfile = params[:file]
+        reject_list = params[:reject].split(/[, ]/).map{|a| a.to_i - 1}
         puts "Get measured data from #{measfile}"
         c = CSV.read(measfile)
-        d = valid_data c
+        d = valid_data c, reject_list
         {"traces" => d}
       end      
     end
