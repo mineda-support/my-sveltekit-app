@@ -1,7 +1,7 @@
 require './app'
 require 'rack/cors'
 #disable Rack::method_override
-use Rack::RewindableInput::Middleware
+#use Rack::RewindableInput::Middleware
 #use Rack::MethodOverride
 run 1
 use Rack::Cors do

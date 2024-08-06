@@ -191,8 +191,10 @@
 		);
 		let result = await res.json();
 		console.log(result);
-		alert(result.calculated_value);
-		//calculated_value = result.calculated_value[0..(plotdata.size-1)];
+		calculated_value = result.calculated_value.slice(0, plotdata.length);
+		if (measdata.length > 0) {
+  		  alert(result.calculated_value.slice(plotdata.length));
+		}
 		console.log(calculated_value);
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
