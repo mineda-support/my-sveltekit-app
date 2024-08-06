@@ -171,7 +171,7 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-	async function submit_equation(equation, dir, file, plotdata) {
+	async function submit_equation(equation, dir, file, plotdata, measdata) {
 		const encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}`;
@@ -185,13 +185,15 @@
 				},
 				body: JSON.stringify({
 					equation: equation,
-					plotdata: plotdata,
+					plotdata: plotdata.concat(measdata),
 				}),
 			},
 		);
 		let result = await res.json();
 		console.log(result);
-		calculated_value = result.calculated_value;
+		alert(result.calculated_value);
+		//calculated_value = result.calculated_value[0..(plotdata.size-1)];
+		console.log(calculated_value);
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
 	$: data.props.equation = equation;
@@ -213,7 +215,7 @@
 </div>
 <div>
 	<button
-		on:click={measurement_results(data.props.measfile.trim(), data.props.reject)}
+		on:click={measurement_results(data.props.measfile.trim().replace(/^"/, '').replace(/"$/,''), data.props.reject)}
 		class="button-1">Get measured data:</button
 	>
 	<input
@@ -333,7 +335,8 @@
 		>Measure
 		<input bind:value={equation} style="border:darkgray solid 1px;" />
 		<button
-			on:click={submit_equation(equation, dir, file, plotdata)}
+			on:click={submit_equation(equation, dir, file, plotdata,
+			              measdata.filter((trace) => trace.checked))}
 			class="button-1"
 		>
 			Calculate</button

@@ -164,18 +164,25 @@ module Test
         # puts params.keys
         # puts params
         work_dir, ckt_name = Utils::get_params(params)
+        results = []
         Dir.chdir(work_dir){
           puts params[:equation]
           ckt = LTspiceControl.new(File.basename ckt_name)
           # puts params[:plotdata].inspect
-          plotdata = params[:plotdata][0]
-          # debugger
-          puts plotdata[:x]
-          puts plotdata[:y]
-          x = Array_with_interpolation.new plotdata[:x]
-          y = Array_with_interpolation.new plotdata[:y]
-          calculated_value = eval params[:equation]
-          {"calculated_value" => calculated_value}
+          puts params[:plotdata].size
+          params[:plotdata].each{|plotdata|
+            # debugger
+            # puts plotdata[:x]
+            # puts plotdata[:y]
+            x = Array_with_interpolation.new plotdata[:x]
+            y = Array_with_interpolation.new plotdata[:y]
+            begin
+              results << eval(params[:equation])
+            rescue
+              results << nil
+            end
+          }
+          {"calculated_value" => results}
         }
       end
     end

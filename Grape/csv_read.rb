@@ -16,7 +16,7 @@ def valid_data c, ignore=[]
       if start >= 0 # && i > 1
         flag = true
         (0..start-1).each{|j| flag = false if c[i][j] != c[i-1][j]}
-        dd << l[start..stop] if flag
+        dd << l[start..stop].map{|a| a.to_f} if flag
       end
     else
       if dd.length > 2
