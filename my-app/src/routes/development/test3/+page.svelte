@@ -84,7 +84,7 @@
 		measdata = res2.traces;
 		for (const trace of measdata) {
 			trace.checked = true;
-			trace.mode = 'line+markers';
+			trace.mode = "line+markers";
 		}
 		console.log(measdata);
 	}
@@ -133,35 +133,45 @@
 			trace.checked = true;
 		}
 	}
-	async function update_elements(dir, file) {
-		console.log(
-			`let me update elements=${elements} here @ dir= ${dir} file=${file}`,
-		);
-		let update_elms = "";
-		for (const [elm, props] of Object.entries(ckt.elements)) {
-			if (elm != "") {
-				if (elements[elm] != get_control(props)) {
-					// console.log(`${elm}: ${get_control(props)}->${elements[elm]}`);
+	async function update_elements(dir) {
+		for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
+			if (ckt_name[0] == ".") {
+				continue;
+			}
+			let target = ckt_name + ".asc";
+			console.log(
+				"update elements=",
+				elements,
+				` here @ dir= ${dir} file=${target}`,
+			);
+			let update_elms = "";
+			for (const [elm, props] of Object.entries(elms)) {
+				if (elements[ckt_name][elm] != get_control(props)) {
 					update_elms =
-						update_elms + elm + ":'" + elements[elm] + "',";
+						update_elms +
+						elm +
+						":'" +
+						elements[ckt_name][elm] +
+						"',";
 				}
 			}
-		}
-		if (update_elms != "") {
-			update_elms = encodeURIComponent(`{${update_elms}}`);
-			let encoded_params = `dir=${encodeURIComponent(
-				dir,
-			)}&file=${encodeURIComponent(file)}`;
-			const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
-			console.log(command);
-			let response = await fetch(command, {});
-			let ckt = await response.json();
-			for (const [elm, props] of Object.entries(ckt.elements)) {
-				if (elm != "") {
-					if (elements[elm] != get_control(props)) {
+			if (update_elms != "") {
+				console.log("let me update ", target, " with:", update_elms);
+				update_elms = encodeURIComponent(`{${update_elms}}`);
+				let encoded_params = `dir=${encodeURIComponent(
+					dir,
+				)}&file=${encodeURIComponent(target)}`;
+				const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
+				console.log(command);
+				let response = await fetch(command, {});
+				let ckt = await response.json(); // ckt = {elements}
+				console.log("ckt=", ckt);
+
+				for (const [elm, props] of Object.entries(ckt.elements)) {
+					if (elements[ckt_name][elm] != get_control(props)){
 						console.log(
 							`Update error! ${elm}: ${get_control(props)}vs.${
-								elements[elm]
+								elements[ckt_name][elm]
 							}`,
 						);
 					}
@@ -193,7 +203,7 @@
 		console.log(result);
 		calculated_value = result.calculated_value.slice(0, plotdata.length);
 		if (measdata.length > 0) {
-  		  alert(result.calculated_value.slice(plotdata.length));
+			alert(result.calculated_value.slice(plotdata.length));
 		}
 		console.log(calculated_value);
 	}
@@ -209,22 +219,27 @@
 <OpenLTspice {data} on:open_end={plot_result} />
 <Settings {data} {ckt} />
 <div>
-	<Simulate
-		on:sim_end={plot_result}
-		on:elm_update={update_elements(dir, file)}
-	/>
+	<Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir)} />
 	<!-- Testplot / -->
 </div>
 <div>
 	<button
-		on:click={measurement_results(data.props.measfile.trim().replace(/^"/, '').replace(/"$/,''), data.props.reject)}
+		on:click={measurement_results(
+			data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
+			data.props.reject,
+		)}
 		class="button-1">Get measured data:</button
 	>
 	<input
 		bind:value={data.props.measfile}
 		style="border:darkgray solid 1px;width: 50%;"
 	/>
-	<label>Reject:<input bind:value={data.props.reject} style="border:darkgray solid 1px;"/></label>
+	<label
+		>Reject:<input
+			bind:value={data.props.reject}
+			style="border:darkgray solid 1px;"
+		/></label
+	>
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
@@ -337,8 +352,13 @@
 		>Measure
 		<input bind:value={equation} style="border:darkgray solid 1px;" />
 		<button
-			on:click={submit_equation(equation, dir, file, plotdata,
-			              measdata.filter((trace) => trace.checked))}
+			on:click={submit_equation(
+				equation,
+				dir,
+				file,
+				plotdata,
+				measdata.filter((trace) => trace.checked),
+			)}
 			class="button-1"
 		>
 			Calculate</button

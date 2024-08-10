@@ -33,29 +33,36 @@
         dir,
       )}&file=${encodeURIComponent(file)}`;
     }
+    console.log(encoded_params);
     let response = await fetch(
       `http://localhost:9292/api/ltspctl/open?${encoded_params}`,
       {},
     );
     let res2 = await response.json();
     console.log(res2);
-    console.log(`probes: ${probes}`);
+    console.log('probes:', probes);
     if (probes != undefined) {
       // goLTspice();
       // plot_result();
       dispatch("open_end", { text: "fake simulation ended!" });
     }
     ckt = res2;
-    console.log(`ckt=${ckt}`);
+    console.log('ckt=', ckt);
     if (ckt != undefined) {
       elements = {};
-      for (const [elm, props] of Object.entries(ckt.elements)) {
-        if (elm != "") {
-          // elements_text = elements_text + elm + ":" + get_control(props) + "\n";
-          elements[elm] = get_control(props);
+      for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
+        console.log(ckt_name, '=', elms);
+        if (ckt_name[0]=='.'){
+          console.log('skip:', ckt_name)
+          continue;
+        }
+        elements[ckt_name] = {};
+        for (const [elm, props] of Object.entries(elms)) {
+          //console.log([elm, props]);
+          elements[ckt_name][elm] = get_control(props);
         }
       }
-      console.log(`elements=${elements}`);
+      console.log('elements=', elements);
     }
     ckt_store.set(ckt);
     elements_store.set(elements);
@@ -146,14 +153,17 @@
     {/each}
   </div -->
   <div style="border:red solid 2px;">
-    {#each Object.entries(elements) as [elm]}
-      <label
-        >{elm}:
-        <input
-          style="border:darkgray solid 1px;"
-          bind:value={elements[elm]}
-        /><br /></label
-      >
+    {#each Object.entries(elements) as [ckt_name, elms]}
+      [{ckt_name}]<br/>
+      {#each Object.entries(elms) as [elm]}
+        <label
+          >{elm}:
+          <input
+            style="border:darkgray solid 1px;"
+            bind:value={elements[ckt_name][elm]}
+          /><br /></label
+        >
+      {/each}
     {/each}
   </div>
   <!-- div class="grid">

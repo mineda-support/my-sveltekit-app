@@ -59,8 +59,9 @@ module Test
       get :open do
         work_dir, ckt_name = Utils::get_params(params)
         Dir.chdir(work_dir){
-          ckt = LTspiceControl.new(File.basename ckt_name)
-          ckt.open if params[:showup]
+          ckt = LTspiceControl.new(File.basename(ckt_name), true)
+          ckt.open(File.basename(ckt_name), true) if params[:showup]
+          puts ckt.elements
           {"elements" => ckt.elements, "info" => ckt.info}
         } 
         end
