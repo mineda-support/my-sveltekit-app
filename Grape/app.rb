@@ -167,22 +167,34 @@ module Test
         work_dir, ckt_name = Utils::get_params(params)
         results = []
         Dir.chdir(work_dir){
-          puts params[:equation]
+          puts "equation for measurement: #{params[:equation]}"
           ckt = LTspiceControl.new(File.basename ckt_name)
           # puts params[:plotdata].inspect
-          puts params[:plotdata].size
-          params[:plotdata].each{|plotdata|
-            # debugger
-            # puts plotdata[:x]
-            # puts plotdata[:y]
-            x = Array_with_interpolation.new plotdata[:x]
-            y = Array_with_interpolation.new plotdata[:y]
+          if params[:plotdata] && params[:plotdata].size > 0
+            puts params[:plotdata].size
+            params[:plotdata].each{|plotdata|
+              # debugger
+              # puts plotdata[:x]
+              # puts plotdata[:y]
+              x = Array_with_interpolation.new plotdata[:x]
+              y = Array_with_interpolation.new plotdata[:y]
+              begin
+                results << eval(params[:equation])
+              rescue
+                results << nil
+              end
+            }
+          else # db and phase
+            puts params[:db_data].size
+            x = Array_with_interpolation.new params[:db_data][:x]
+            db = Array_with_interpolation.new params[:db_data][:y]
+            ph = Array_with_interpolation.new params[:ph_data][:y]
             begin
               results << eval(params[:equation])
             rescue
               results << nil
             end
-          }
+          end
           {"calculated_value" => results}
         }
       end

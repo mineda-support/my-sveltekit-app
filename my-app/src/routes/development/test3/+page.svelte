@@ -15,8 +15,8 @@
 
 	let plotdata;
 	$: data.props.plotdata = plotdata;
-	let db;
-	let phase;
+	let db_data;
+	let ph_data;
 	export function handleMessage(event) {
 		console.log("handleMessage");
 		alert(event.detail.text);
@@ -108,9 +108,9 @@
 		plotdata = res2.traces;
 		console.log(`probes=${probes}`);
 		if (probes != null && probes.startsWith("frequency")) {
-			phase = res2.phase;
-			db = res2.db;
-			console.log(`db=${db}`);
+			db_data = res2.db;
+			ph_data = res2.phase;
+			console.log('db_data=', db_data);
 		}
 		return res2;
 	}
@@ -122,7 +122,7 @@
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
 	function clear_plot() {
-		plotdata = undefined;
+		plotdata = db_data = ph_data = undefined;
 	}
 	function clear_measdata() {
 		measdata = [];
@@ -168,7 +168,7 @@
 				console.log("ckt=", ckt);
 
 				for (const [elm, props] of Object.entries(ckt.elements)) {
-					if (elements[ckt_name][elm] != get_control(props)){
+					if (elements[ckt_name][elm] != get_control(props)) {
 						console.log(
 							`Update error! ${elm}: ${get_control(props)}vs.${
 								elements[ckt_name][elm]
@@ -181,11 +181,11 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-	async function submit_equation(equation, dir, file, plotdata, measdata) {
+	async function submit_equation(equation, dir, file, plotdata, db_data, ph_data, measdata) {
 		const encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}`;
-		// console.log(`program to send: ${equation}`);
+		console.log(`equation to send: ${equation}`);
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/measure?${encoded_params}`,
 			{
@@ -195,15 +195,21 @@
 				},
 				body: JSON.stringify({
 					equation: equation,
-					plotdata: plotdata.concat(measdata),
+					plotdata: plotdata ? plotdata.concat(measdata) : [],
+					db_data: db_data[0],
+					ph_data: ph_data[0]
 				}),
 			},
 		);
 		let result = await res.json();
 		console.log(result);
-		calculated_value = result.calculated_value.slice(0, plotdata.length);
-		if (measdata.length > 0) {
-			alert(result.calculated_value.slice(plotdata.length));
+		if (plotdata != undefined){
+		    calculated_value = result.calculated_value.slice(0, plotdata.length);
+		    if (measdata.length > 0) {
+    			alert(result.calculated_value.slice(plotdata.length));
+		    }
+		} else {
+			calculated_value = result.calculated_value.slice(0);
 		}
 		console.log(calculated_value);
 	}
@@ -243,14 +249,16 @@
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
-<label>
-	<input type="checkbox" bind:checked={xaxis_is_log} />
-	xaxis is log
-</label>
-<label>
-	<input type="checkbox" bind:checked={yaxis_is_log} />
-	yaxis is log
-</label>
+{#if probes == undefined || !probes.startsWith("frequency")}
+	<label>
+		<input type="checkbox" bind:checked={xaxis_is_log} />
+		xaxis is log
+	</label>
+	<label>
+		<input type="checkbox" bind:checked={yaxis_is_log} />
+		yaxis is log
+	</label>
+{/if}
 <label>
 	<button on:click={clear_plot} class="button-1">clear</button>
 </label>
@@ -266,13 +274,30 @@
 			style="border:darkgray solid 1px;"
 		/>
 	</label>
-	<label
-		>Y title
-		<input
-			bind:value={settings.title_y}
-			style="border:darkgray solid 1px;"
-		/>
-	</label>
+	{#if probes == undefined || !probes.startsWith("frequency")}
+		<label
+			>Y title
+			<input
+				bind:value={settings.title_y}
+				style="border:darkgray solid 1px;"
+			/>
+		</label>
+	{:else}
+		<label
+			>Y1 title
+			<input
+				bind:value={settings.title_y1}
+				style="border:darkgray solid 1px;"
+			/>
+		</label>
+		<label
+			>Y2 title
+			<input
+				bind:value={settings.title_y2}
+				style="border:darkgray solid 1px;"
+			/>
+		</label>
+	{/if}
 </div>
 {#if plotdata !== undefined}
 	<Plot
@@ -295,17 +320,23 @@
 		debounce={250}
 	/>
 {/if}
-{#if probes != undefined && probes.startsWith("frequency")}
+{#if probes != undefined && probes.startsWith("frequency") && db_data !== undefined && ph_data !== undefined}
 	<Plot
-		data={db}
+		data={db_data}
 		layout={{
+			title: settings.title,
 			xaxis: {
 				type: "log",
 				autorange: "true",
 				linewidth: 1,
 				mirror: true,
 			},
-			yaxis: { autorange: "true", linewidth: 1, mirror: true },
+			yaxis: {
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+				title: settings.title_y1,
+			},
 			margin: { t: 30 },
 			linewidth: 1,
 			mirror: true,
@@ -314,15 +345,21 @@
 		debounce={250}
 	/>
 	<Plot
-		data={phase}
+		data={ph_data}
 		layout={{
 			xaxis: {
 				type: "log",
 				autorange: "true",
 				linewidth: 1,
 				mirror: true,
+				title: settings.title_x,
 			},
-			yaxis: { autorange: "true", linewidth: 1, mirror: true },
+			yaxis: {
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+				title: settings.title_y2,
+			},
 			margin: { t: 30 },
 		}}
 		fillParent="width"
@@ -356,7 +393,7 @@
 				equation,
 				dir,
 				file,
-				plotdata,
+				plotdata, db_data, ph_data,
 				measdata.filter((trace) => trace.checked),
 			)}
 			class="button-1"
