@@ -169,9 +169,8 @@ module Test
         Dir.chdir(work_dir){
           puts "equation for measurement: #{params[:equation]}"
           ckt = LTspiceControl.new(File.basename ckt_name)
-          # puts params[:plotdata].inspect
+          puts "plotdata: '#{params[:plotdata].inspect}', size=#{params[:plotdata].size}"
           if params[:plotdata] && params[:plotdata].size > 0
-            puts params[:plotdata].size
             params[:plotdata].each{|plotdata|
               # debugger
               # puts plotdata[:x]
@@ -189,8 +188,10 @@ module Test
             x = Array_with_interpolation.new params[:db_data][:x]
             db = Array_with_interpolation.new params[:db_data][:y]
             ph = Array_with_interpolation.new params[:ph_data][:y]
+            # puts "db=#{db}"
             begin
               results << eval(params[:equation])
+              #puts "results === #{results}"
             rescue
               results << nil
             end

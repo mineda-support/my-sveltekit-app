@@ -67,11 +67,12 @@
 			},
 		],
 	};
-	async function measurement_results(measfile, reject_list) {
+	async function measurement_results(measfile, reject_list, reverse, tracemode) {
 		if (measfile == undefined || measfile == "") {
 			const [handle] = await window.showOpenFilePicker(options);
 		}
 		console.log(measfile);
+		console.log(`reverse=${reverse}, tracemode: ${tracemode}`);
 		//console.log(handle.name);
 		//const file = await handle.getFile();
 		//console.log(file);
@@ -81,12 +82,12 @@
 			{},
 		);
 		let res2 = await response.json();
-		measdata = res2.traces;
+		measdata = reverse ? res2.traces.reverse() : res2.traces;
 		for (const trace of measdata) {
 			trace.checked = true;
-			trace.mode = "line+markers";
+			trace.mode = tracemode;
 		}
-		console.log(measdata);
+		console.log('measdata:', measdata);
 	}
 
 	async function plot_result(event) {
@@ -110,9 +111,10 @@
 		if (probes != null && probes.startsWith("frequency")) {
 			db_data = res2.db;
 			ph_data = res2.phase;
-			console.log('db_data=', db_data);
+			console.log("db_data=", db_data);
 		}
-		return res2;
+		//return res2;
+		calculate_equation();
 	}
 	export let data;
 	//probes_name.set(data.props.probes);
@@ -181,11 +183,33 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-	async function submit_equation(equation, dir, file, plotdata, db_data, ph_data, measdata) {
+
+	function calculate_equation() {
+		const value = submit_equation(
+			equation,
+			dir,
+			file,
+			plotdata,
+			db_data,
+			ph_data,
+			measdata.filter((trace) => trace.checked),
+		);
+	}
+
+	async function submit_equation(
+		equation,
+		dir,
+		file,
+		plotdata,
+		db_data,
+		ph_data,
+		measdata,
+	) {
 		const encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}`;
 		console.log(`equation to send: ${equation}`);
+		console.log('plotdata:', plotdata, 'db_data:', db_data, 'ph_data:', ph_data);
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/measure?${encoded_params}`,
 			{
@@ -196,18 +220,21 @@
 				body: JSON.stringify({
 					equation: equation,
 					plotdata: plotdata ? plotdata.concat(measdata) : [],
-					db_data: db_data[0],
-					ph_data: ph_data[0]
+					db_data: db_data ? db_data[0] : [],
+					ph_data: ph_data ? ph_data[0] : [],
 				}),
 			},
 		);
 		let result = await res.json();
 		console.log(result);
-		if (plotdata != undefined){
-		    calculated_value = result.calculated_value.slice(0, plotdata.length);
-		    if (measdata.length > 0) {
-    			alert(result.calculated_value.slice(plotdata.length));
-		    }
+		if (plotdata != undefined) {
+			calculated_value = result.calculated_value.slice(
+				0,
+				plotdata.length,
+			);
+			if (measdata.length > 0) {
+				alert(result.calculated_value.slice(plotdata.length).join("\n"));
+			}
 		} else {
 			calculated_value = result.calculated_value.slice(0);
 		}
@@ -232,13 +259,13 @@
 	<button
 		on:click={measurement_results(
 			data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
-			data.props.reject,
+			data.props.reject, data.props.reverse, data.props.tracemode
 		)}
 		class="button-1">Get measured data:</button
 	>
 	<input
 		bind:value={data.props.measfile}
-		style="border:darkgray solid 1px;width: 50%;"
+		style="border:darkgray solid 1px;width: 40%;"
 	/>
 	<label
 		>Reject:<input
@@ -246,6 +273,14 @@
 			style="border:darkgray solid 1px;"
 		/></label
 	>
+	<label>Reverse<input type="checkbox" bind:checked={data.props.reverse}/></label>
+	<button>Trace mode</button>
+	<input name="tracemodes" value={data.props.tracemode} type="hidden" />
+    <select bind:value={data.props.tracemode} style="border:darkgray solid 1px;">
+        <option value="lines">lines</option>
+        <option value="markers">markers</option>
+        <option value="lines+markers">lines+markers</option>
+    </select>	
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
@@ -393,7 +428,9 @@
 				equation,
 				dir,
 				file,
-				plotdata, db_data, ph_data,
+				plotdata,
+				db_data,
+				ph_data,
 				measdata.filter((trace) => trace.checked),
 			)}
 			class="button-1"
