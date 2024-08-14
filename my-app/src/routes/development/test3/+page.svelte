@@ -67,7 +67,12 @@
 			},
 		],
 	};
-	async function measurement_results(measfile, reject_list, reverse, tracemode) {
+	async function measurement_results(
+		measfile,
+		reject_list,
+		reverse,
+		tracemode,
+	) {
 		if (measfile == undefined || measfile == "") {
 			const [handle] = await window.showOpenFilePicker(options);
 		}
@@ -87,7 +92,7 @@
 			trace.checked = true;
 			trace.mode = tracemode;
 		}
-		console.log('measdata:', measdata);
+		console.log("measdata:", measdata);
 	}
 
 	async function plot_result(event) {
@@ -209,7 +214,14 @@
 			dir,
 		)}&file=${encodeURIComponent(file)}`;
 		console.log(`equation to send: ${equation}`);
-		console.log('plotdata:', plotdata, 'db_data:', db_data, 'ph_data:', ph_data);
+		console.log(
+			"plotdata:",
+			plotdata,
+			"db_data:",
+			db_data,
+			"ph_data:",
+			ph_data,
+		);
 		const res = await fetch(
 			`http://localhost:9292/api/ltspctl/measure?${encoded_params}`,
 			{
@@ -233,7 +245,9 @@
 				plotdata.length,
 			);
 			if (measdata.length > 0) {
-				alert(result.calculated_value.slice(plotdata.length).join("\n"));
+				alert(
+					result.calculated_value.slice(plotdata.length).join("\n"),
+				);
 			}
 		} else {
 			calculated_value = result.calculated_value.slice(0);
@@ -252,14 +266,20 @@
 <OpenLTspice {data} on:open_end={plot_result} />
 <Settings {data} {ckt} />
 <div>
-	<Simulate on:sim_end={plot_result} on:elm_update={update_elements(dir)} />
+	<Simulate
+		on:sim_end={plot_result}
+		on:sim_start={clear_plot}
+		on:elm_update={update_elements(dir)}
+	/>
 	<!-- Testplot / -->
 </div>
 <div>
 	<button
 		on:click={measurement_results(
 			data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
-			data.props.reject, data.props.reverse, data.props.tracemode
+			data.props.reject,
+			data.props.reverse,
+			data.props.tracemode,
 		)}
 		class="button-1">Get measured data:</button
 	>
@@ -273,14 +293,22 @@
 			style="border:darkgray solid 1px;"
 		/></label
 	>
-	<label>Reverse<input type="checkbox" bind:checked={data.props.reverse}/></label>
+	<label
+		>Reverse<input
+			type="checkbox"
+			bind:checked={data.props.reverse}
+		/></label
+	>
 	<button>Trace mode</button>
 	<input name="tracemodes" value={data.props.tracemode} type="hidden" />
-    <select bind:value={data.props.tracemode} style="border:darkgray solid 1px;">
-        <option value="lines">lines</option>
-        <option value="markers">markers</option>
-        <option value="lines+markers">lines+markers</option>
-    </select>	
+	<select
+		bind:value={data.props.tracemode}
+		style="border:darkgray solid 1px;"
+	>
+		<option value="lines">lines</option>
+		<option value="markers">markers</option>
+		<option value="lines+markers">lines+markers</option>
+	</select>
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />

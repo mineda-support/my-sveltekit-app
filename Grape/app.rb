@@ -64,7 +64,7 @@ module Test
           puts ckt.elements
           {"elements" => ckt.elements, "info" => ckt.info}
         } 
-        end
+      end
       desc 'Simulate'
       get :simulate do
         work_dir, ckt_name = Utils::get_params(params)

@@ -30,6 +30,7 @@
         const encoded_params = `dir=${encodeURIComponent(
             dir
         )}&file=${encodeURIComponent(file)}`;
+        dispatch("sim_start", { text: "LTspice simulation started!" });
         let response = await fetch(
             `http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
             {}
