@@ -8,6 +8,35 @@ require 'j_pack'
 require 'byebug'
 require './csv_read'
 
+def eval_equation plot_data, equation
+  results = []
+  # if plot_data && plot_data.size > 0
+  plot_data.each{|plotdata|
+    x = Array_with_interpolation.new plotdata[:x]
+    y = Array_with_interpolation.new plotdata[:y]
+    begin
+      results << eval(equation)
+    rescue
+      results << nil
+     end
+  }
+end
+
+def eval_db_ph_equation db_data, ph_data, equation
+  results = []
+  puts db_data.size
+  x = Array_with_interpolation.new db_data[:x]
+  db = Array_with_interpolation.new db_data[:y]
+  ph = Array_with_interpolation.new ph_data[:y]
+  # puts "db=#{db}"
+  begin
+    results << eval(equation)
+    #puts "results === #{results}"
+  rescue
+    results << nil
+  end
+end
+
 module Test
   class Utils
     def self.get_params params
@@ -77,9 +106,15 @@ module Test
             if probes.start_with? 'frequency'
               db = traces.map{|trace| {name: trace[:name], x: trace[:x], y: trace[:y].map{|a| 20.0*Math.log10(a.abs)}}}
               phase = traces.map{|trace| {name: trace[:name], x: trace[:x], y: trace[:y].map{|a| Utils::shift360(a.phase*(180.0/Math::PI))}}}
-              {"vars" => vars, "db" => db, "phase" => phase}
+              if equation = params[:equation]
+                results = eval_db_ph_equation db[0], phase[0], equation
+              end
+              {"vars" => vars, "db" => db, "phase" => phase, "calculated_value" => results}
             else
-              {"vars" => vars, "traces" => traces}
+              if equation = params[:equation]
+                results = eval_equation traces, equation
+              end
+              {"vars" => vars, "traces" => traces, "calculated_value" => results}
             end 
           else
             {"log" => ckt.sim_log}
@@ -95,12 +130,19 @@ module Test
           ckt = LTspiceControl.new(File.basename ckt_name)
           if probes
             vars, traces = ckt.get_traces *(probes.split(','))
+            # puts traces.inspect
             if probes.start_with? 'frequency'
               db = traces.map{|trace| {name: trace[:name], x: trace[:x], y: trace[:y].map{|a| 20.0*Math.log10(a.abs)}}}
               phase = traces.map{|trace| {name: trace[:name], x: trace[:x], y: trace[:y].map{|a| Utils::shift360(a.phase*(180.0/Math::PI))}}}
-              {"vars" => vars, "db" => db, "phase" => phase}
+              if equation = params[:equation]
+                results = eval_db_ph_equation db[0], phase[0], equation
+              end
+              {"vars" => vars, "db" => db, "phase" => phase, "calculated_value" => results} 
             else
-              {"vars" => vars, "traces" => traces}
+              if equation = params[:equation]
+                results = eval_equation traces, equation
+              end
+              {"vars" => vars, "traces" => traces, "calculated_value" => results}
             end 
           else
             {"log" => ckt.sim_log}

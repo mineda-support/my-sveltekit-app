@@ -29,6 +29,8 @@
 		equation_name,
 		ckt_store,
 		elements_store,
+        settings_store
+
 	} from "./stores.js";
 	let file;
 	let dir;
@@ -36,6 +38,7 @@
 	let equation;
 	let ckt;
 	let elements;
+
 	ckt_name.subscribe((value) => {
 		file = value;
 	});
@@ -55,6 +58,10 @@
 		elements = value;
 	});
 	elements_store.set({});
+	let settings = {}; //let title, title_x, title_y;
+	settings_store.subscribe((value) => {
+        settings = value;
+	});
 	ckt_store.set(undefined);
 	// settings_name.set({equation: equation, probes: probes})
 	const options = {
@@ -100,11 +107,15 @@
 		console.log(
 			`Plot results@dir='${dir}' file='${file}' probes=${probes}`,
 		);
+		if (probes != probes.trim()){
+			alert('probes have unwanted leading space(s)');
+			return;
+		}
 		const encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
 			probes,
-		)}`;
+		)}&equation=${encodeURIComponent(equation)}`;
 		let response = await fetch(
 			`http://localhost:9292/api/ltspctl/results?${encoded_params}`,
 			{},
@@ -119,7 +130,7 @@
 			console.log("db_data=", db_data);
 		}
 		//return res2;
-		calculate_equation();
+		//calculate_equation();
 	}
 	export let data;
 	//probes_name.set(data.props.probes);
@@ -258,7 +269,6 @@
 	$: data.props.equation = equation;
 	let calculated_value;
 	// $: calculated_value = calculated_value;
-	let settings = {}; //let title, title_x, title_y;
 	$: settings.probes = probes;
 </script>
 

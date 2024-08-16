@@ -15,9 +15,12 @@
     const props = data.props;
     props.settings_name = settings_name;
     props.ckt = ckt;
+    console.log('settings=', settings);
+    props.settings = {};
     for (const [item, value] of Object.entries(settings)) {
-      props[item] = value;
+      props.settings[item] = value;
     }
+    console.log('props=', props);
     const response = await fetch("/development/test3/settings", {
       method: "POST",
       body: JSON.stringify(props),
@@ -26,8 +29,7 @@
       },
     });
     const setting_names = await response.json();
-    console.log("settings:");
-    console.log(setting_names);
+    console.log("settings:", setting_names);
     if (setting_names.includes(settings_name)) {
       alert(`${settings_name} saved`);
       data.props.setting_names = setting_names;
@@ -35,7 +37,7 @@
   }
 
   async function load_settings(settings_name, dir) {
-    // alert(`load ${settings_name}`)
+    //alert(`load ${settings_name}`);
     const response = await fetch(
       `/development/test3/settings?dir=${encodeURIComponent(
         dir,
@@ -44,16 +46,16 @@
     // const result = await response.json();
     const new_settings = await response.json();
     // probes_name.set(probes);
-    console.log("result");
-    // console.log(new_settings);
+    console.log('new_settings=', new_settings);
     console.log([new_settings.equation, new_settings.probes]);
     equation_name.set(new_settings.equation);
     probes_name.set(new_settings.probes);
-    for (const [item, value] of Object.entries(settings)) {
-      settings[item] = new_settings[item];
+    // settings = {};
+    for (const [item, value] of Object.entries(new_settings['settings'])) {
+      settings[item] = value;
     }
     settings_store.set(settings);
-    console.log(settings);
+    console.log('settings=', settings);
   }
   let settings_name = "default";
   export let data, ckt;
@@ -81,7 +83,7 @@
     class="button-1"
     >Load settings from:
   </button>
-  <select bind:value={settings_name} style="border:darkgray solid 1px;">
+  <select on:update_settings_choice bind:value={settings_name} style="border:darkgray solid 1px;">
     {#each data.props.setting_names as setting}
       <option value={setting}>{setting}</option>
     {/each}

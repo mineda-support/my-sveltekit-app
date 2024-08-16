@@ -113,7 +113,6 @@
     //wdir = handle.name; # does not return path
     goto("/development/test3?wdir=" + wdir);
   }
-
 </script>
 
 <h2>

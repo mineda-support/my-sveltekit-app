@@ -4,24 +4,31 @@
 	import {
 		ckt_name,
 		dir_name,
-		// probes_name,
+		probes_name,
+		equation_name,
 		ckt_store,
 		elements_store,
 		settings_store,
 	} from "./stores.js";
 	import { bindAll, dot$1, number } from "plotly.js-dist";
 	let ckt;
-	let file, dir;
+	let file, dir, probes, equation;
+
 	ckt_name.subscribe((value) => {
 		file = value;
 	});
 	dir_name.subscribe((value) => {
 		dir = value;
 	});
+	probes_name.subscribe((value) => {
+		probes = value;
+	});
+	equation_name.subscribe((value) => {
+		equation = value;
+	});
 	ckt_store.subscribe((value) => {
 		ckt = value;
 	});
-	export let probes;
 	let elements;
 	elements_store.subscribe((value) => {
 		elements = value;
@@ -90,42 +97,40 @@
 	}
 	async function goLTspice2(ckt) {
         console.log(`openLTspice dir='${dir}' file='${file}'`);
-        dispatch("elm_update", { text: "Update elements" });
+        /* dispatch("elm_update", { text: "Update elements" });
         const my_sleep = (ms) =>
             new Promise((resolve) => setTimeout(resolve, ms));
-        await my_sleep(3000);
+        await my_sleep(3000); */
         const encoded_params = `dir=${encodeURIComponent(
             dir
-        )}&file=${encodeURIComponent(file)}`;
-        dispatch("sim_start", { text: "LTspice simulation started!" });
+        )}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
+			probes,
+		)}&equation=${encodeURIComponent(equation)}`;
+        // dispatch("sim_start", { text: "LTspice simulation started!" });
         let response = await fetch(
             `http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
             {}
         );
         let res2 = await response.json();
-        console.log(res2);
-        //if (ckt.info == null) {
-            response = await fetch(
-                `http://localhost:9292/api/ltspctl/info?${encoded_params}`,
-                {}
-            );
-            res2 = await response.json();
-			console.log(res2);
-            ckt.info = res2.info;
-            // console.log(ckt.info);
-            ckt_store.set(ckt);
-            //}
-        dispatch("sim_end", { text: "LTspice simulation ended!" });
+        console.log('res2=', res2);
+        //dispatch("sim_end", { text: "LTspice simulation ended!" });
         // plotdata = get_results();
-        return res2;
+        return res2.calculated_value;
     }	
-	async function temp(dir, settings, elements) {
+
+	async function go(dir, settings, elements) {
+		plot_data = [];
+		plot_data[0] = {x: [], y: []};
+		result_data = [];
+		result_data[0] = {x: [], y:[]};
 		//alert(settings.src1);
 		let var_name;
 		let target;
 		[target, var_name] = settings.src1.split(":");
 		//console.log(target, var_name);
 		const keep = elements[target][var_name];
+		let gb = []; // Gain Bandwidth product
+		let pm = []; // Phase Margin
 		for (const value of settings.src1_values) {
 			if (keep.match(/\.par/)) {
 				console.log(`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, '$1'+value)}`);
@@ -135,10 +140,23 @@ console.log(updates);
 			} else {
 			    console.log(`${var_name}: ${value}`);
             }
-            await goLTspice2(ckt) ;
-		   
+			dispatch("sim_start", { text: "LTspice simulation started!" });
+            let calculated_value = await goLTspice2(ckt) ;
+			gb.push(calculated_value[0][0]);
+			pm.push(calculated_value[0][1]);
+			dispatch("sim_end", { text: "LTspice simulation ended!" });
+			plot_data[0].x.push(Number(value));
+			result_data[0].x.push(Number(value));
 		}
+		console.log('gb=', gb);
+		console.log('pm=', pm);
+		plot_data[0].y = gb;
+		result_data[0].y =pm;
+		console.log('plot_data=', plot_data);
 	}
+// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
+
+
 	function set_src_values() {
 		console.log("sweep type:", settings.sweep_type1);
 		settings.src1_values = [];
@@ -265,11 +283,11 @@ console.log(updates);
 </div>
 <div>
 	<label>
-		<button on:click={temp(dir, settings, elements)} class="button-1">Go</button>
+		<button on:click={go(dir, settings, elements)} class="button-1">Go</button>
 	</label>
 </div>
 <div>
-	<label>
+	<!-- label>
 		<button
 			on:click={execute_script(settings.script, dir, settings, elements)}
 			class="button-1"
@@ -281,7 +299,7 @@ console.log(updates);
 			style="border:darkgray solid 1px; height: 200px; 
 width: 90%;"
 		/>
-	</label>
+	</label -->
 	<!-- label>
 		<button
 			on:click={submit_program(settings.program, dir, file)}
@@ -298,17 +316,17 @@ width: 90%;"
 </div>
 {#if plot_data !== undefined}
 	<Plot
-		data={plot_data.traces}
+		data={plot_data}
 		layout={{
 			title: "title",
-			xaxis: { title: "time", autorange: "true" },
-			yaxis: { title: "voltage", autorange: "true" },
+			xaxis: { title: "capacitor", autorange: "true", linewidth: 1, mirror: true, },
+			yaxis: { title: "Gain Bandwidth product", autorange: "true", linewidth: 1, mirror: true, },
 		}}
 		fillParent="width"
 		debounce={250}
 	/>
 {/if}
-<div>
+<!-- div>
 	<label>
 		<button on:click={postprocess(settings)} class="button-1">
 			Postprocess</button
@@ -319,14 +337,14 @@ width: 90%;"
 width: 90%;"
 		/>
 	</label>
-</div>
+</div -->
 {#if result_data !== undefined}
 	<Plot
-		data={result_data.traces}
+		data={result_data}
 		layout={{
 			title: "title",
-			xaxis: { title: "time", autorange: "true" },
-			yaxis: { title: "voltage", autorange: "true" },
+			xaxis: { title: "capacitor", autorange: "true", linewidth: 1, mirror: true, },
+			yaxis: { title: "Phase Margin", autorange: "true", linewidth: 1, mirror: true,  },
 		}}
 		fillParent="width"
 		debounce={250}
