@@ -1,6 +1,7 @@
 <script>
 	import Plot from "svelte-plotly.js";
 	import InputValue from "./Utils/input_value.svelte";
+	import SweepSource from "./utils/sweep_source.svelte";
 	import {
 		ckt_name,
 		dir_name,
@@ -10,7 +11,7 @@
 		elements_store,
 		settings_store,
 	} from "./stores.js";
-	import { bindAll, dot$1, number } from "plotly.js-dist";
+	import { bindAll, dot$1, number, update } from "plotly.js-dist";
 	let ckt;
 	let file, dir, probes, equation;
 
@@ -34,6 +35,7 @@
 		elements = value;
 	});
 	let settings = {};
+	//settings.start_dec_val2 = unknown
 	settings_store.subscribe((value) => {
 		settings = value;
 	});
@@ -86,7 +88,7 @@
 	$: settings.src1 = src1;
 
 	import { createEventDispatcher } from "svelte";
-    const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher();
 
 	function postprocess(settings) {
 		eval(settings.postprocess);
@@ -96,99 +98,213 @@
 		eval(script);
 	}
 	async function goLTspice2(ckt) {
-        console.log(`openLTspice dir='${dir}' file='${file}'`);
-        /* dispatch("elm_update", { text: "Update elements" });
+		console.log(`openLTspice dir='${dir}' file='${file}'`);
+		/* dispatch("elm_update", { text: "Update elements" });
         const my_sleep = (ms) =>
             new Promise((resolve) => setTimeout(resolve, ms));
         await my_sleep(3000); */
-        const encoded_params = `dir=${encodeURIComponent(
-            dir
-        )}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
+		console.log('equation=', equation);
+		const encoded_params = `dir=${encodeURIComponent(
+			dir,
+		)}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
 			probes,
 		)}&equation=${encodeURIComponent(equation)}`;
-        // dispatch("sim_start", { text: "LTspice simulation started!" });
-        let response = await fetch(
-            `http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
-            {}
-        );
-        let res2 = await response.json();
-        console.log('res2=', res2);
-        //dispatch("sim_end", { text: "LTspice simulation ended!" });
-        // plotdata = get_results();
-        return res2.calculated_value;
-    }	
+		// dispatch("sim_start", { text: "LTspice simulation started!" });
+		let response = await fetch(
+			`http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
+			{},
+		);
+		let res2 = await response.json();
+		console.log("res2=", res2);
+		//dispatch("sim_end", { text: "LTspice simulation ended!" });
+		// plotdata = get_results();
+		return res2.calculated_value;
+	}
+
+	function create_updates(keep, var_name, par_name, value) {
+		if (var_name.match(/^par/)) {
+			return [
+				`${var_name}: '${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}'`,
+			];
+		} else if (var_name.match(/^M/)) {
+			let rex = new RegExp(`${par_name} *= *(\\S+)`);
+			return [
+				`${var_name}: ` + keep.replace(rex, `${par_name}=${value}`),
+			];
+		} else {
+			return [`${var_name}: ${value}`];
+		}
+	}
+
+	function updates_plus(value, src, par_name, src_plus) {
+		let target, var_name;
+		console.log("src in updates_plus=", src);
+		[target, var_name] = src.split(":");
+		let updates = create_updates(
+			elements[target][var_name],
+			var_name,
+			par_name,
+			value,
+		);
+		if (src_plus == undefined) {
+			return [updates, target];
+		}
+		for (const plus of src_plus) {
+			[target, var_name, par_name] = plus.split(":");
+			if (elements[target] == undefined) {
+				alert(`${target} is not this circuit`);
+				return;
+			}
+			console.log("plus=", plus);
+			console.log(elements);
+			updates = updates.concat(
+				create_updates(
+					elements[target][var_name],
+					var_name,
+					par_name,
+					value,
+				),
+			);
+		}
+		return [updates, target];
+	}
+	// console.log("updates=", updates, `on ${dir}${target}.asc`);
+	// await update_elms(dir, target+'.asc', updates);
+
+	function preview_updates(dir, settings, elements) {
+		let var_name;
+		let target;
+		console.log('probes=', probes);
+		console.log('equation=', equation);
+		console.log("src1=", settings.src1);
+		console.log("src1_plus=", settings.src1_plus);
+		console.log("src1_values=", settings.src1_values);
+		[target, var_name] = settings.src1.split(":");
+		// console.log(target, var_name);
+		if (
+			elements[target] == undefined ||
+			elements[target][var_name] == undefined
+		) {
+			return;
+		}
+		let updates;
+
+		for (const value2 of settings.src2_values) {
+			//src, par_name, src_plus) {
+			[updates, target] = updates_plus(
+				value2,
+				settings.src2,
+				settings.par_name2,
+				settings.src2_plus,
+			);
+			console.log("updates=", updates, `on ${dir}${target}.asc`);
+			for (const value of settings.src1_values) {
+				[updates, target] = updates_plus(
+					value,
+					settings.src1,
+					settings.par_name1,
+					settings.src1_plus,
+				);
+				/*
+				updates = create_updates(
+					elements[target][var_name],
+					var_name,
+					par_name,
+					value,
+				);
+				console.log("updates=", updates, `on ${dir}${target}.asc`);
+				// await update_elms(dir, target+'.asc', updates);
+				for (const plus of settings.src1_plus) {
+					[target, var_name, par_name] = plus.split(":");
+					if (elements[target] == undefined) {
+						alert(`${target} is not this circuit`);
+						return;
+					}
+					//console.log("plus=", plus);
+					//console.log(elements);
+					updates = create_updates(
+						elements[target][var_name],
+						var_name,
+						par_name,
+						value,
+					);
+				*/
+				console.log("updates=", updates, `on ${dir}${target}.asc`);
+				// await update_elms(dir, target+'.asc', updates);
+			}
+		}
+	}
 
 	async function go(dir, settings, elements) {
 		plot_data = [];
-		plot_data[0] = {x: [], y: []};
+		let plot_trace = { x: [], y: [] };
 		result_data = [];
-		result_data[0] = {x: [], y:[]};
+		let result_trace = { x: [], y: [] };
 		//alert(settings.src1);
 		let var_name;
 		let target;
 		[target, var_name] = settings.src1.split(":");
 		//console.log(target, var_name);
-		const keep = elements[target][var_name];
-		let gb = []; // Gain Bandwidth product
-		let pm = []; // Phase Margin
-		for (const value of settings.src1_values) {
-			if (keep.match(/\.par/)) {
-				console.log(`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, '$1'+value)}`);
-                let updates = [`${var_name}: '${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, '$1'+value)}'`];
-console.log(updates);
-                await update_elms(dir, target+'.asc', updates);
+		//const keep = elements[target][var_name];
+		let updates;
+
+		for (const value2 of settings.src2_values) {
+			//src, par_name, src_plus) {
+			[updates, target] = updates_plus(
+				value2,
+				settings.src2,
+				settings.par_name2,
+				settings.src2_plus,
+			);
+			console.log("updates=", updates, `on ${dir}${target}.asc`);
+			await update_elms(dir, target + ".asc", updates);
+			let gb = []; // Gain Bandwidth product
+			let pm = []; // Phase Margin
+			for (const value of settings.src1_values) {
+				[updates, target] = updates_plus(
+					value,
+					settings.src1,
+					settings.par_name1,
+					settings.src1_plus,
+				);
+				dispatch("sim_start", { text: "LTspice simulation started!" });
+				let calculated_value = await goLTspice2(ckt);
+				gb.push(calculated_value[0][0]);
+				pm.push(calculated_value[0][1]);
+				dispatch("sim_end", { text: "LTspice simulation ended!" });
+				plot_trace.x.push(Number(value));
+				result_trace.x.push(Number(value));
+			}
+			console.log("gb=", gb);
+			console.log("pm=", pm);
+			plot_trace.y = gb;
+			result_trace.y = pm;
+			plot_data.push(plot_trace);
+			result_data.push(result_trace);
+			/*
+			console.log(
+					`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}`,
+				);
+				let updates = [
+					`${var_name}: '${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}'`,
+				];
+				console.log(updates);
+				await update_elms(dir, target + ".asc", updates);
 			} else {
-			    console.log(`${var_name}: ${value}`);
-            }
+				console.log(`${var_name}: ${value}`);
+			}
 			dispatch("sim_start", { text: "LTspice simulation started!" });
-            let calculated_value = await goLTspice2(ckt) ;
+			let calculated_value = await goLTspice2(ckt);
 			gb.push(calculated_value[0][0]);
 			pm.push(calculated_value[0][1]);
 			dispatch("sim_end", { text: "LTspice simulation ended!" });
 			plot_data[0].x.push(Number(value));
 			result_data[0].x.push(Number(value));
+*/
 		}
-		console.log('gb=', gb);
-		console.log('pm=', pm);
-		plot_data[0].y = gb;
-		result_data[0].y =pm;
-		console.log('plot_data=', plot_data);
+		console.log("plot_data=", plot_data);
 	}
-// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
-
-
-	function set_src_values() {
-		console.log("sweep type:", settings.sweep_type1);
-		settings.src1_values = [];
-		switch (settings.sweep_type1) {
-			case "Linear":
-				console.log("start:", settings.start_lin_val1);
-				console.log("stop:", settings.stop_lin_val1);
-				console.log("increment:", settings.lin_incr1);
-				for (
-					let val = Number(settings.start_lin_val1);
-					val <= Number(settings.stop_lin_val1);
-					val = val + Number(settings.lin_incr1)
-				) {
-					settings.src1_values.push(val);
-				}
-				break;
-			case "Decade":
-				console.log("Decade");
-				let log10start = Math.log10(Number(settings.start_dec_val1));
-				console.log("start=", log10start);
-				let log10stop = Math.log10(Number(settings.stop_dec_val1));
-				console.log("stop=", log10stop);
-				let incr = 1.0 / Number(settings.dec_points1);
-				console.log("incr=", incr);
-				for (let i = log10start; i <= log10stop; i = i + incr) {
-					console.log(i);
-					settings.src1_values.push(Math.pow(10, i));
-				}
-				break;
-		}
-		console.log(settings.src1_values);
-	}
+	// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
 
 	async function update_elms(dir, target, update_elms) {
 		console.log("let me update ", target, " with:", update_elms);
@@ -205,85 +321,49 @@ console.log(updates);
 </script>
 
 <div>Make Experiments</div>
-<div>
-	<label
-		>1st source
-		<select bind:value={settings.src1} style="border:darkgray solid 1px;">
-			{#each Object.entries(elements) as [ckt_name1, elms]}
-				{#each Object.keys(elms) as elm1}
-					<!-- option value={[ckt_name1, elm1]}
-				>{String([ckt_name1, elm1].join(":"))}</option
-			-->
-					<option value={[ckt_name1, elm1].join(":")}
-						>{[ckt_name1, elm1].join(":")}</option
-					>
-				{/each}
-			{/each}
-		</select>
-		<select
-			bind:value={settings.sweep_type1}
-			style="border:darkgray solid 1px;"
-		>
-			<option value="Linear">Linear</option>
-			<option value="Octave">Octave</option>
-			<option value="Decade">Decade</option>
-			<option value="List">List</option>
-		</select>
-		{#if settings.sweep_type1 == "Linear"}
-			<!-- label>Start
-			<input
-				bind:value={settings.start_value1}
-				style="border:darkgray solid 1px;"
-			/></label -->
-			<InputValue lab="Start" bind:val={settings.start_lin_val1} />
-			<InputValue lab="Stop" bind:val={settings.stop_lin_val1} />
-			<InputValue lab="Increment" bind:val={settings.lin_incr1} />
-		{/if}
-		{#if settings.sweep_type1 == "Decade"}
-			<InputValue
-				lab="# of points /dec."
-				bind:val={settings.dec_points1}
-			/>
-			<InputValue lab="Start" bind:val={settings.start_dec_val1} />
-			<InputValue lab="Stop" bind:val={settings.stop_dec_val1} />
-		{/if}
-		{#if settings.sweep_type1 == "Octave"}
-			<InputValue
-				lab="# of points /oct."
-				bind:val={settings.oct_points1}
-			/>
-			<InputValue lab="Start value" bind:val={settings.start_oct_val1} />
-			<InputValue lab="Stop value" bind:val={settings.stop_oct_val1} />
-		{/if}
-		{#if settings.sweep_type1 == "List"}
-			<label
-				>List
-				<input
-					bind:value={settings.list1}
-					style="border:darkgray solid 1px;"
-				/></label
-			>
-		{/if}
-		<button on:click={set_src_values} class="button-1"
-			>Set source values</button
-		>
-		{settings.src1} =&gt;{settings.src1_values}
-	</label>
-</div>
-<div>
-	<label
-		>2nd source
-		<input bind:value={settings.src2} style="border:darkgray solid 1px;" />
-		values
-		<input
-			bind:value={settings.src2_values}
-			style="border:darkgray solid 1px;width: 50%;"
-		/>
-	</label>
-</div>
+<SweepSource
+	source_title="1st source"
+	bind:src={settings.src1}
+	bind:par_name={settings.par_name1}
+	bind:src_values={settings.src1_values}
+	bind:src_plus={settings.src1_plus}
+	bind:sweep_type={settings.sweep_type1}
+	bind:start_lin_val={settings.start_lin_val1}
+	bind:stop_lin_val={settings.stop_lin_val1}
+	bind:lin_incr={settings.lin_incr1}
+	bind:src_value={settings.source_value1}
+	bind:start_dec_val={settings.start_dec_val1}
+	bind:stop_dec_val={settings.stop_dec_val1}
+	bind:dec_incr={settings.dec_points1}
+	bind:elements
+></SweepSource>
+<SweepSource
+	source_title="2nd source"
+	bind:src={settings.src2}
+	bind:par_name={settings.par_name2}
+	bind:src_values={settings.src2_values}
+	bind:src_plus={settings.src2_plus}
+	bind:sweep_type={settings.sweep_type2}
+	bind:start_lin_val={settings.start_lin_val2}
+	bind:stop_lin_val={settings.stop_lin_val2}
+	bind:lin_incr={settings.lin_incr2}
+	bind:src_value={settings.source_value2}
+	bind:start_dec_val={settings.start_dec_val2}
+	bind:stop_dec_val={settings.stop_dec_val2}
+	bind:dec_incr={settings.dec_points2}
+	bind:elements
+></SweepSource>
 <div>
 	<label>
-		<button on:click={go(dir, settings, elements)} class="button-1">Go</button>
+		<button
+			on:click={preview_updates(dir, settings, elements)}
+			class="button-1">Dry run</button
+		>
+	</label>
+	<label>
+		<button on:click={go(dir, settings, elements)} class="button-1"
+			>Go</button
+		>
 	</label>
 </div>
 <div>
@@ -319,8 +399,18 @@ width: 90%;"
 		data={plot_data}
 		layout={{
 			title: "title",
-			xaxis: { title: "capacitor", autorange: "true", linewidth: 1, mirror: true, },
-			yaxis: { title: "Gain Bandwidth product", autorange: "true", linewidth: 1, mirror: true, },
+			xaxis: {
+				title: "capacitor",
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+			},
+			yaxis: {
+				title: "Gain Bandwidth product",
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+			},
 		}}
 		fillParent="width"
 		debounce={250}
@@ -343,8 +433,18 @@ width: 90%;"
 		data={result_data}
 		layout={{
 			title: "title",
-			xaxis: { title: "capacitor", autorange: "true", linewidth: 1, mirror: true, },
-			yaxis: { title: "Phase Margin", autorange: "true", linewidth: 1, mirror: true,  },
+			xaxis: {
+				title: "capacitor",
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+			},
+			yaxis: {
+				title: "Phase Margin",
+				autorange: "true",
+				linewidth: 1,
+				mirror: true,
+			},
 		}}
 		fillParent="width"
 		debounce={250}

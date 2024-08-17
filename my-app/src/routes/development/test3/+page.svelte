@@ -267,6 +267,7 @@
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
 	$: data.props.equation = equation;
+	$: equation_name.set(equation);
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: settings.probes = probes;
