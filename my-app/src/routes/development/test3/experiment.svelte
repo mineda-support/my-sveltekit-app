@@ -103,7 +103,7 @@
         const my_sleep = (ms) =>
             new Promise((resolve) => setTimeout(resolve, ms));
         await my_sleep(3000); */
-		console.log('equation=', equation);
+		console.log("equation=", equation);
 		const encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
@@ -172,13 +172,19 @@
 	// await update_elms(dir, target+'.asc', updates);
 
 	function preview_updates(dir, settings, elements) {
+		plot_data = [];
 		let var_name;
 		let target;
-		console.log('probes=', probes);
-		console.log('equation=', equation);
+		console.log("probes=", probes);
+		console.log("equation=", equation);
 		console.log("src1=", settings.src1);
 		console.log("src1_plus=", settings.src1_plus);
 		console.log("src1_values=", settings.src1_values);
+		settings.sweep_title = settings.src1;
+		settings.result_title = file;
+		console.log("sweep_title=", settings.sweep_title);
+		console.log("result_title=", settings.result_title);
+
 		[target, var_name] = settings.src1.split(":");
 		// console.log(target, var_name);
 		if (
@@ -187,8 +193,10 @@
 		) {
 			return;
 		}
+		let plot_trace = { x: [], y: [] };
 		let updates;
-
+        let count = 0;
+		let preview_table = `count ${settings.src2} ${settings.src2_plus.join(' ')}, ${settings.src1} ${settings.src1_plus.join(' ')}\n`;
 		for (const value2 of settings.src2_values) {
 			//src, par_name, src_plus) {
 			[updates, target] = updates_plus(
@@ -197,7 +205,12 @@
 				settings.par_name2,
 				settings.src2_plus,
 			);
+			plot_trace.name = settings.src2 + ':' + value2;
+			console.log('plot_trace!!!', count, plot_trace);
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
+			preview_table = preview_table + settings.src2 + ':' + value2 + "\n";
+			preview_table = preview_table + `plot_trace.name = ${settings.src2} + ':' + ${value2}\n`;
+
 			for (const value of settings.src1_values) {
 				[updates, target] = updates_plus(
 					value,
@@ -205,34 +218,20 @@
 					settings.par_name1,
 					settings.src1_plus,
 				);
-				/*
-				updates = create_updates(
-					elements[target][var_name],
-					var_name,
-					par_name,
-					value,
-				);
 				console.log("updates=", updates, `on ${dir}${target}.asc`);
 				// await update_elms(dir, target+'.asc', updates);
-				for (const plus of settings.src1_plus) {
-					[target, var_name, par_name] = plus.split(":");
-					if (elements[target] == undefined) {
-						alert(`${target} is not this circuit`);
-						return;
-					}
-					//console.log("plus=", plus);
-					//console.log(elements);
-					updates = create_updates(
-						elements[target][var_name],
-						var_name,
-						par_name,
-						value,
-					);
-				*/
-				console.log("updates=", updates, `on ${dir}${target}.asc`);
-				// await update_elms(dir, target+'.asc', updates);
+				count = count + 1;
+				preview_table = preview_table + `${count}: ${value2}, ${value}\n`
 			}
+			plot_data.push({...plot_trace});
+			console.log('plot_trace=', count, plot_trace);
 		}
+		console.log('plot_data =', plot_data);
+		let blob = new Blob([preview_table], {type:"text/plain"});
+		const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'experiment_preview.txt';
+        link.click();	
 	}
 
 	async function go(dir, settings, elements) {
@@ -246,6 +245,8 @@
 		[target, var_name] = settings.src1.split(":");
 		//console.log(target, var_name);
 		//const keep = elements[target][var_name];
+		settings.sweep_title = settings.src1;
+		settings.result_title = file;
 		let updates;
 
 		for (const value2 of settings.src2_values) {
@@ -256,10 +257,15 @@
 				settings.par_name2,
 				settings.src2_plus,
 			);
+			const trace_name = settings.src2.replace(/^.*:/, '') + ':' + value2;
+			plot_trace.name = trace_name;
+			result_trace.name = trace_name;
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
 			await update_elms(dir, target + ".asc", updates);
 			let gb = []; // Gain Bandwidth product
 			let pm = []; // Phase Margin
+			plot_trace.x = [];
+			result_trace.x = [];
 			for (const value of settings.src1_values) {
 				[updates, target] = updates_plus(
 					value,
@@ -267,10 +273,18 @@
 					settings.par_name1,
 					settings.src1_plus,
 				);
+				console.log("updates=", updates, `on ${dir}${target}.asc`);
+				await update_elms(dir, target + ".asc", updates);
+
 				dispatch("sim_start", { text: "LTspice simulation started!" });
 				let calculated_value = await goLTspice2(ckt);
-				gb.push(calculated_value[0][0]);
-				pm.push(calculated_value[0][1]);
+				if (Array.isArray(calculated_value[0])) {
+					gb.push(calculated_value[0][0]);
+					pm.push(calculated_value[0][1]);
+				} else {
+					gb.push(undefined);
+					pm.push(undefined);
+				}
 				dispatch("sim_end", { text: "LTspice simulation ended!" });
 				plot_trace.x.push(Number(value));
 				result_trace.x.push(Number(value));
@@ -279,8 +293,8 @@
 			console.log("pm=", pm);
 			plot_trace.y = gb;
 			result_trace.y = pm;
-			plot_data.push(plot_trace);
-			result_data.push(result_trace);
+			plot_data.push({...plot_trace});
+			result_data.push({...result_trace});
 			/*
 			console.log(
 					`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}`,
@@ -302,6 +316,8 @@
 			result_data[0].x.push(Number(value));
 */
 		}
+		plot_data = plot_data;
+		result_data = result_data;
 		console.log("plot_data=", plot_data);
 	}
 	// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
@@ -318,6 +334,42 @@
 		let ckt = await response.json(); // ckt = {elements}
 		console.log("ckt=", ckt);
 	}
+
+	function clear() {
+		plot_data = result_data = undefined;
+	}
+
+	async function save() {
+		const blob = JSON.stringify([settings, plot_data, result_data]);
+		const handle = await window.showSaveFilePicker(); 
+		const ws = await handle.createWritable();
+		await ws.write(blob);
+		await ws.close();
+	}
+
+	async function load() {
+		const pickerOpts = {
+          types: [{ description: 'JSON(.json)', accept: {'json/*': ['.json']} }],
+          multiple: false,
+		}
+		let fileHandle;
+		[fileHandle] = await window.showOpenFilePicker(pickerOpts); 
+		const file = await fileHandle.getFile();
+		/* const reader = new FileReader();
+		reader.readAsText(file, 'UTF-8');
+		let filedata;
+		reader.onload = (event) => {
+			filedata = (event.target.result);
+		}*/
+		let filedata = await file.text();
+		let tempsettings;
+		console.log(filedata);
+		console.log('before:', plot_data);
+		[tempsettings, plot_data, result_data] = JSON.parse(filedata);
+		settings.result_title = tempsettings.result_title;
+		settings.sweep_title = tempsettings.sweep_title;
+		console.log('after:', plot_data);
+	} 
 </script>
 
 <div>Make Experiments</div>
@@ -365,6 +417,15 @@
 			>Go</button
 		>
 	</label>
+	<label>
+		<button on:click={clear} class="button-1">clear</button>
+	</label>
+	<label>
+		<button on:click={save} class="button-1">Save</button>
+	</label>
+	<label>
+		<button on:click={load} class="button-1">Load</button>
+	</label>
 </div>
 <div>
 	<!-- label>
@@ -394,13 +455,14 @@ width: 90%;"
 		/>
 	</label -->
 </div>
+
 {#if plot_data !== undefined}
 	<Plot
 		data={plot_data}
 		layout={{
-			title: "title",
+			title: settings.result_title,
 			xaxis: {
-				title: "capacitor",
+				title: settings.sweep_title,
 				autorange: "true",
 				linewidth: 1,
 				mirror: true,
@@ -432,9 +494,9 @@ width: 90%;"
 	<Plot
 		data={result_data}
 		layout={{
-			title: "title",
+			title: settings.result_title,
 			xaxis: {
-				title: "capacitor",
+				title: settings.sweep_title,
 				autorange: "true",
 				linewidth: 1,
 				mirror: true,
