@@ -73,7 +73,10 @@
   function fakeOpen(file) {
     alert(`you have chosen ${file}`);
   }
-  let scoops = data.props.ckt;
+  let scoops;
+  if (data.props != undefined && data.props.ckt != undefined) {
+     scoops = data.props.ckt;
+  }
   import {
     ckt_name,
     dir_name,
@@ -116,21 +119,26 @@
 </script>
 
 <h2>
-  Work directory: <input
+  Work directory: 
+  {#if data.props != undefined}
+  <input
     bind:value={data.props.wdir}
     style="border:darkgray solid 1px;width: 50%;"
   />
+  {/if} 
   <button on:click={switch_wdir(data.props.wdir)} class="button-1"
     >Switch Wdir</button
   >
 </h2>
 <div class="sample">
+  {#if data.props != undefined}
   {#each data.props.files as file}
     <label class="box-item">
       <input type="radio" name="scoops" value={file} bind:group={scoops} />
       {file}<br />
     </label>
   {/each}
+  {/if}  
 </div>
 <div>
   <button

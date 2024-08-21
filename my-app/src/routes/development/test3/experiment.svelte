@@ -196,7 +196,13 @@
 		let plot_trace = { x: [], y: [] };
 		let updates;
         let count = 0;
-		let preview_table = `count ${settings.src2} ${settings.src2_plus.join(' ')}, ${settings.src1} ${settings.src1_plus.join(' ')}\n`;
+		if (settings.src1_plus == undefined) {
+			settings.src1_plus = [];
+		}
+		if (settings.src2_plus == undefined) {
+			settings.src2_plus = [];
+		}
+		let preview_table = `count: ${settings.src2} ${settings.src2_plus.join(' ')}, ${settings.src1} ${settings.src1_plus.join(' ')}\n`;
 		for (const value2 of settings.src2_values) {
 			//src, par_name, src_plus) {
 			[updates, target] = updates_plus(
@@ -208,8 +214,8 @@
 			plot_trace.name = settings.src2 + ':' + value2;
 			console.log('plot_trace!!!', count, plot_trace);
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
-			preview_table = preview_table + settings.src2 + ':' + value2 + "\n";
-			preview_table = preview_table + `plot_trace.name = ${settings.src2} + ':' + ${value2}\n`;
+			//preview_table = preview_table + settings.src2 + ':' + value2 + "\n";
+			//preview_table = preview_table + `plot_trace.name = ${settings.src2} + ':' + ${value2}\n`;
 
 			for (const value of settings.src1_values) {
 				[updates, target] = updates_plus(

@@ -14,7 +14,9 @@
 	let measdata = [];
 
 	let plotdata;
-	$: data.props.plotdata = plotdata;
+	$: {if (plotdata != undefined) {
+		data.props.plotdata = plotdata;
+	}}
 	let db_data;
 	let ph_data;
 	export function handleMessage(event) {
@@ -135,7 +137,10 @@
 	export let data;
 	//probes_name.set(data.props.probes);
 	$: probes_name.set(probes);
-	$: data.props.probes = probes;
+	$: {if (probes != undefined) {
+		data.props.probes = probes;
+		}
+	}
 
 	let yaxis_is_log = false;
 	let xaxis_is_log = false;
@@ -266,7 +271,10 @@
 		console.log(calculated_value);
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
-	$: data.props.equation = equation;
+	$: {if (equation != undefined && data.props != undefined) {
+		data.props.equation = equation;
+	   }
+	}
 	$: equation_name.set(equation);
 	let calculated_value;
 	// $: calculated_value = calculated_value;
@@ -285,6 +293,7 @@
 	<!-- Testplot / -->
 </div>
 <div>
+	{#if data.props != undefined } 
 	<button
 		on:click={measurement_results(
 			data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
@@ -313,13 +322,14 @@
 	<button>Trace mode</button>
 	<input name="tracemodes" value={data.props.tracemode} type="hidden" />
 	<select
-		bind:value={data.props.tracemode}
+	    bind:value={data.props.tracemode}
 		style="border:darkgray solid 1px;"
 	>
 		<option value="lines">lines</option>
 		<option value="markers">markers</option>
 		<option value="lines+markers">lines+markers</option>
 	</select>
+    {/if}
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />

@@ -1,0 +1,19 @@
+Version 4
+SymbolType CELL
+LINE Normal 16 64 -16 64
+LINE Normal 16 64 -16 64
+LINE Normal -16 64 0 38
+LINE Normal 16 64 0 38
+LINE Normal 0 38 0 96
+LINE Normal 16 38 -16 38
+LINE Normal 0 0 0 38
+SYMATTR Prefix D
+SYMATTR Value DP
+WINDOW 2 25 25 Left 2
+WINDOW 0 20 10 Left 2
+PIN 0 0 NONE 0
+PINATTR PinName MINUS
+PINATTR SpiceOrder 1
+PIN 0 96 NONE 0
+PINATTR PinName PLUS
+PINATTR SpiceOrder 2
