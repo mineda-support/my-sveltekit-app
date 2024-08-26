@@ -17,6 +17,7 @@
     export let src_values;
     export let elements;
     export let source_title;
+    export let src_precision=3;
 
     function set_src_values() {
         console.log("sweep type:", sweep_type);
@@ -31,7 +32,7 @@
                     val <= Number(stop_lin_val);
                     val = val + Number(lin_incr)
                 ) {
-                    src_values.push(val);
+                    src_values.push(val.toPrecision(src_precision));
                 }
                 break;
             case "Decade":
@@ -135,6 +136,9 @@
             <button on:click={set_src_values} class="button-1"
                 >Set source values</button
             >
+            <label>precision:
+        <input value={src_precision} />
+            </label>
         </div>
 
         {src} =&gt;{src_values} 

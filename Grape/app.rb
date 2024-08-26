@@ -227,15 +227,21 @@ module Test
             }
           else # db and phase
             puts params[:db_data].size
-            x = Array_with_interpolation.new params[:db_data][:x]
-            db = Array_with_interpolation.new params[:db_data][:y]
-            ph = Array_with_interpolation.new params[:ph_data][:y]
-            # puts "db=#{db}"
-            begin
-              results << eval(params[:equation])
-              #puts "results === #{results}"
-            rescue
-              results << nil
+            if params[:db_data] && params[:db_data].size > 0
+              params[:db_data].each_index{|i|
+                db_data = params[:db_data][i]
+                ph_data = params[:ph_data][i]
+                x = Array_with_interpolation.new db_data[:x]
+                db = Array_with_interpolation.new db_data[:y]
+                ph = Array_with_interpolation.new ph_data[:y]
+                # puts "db=#{db}"
+                begin
+                  results << eval(params[:equation])
+                  #puts "results === #{results}"
+                rescue
+                  results << nil
+                end
+              }
             end
           end
           {"calculated_value" => results}

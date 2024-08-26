@@ -1,0 +1,10 @@
+cells:
+  RR: IP62_2_analog
+  RH: IP62_2_analog
+  MN: IP62_2_analog
+  MP: IP62_2_analog
+  CSIO: IP62_2_analog
+  DN: IP62_2_analog
+  DP: IP62_2_analog
+  MPO: IP62_2_analog
+  MNO: IP62_2_analog

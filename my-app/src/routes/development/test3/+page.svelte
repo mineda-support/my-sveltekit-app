@@ -8,15 +8,21 @@
 	import Experiment from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
-	import Plot from "svelte-plotly.js";
 	import Settings from "./settings.svelte";
+	// import Plot from "svelte-plotly.js";
+	import BodePlot from "./utils/bode_plot.svelte";
+	import SinglePlot from "./utils/single_plot.svelte";
 
 	let measdata = [];
 
+	let results_data = [];
+	results_data[0] = {};
 	let plotdata;
-	$: {if (plotdata != undefined) {
-		data.props.plotdata = plotdata;
-	}}
+	$: {
+		if (plotdata != undefined) {
+			data.props.plotdata = plotdata;
+		}
+	}
 	let db_data;
 	let ph_data;
 	export function handleMessage(event) {
@@ -31,9 +37,9 @@
 		equation_name,
 		ckt_store,
 		elements_store,
-        settings_store
-
+		settings_store,
 	} from "./stores.js";
+	import { stringify } from "postcss";
 	let file;
 	let dir;
 	let probes;
@@ -62,7 +68,7 @@
 	elements_store.set({});
 	let settings = {}; //let title, title_x, title_y;
 	settings_store.subscribe((value) => {
-        settings = value;
+		settings = value;
 	});
 	ckt_store.set(undefined);
 	// settings_name.set({equation: equation, probes: probes})
@@ -109,8 +115,8 @@
 		console.log(
 			`Plot results@dir='${dir}' file='${file}' probes=${probes}`,
 		);
-		if (probes != probes.trim()){
-			alert('probes have unwanted leading space(s)');
+		if (probes != probes.trim()) {
+			alert("probes have unwanted leading space(s)");
 			return;
 		}
 		const encoded_params = `dir=${encodeURIComponent(
@@ -128,22 +134,92 @@
 		console.log(`probes=${probes}`);
 		if (probes != null && probes.startsWith("frequency")) {
 			db_data = res2.db;
+			set_trace_names(db_data);
 			ph_data = res2.phase;
+			set_trace_names(ph_data);
 			console.log("db_data=", db_data);
 		}
 		//return res2;
 		//calculate_equation();
 	}
-	export let data;
-	//probes_name.set(data.props.probes);
-	$: probes_name.set(probes);
-	$: {if (probes != undefined) {
-		data.props.probes = probes;
+
+	function eng2f(str) {
+		const s = str.toLowerCase();
+		let i;
+		let e;
+		if ((i = s.indexOf("t")) != -1) {
+			e = 1.0e12;
+		} else if ((i = s.indexOf("g")) != -1) {
+			e = 1.0e9;
+		} else if ((i = s.indexOf("meg")) != -1) {
+			e = 1.0e6;
+		} else if ((i = s.indexOf("k")) != -1) {
+			e = 1.0e3;
+		} else if ((i = s.indexOf("f")) != -1) {
+			e = 1.0e-15;
+		} else if ((i = s.indexOf("p")) != -1) {
+			e = 1.0e-12;
+		} else if ((i = s.indexOf("n")) != -1) {
+			e = 1.0e-9;
+		} else if ((i = s.indexOf("u")) != -1) {
+			e = 1.0e-6;
+		} else if ((i = s.indexOf("m")) != -1) {
+			e = 1.0e-3;
+		} else {
+			return Number(s);
+		}
+		console.log("i=", i, "e=", e);
+		console.log(s.substring(0, i), Number(s.substring(0, i)));
+		return Number(s.substring(0, i)) * e;
+	}
+
+	function parse_step_command(props, precision) {
+		// like '.step param ccap 0.2p 2p 0.5p'
+		const items = props.split(/ +/);
+		const name = items[2];
+		const start = eng2f(items[3]);
+		const stop = eng2f(items[4]);
+		const step = eng2f(items[5]);
+		console.log("step=", [name, start, stop, step]);
+		let src_values = [];
+		for (let v = start; v < stop; v = v + step) {
+			src_values.push(`${name}=${v.toPrecision(precision)}`);
+		}
+		if (stop > start + step * (src_values.length - 1)) {
+			src_values.push(`${name}=${stop.toPrecision(precision)}`);
+		}
+		console.log("src_values=", src_values);
+		return src_values;
+	}
+
+	function set_trace_names(plotdata) {
+		console.log("plotdata in set_trace_names:", plotdata);
+		for (const [ckt_name, elms] of Object.entries(elements)) {
+			for (const [elm, props] of Object.entries(elms)) {
+				//console.log([elm, props]);
+				if (elm == "step") {
+					parse_step_command(props, settings.step_precision).forEach(
+						function (src_value, index) {
+							plotdata[index].name = src_value;
+						},
+					);
+					return;
+				}
+			}
 		}
 	}
 
-	let yaxis_is_log = false;
-	let xaxis_is_log = false;
+	export let data;
+	//probes_name.set(data.props.probes);
+	$: probes_name.set(probes);
+	$: {
+		if (probes != undefined) {
+			data.props.probes = probes;
+		}
+	}
+	settings.step_precision = 3;
+	settings.yaxis_is_log = false;
+	settings.xaxis_is_log = false;
 	function clear_plot() {
 		plotdata = db_data = ph_data = undefined;
 	}
@@ -205,8 +281,18 @@
 		elements_store.set(elements);
 	}
 
+	function get_sweep_values(plotdata) {
+		let values = [];
+		let sweep, value;
+		console.log('plotdata in get_sweep_values=', plotdata);
+		plotdata.forEach((trace) => {
+			[sweep, value] = trace.name.split("=");
+			values.push(value);
+		});
+	}
+
 	function calculate_equation() {
-		const value = submit_equation(
+		const values = submit_equation(
 			equation,
 			dir,
 			file,
@@ -215,6 +301,15 @@
 			ph_data,
 			measdata.filter((trace) => trace.checked),
 		);
+		settings.performances.forEach(function (perf, index) {
+			console.log("perf, index=", [perf, index]);
+			results_data[0][perf] = {
+				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
+				y: values[index],
+				name: equation[index],
+			};
+			console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
+		});
 	}
 
 	async function submit_equation(
@@ -248,13 +343,13 @@
 				body: JSON.stringify({
 					equation: equation,
 					plotdata: plotdata ? plotdata.concat(measdata) : [],
-					db_data: db_data ? db_data[0] : [],
-					ph_data: ph_data ? ph_data[0] : [],
+					db_data: db_data ? db_data : [],
+					ph_data: ph_data ? ph_data : [],
 				}),
 			},
 		);
 		let result = await res.json();
-		console.log(result);
+		//console.log(result);
 		if (plotdata != undefined) {
 			calculated_value = result.calculated_value.slice(
 				0,
@@ -269,16 +364,26 @@
 			calculated_value = result.calculated_value.slice(0);
 		}
 		console.log(calculated_value);
+		calculated_value;
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
-	$: {if (equation != undefined && data.props != undefined) {
-		data.props.equation = equation;
-	   }
+	$: {
+		if (equation != undefined && data.props != undefined) {
+			data.props.equation = equation;
+		}
 	}
 	$: equation_name.set(equation);
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: settings.probes = probes;
+	let performance_names;
+	$: {
+		if (performance_names != undefined) {
+			settings.performances = Array.isArray(performance_names)
+				? performance_names
+				: performance_names.split(",");
+		}
+	}
 </script>
 
 <ConvertSchematic />
@@ -293,58 +398,62 @@
 	<!-- Testplot / -->
 </div>
 <div>
-	{#if data.props != undefined } 
-	<button
-		on:click={measurement_results(
-			data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
-			data.props.reject,
-			data.props.reverse,
-			data.props.tracemode,
-		)}
-		class="button-1">Get measured data:</button
-	>
-	<input
-		bind:value={data.props.measfile}
-		style="border:darkgray solid 1px;width: 40%;"
-	/>
-	<label
-		>Reject:<input
-			bind:value={data.props.reject}
+	{#if data.props != undefined}
+		<button
+			on:click={measurement_results(
+				data.props.measfile.trim().replace(/^"/, "").replace(/"$/, ""),
+				data.props.reject,
+				data.props.reverse,
+				data.props.tracemode,
+			)}
+			class="button-1">Get measured data:</button
+		>
+		<input
+			bind:value={data.props.measfile}
+			style="border:darkgray solid 1px;width: 40%;"
+		/>
+		<label
+			>Reject:<input
+				bind:value={data.props.reject}
+				style="border:darkgray solid 1px;"
+			/></label
+		>
+		<label
+			>Reverse<input
+				type="checkbox"
+				bind:checked={data.props.reverse}
+			/></label
+		>
+		<button>Trace mode</button>
+		<input name="tracemodes" value={data.props.tracemode} type="hidden" />
+		<select
+			bind:value={data.props.tracemode}
 			style="border:darkgray solid 1px;"
-		/></label
-	>
-	<label
-		>Reverse<input
-			type="checkbox"
-			bind:checked={data.props.reverse}
-		/></label
-	>
-	<button>Trace mode</button>
-	<input name="tracemodes" value={data.props.tracemode} type="hidden" />
-	<select
-	    bind:value={data.props.tracemode}
-		style="border:darkgray solid 1px;"
-	>
-		<option value="lines">lines</option>
-		<option value="markers">markers</option>
-		<option value="lines+markers">lines+markers</option>
-	</select>
-    {/if}
+		>
+			<option value="lines">lines</option>
+			<option value="markers">markers</option>
+			<option value="lines+markers">lines+markers</option>
+		</select>
+	{/if}
 </div>
 <button on:click={plot_result} class="button-1">Plot with probes:</button>
 <input bind:value={probes} style="border:darkgray solid 1px;" />
 {#if probes == undefined || !probes.startsWith("frequency")}
 	<label>
-		<input type="checkbox" bind:checked={xaxis_is_log} />
+		<input type="checkbox" bind:checked={settings.xaxis_is_log} />
 		xaxis is log
 	</label>
 	<label>
-		<input type="checkbox" bind:checked={yaxis_is_log} />
+		<input type="checkbox" bind:checked={settings.yaxis_is_log} />
 		yaxis is log
 	</label>
 {/if}
 <label>
 	<button on:click={clear_plot} class="button-1">clear</button>
+</label>
+<label
+	>step precision:
+	<input bind:value={settings.step_precision} />
 </label>
 <div>
 	<label
@@ -384,7 +493,8 @@
 	{/if}
 </div>
 {#if plotdata !== undefined}
-	<Plot
+	<SinglePlot {plotdata} {measdata} {settings} />
+	<!-- Plot
 		data={plotdata.concat(measdata.filter((trace) => trace.checked))}
 		layout={{
 			title: settings.title,
@@ -402,10 +512,11 @@
 		}}
 		fillParent="width"
 		debounce={250}
-	/>
+	/ -->
 {/if}
 {#if probes != undefined && probes.startsWith("frequency") && db_data !== undefined && ph_data !== undefined}
-	<Plot
+	<BodePlot {db_data} {ph_data} {settings} />
+	<!-- Plot
 		data={db_data}
 		layout={{
 			title: settings.title,
@@ -422,8 +533,6 @@
 				title: settings.title_y1,
 			},
 			margin: { t: 30 },
-			linewidth: 1,
-			mirror: true,
 		}}
 		fillParent="width"
 		debounce={250}
@@ -448,7 +557,7 @@
 		}}
 		fillParent="width"
 		debounce={250}
-	/>
+	/ -->
 {/if}
 
 {#if measdata != undefined && measdata != "" && measdata != []}
@@ -469,28 +578,34 @@
 {/if}
 
 <div>
-	<label
-		>Measure
-		<input bind:value={equation} style="border:darkgray solid 1px;" />
-		<button
-			on:click={submit_equation(
-				equation,
-				dir,
-				file,
-				plotdata,
-				db_data,
-				ph_data,
-				measdata.filter((trace) => trace.checked),
-			)}
-			class="button-1"
-		>
-			Calculate</button
-		>
-		=> {calculated_value}
+	<label>
+		Performance name(s)
+		<input
+			bind:value={performance_names}
+			style="border:darkgray solid 1px;"
+		/>
 	</label>
 </div>
 
-<Experiment {probes} />
+<div>
+	<label
+		>Equation(s)
+		<input bind:value={equation} style="border:darkgray solid 1px;" />
+		<button on:click={calculate_equation(results_data[0])} class="button-1">
+			Calculate</button
+		>
+		=>
+		{#if Array.isArray(calculated_value)}
+			{#each calculated_value as val}
+				<div>
+					{val}
+				</div>
+			{/each}
+		{/if}
+	</label>
+</div>
+
+<Experiment {results_data} />
 
 <style>
 	.button-1 {

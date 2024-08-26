@@ -83,8 +83,8 @@
     class="button-1"
     >Load settings from:
   </button>
-  <select on:update_settings_choice bind:value={settings_name} style="border:darkgray solid 1px;">
-    {#if data.props != undefined && data.props.setting_name != undefined}
+  <select bind:value={settings_name} style="border:darkgray solid 1px;">
+    {#if data.props != undefined}
     {#each data.props.setting_names as setting}
       <option value={setting}>{setting}</option>
     {/each}

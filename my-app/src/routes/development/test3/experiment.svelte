@@ -2,6 +2,7 @@
 	import Plot from "svelte-plotly.js";
 	import InputValue from "./Utils/input_value.svelte";
 	import SweepSource from "./utils/sweep_source.svelte";
+	import ResultsPlot from "./utils/results_plot.svelte";
 	import {
 		ckt_name,
 		dir_name,
@@ -14,6 +15,7 @@
 	import { bindAll, dot$1, number, update } from "plotly.js-dist";
 	let ckt;
 	let file, dir, probes, equation;
+	export let results_data;
 
 	ckt_name.subscribe((value) => {
 		file = value;
@@ -93,7 +95,10 @@
 	function postprocess(settings) {
 		eval(settings.postprocess);
 	}
-	let result_data;
+	let plot_data2;
+	let result_data = [];
+	let result_number = 0;
+	result_data[result_number] = {};
 	function execute_script(script, dir, settings, elements) {
 		eval(script);
 	}
@@ -243,7 +248,7 @@
 	async function go(dir, settings, elements) {
 		plot_data = [];
 		let plot_trace = { x: [], y: [] };
-		result_data = [];
+		plot_data2 = [];
 		let result_trace = { x: [], y: [] };
 		//alert(settings.src1);
 		let var_name;
@@ -300,7 +305,7 @@
 			plot_trace.y = gb;
 			result_trace.y = pm;
 			plot_data.push({...plot_trace});
-			result_data.push({...result_trace});
+			plot_data2.push({...result_trace});
 			/*
 			console.log(
 					`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}`,
@@ -319,11 +324,11 @@
 			pm.push(calculated_value[0][1]);
 			dispatch("sim_end", { text: "LTspice simulation ended!" });
 			plot_data[0].x.push(Number(value));
-			result_data[0].x.push(Number(value));
+			plot_data2[0].x.push(Number(value));
 */
 		}
 		plot_data = plot_data;
-		result_data = result_data;
+		plot_data2 = plot_data2;
 		console.log("plot_data=", plot_data);
 	}
 	// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
@@ -342,11 +347,12 @@
 	}
 
 	function clear() {
-		plot_data = result_data = undefined;
+		plot_data = plot_data2 = undefined;
+		result_data[result_number] = undefined;
 	}
 
 	async function save() {
-		const blob = JSON.stringify([settings, plot_data, result_data]);
+		const blob = JSON.stringify([settings, plot_data, plot_data2]);
 		const handle = await window.showSaveFilePicker(); 
 		const ws = await handle.createWritable();
 		await ws.write(blob);
@@ -371,13 +377,19 @@
 		let tempsettings;
 		console.log(filedata);
 		console.log('before:', plot_data);
-		[tempsettings, plot_data, result_data] = JSON.parse(filedata);
+		[tempsettings, plot_data, plot_data2] = JSON.parse(filedata);
 		settings.result_title = tempsettings.result_title;
 		settings.sweep_title = tempsettings.sweep_title;
 		console.log('after:', plot_data);
 	} 
+
 </script>
 
+{#if results_data != undefined && results_data[0].length > 0}
+	{#each Object.entries(results_data[0]) as [performance, plot_data]}
+     <ResultsPlot {plot_data} title={performance} {performance} />
+{/each}
+{/if}
 <div>Make Experiments</div>
 <SweepSource
 	source_title="1st source"
@@ -393,6 +405,7 @@
 	bind:start_dec_val={settings.start_dec_val1}
 	bind:stop_dec_val={settings.stop_dec_val1}
 	bind:dec_incr={settings.dec_points1}
+	bind:src_precision={settings.src_precision1}
 	bind:elements
 ></SweepSource>
 <SweepSource
@@ -409,6 +422,7 @@
 	bind:start_dec_val={settings.start_dec_val2}
 	bind:stop_dec_val={settings.stop_dec_val2}
 	bind:dec_incr={settings.dec_points2}
+	bind:src_precision={settings.src_precision2}
 	bind:elements
 ></SweepSource>
 <div>
@@ -496,9 +510,9 @@ width: 90%;"
 		/>
 	</label>
 </div -->
-{#if result_data !== undefined}
+{#if plot_data2 !== undefined}
 	<Plot
-		data={result_data}
+		data={plot_data2}
 		layout={{
 			title: settings.result_title,
 			xaxis: {
