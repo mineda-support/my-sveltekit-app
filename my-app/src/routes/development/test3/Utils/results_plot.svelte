@@ -2,6 +2,7 @@
     export let plot_data;
     export let title, performance;
     let sweep, value;
+
     function get_sweep() {
       [sweep, value] = plot_data.name.split('=');
       sweep.trim();
@@ -13,7 +14,7 @@
     layout={{
         title: {title},
         xaxis: {
-            title: {get_sweep()},
+            title: {get_sweep},
             autorange: "true",
             linewidth: 1,
             mirror: true,

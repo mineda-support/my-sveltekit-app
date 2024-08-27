@@ -40,6 +40,7 @@
 		settings_store,
 	} from "./stores.js";
 	import { stringify } from "postcss";
+    import { A } from "plotly.js-dist";
 	let file;
 	let dir;
 	let probes;
@@ -292,7 +293,7 @@
 	}
 
 	function calculate_equation() {
-		const values = submit_equation(
+		submit_equation(
 			equation,
 			dir,
 			file,
@@ -301,12 +302,15 @@
 			ph_data,
 			measdata.filter((trace) => trace.checked),
 		);
+		console.log('values in calculate_equation:', calculated_value);
+		const equation_array = equation.split(',');
 		settings.performances.forEach(function (perf, index) {
 			console.log("perf, index=", [perf, index]);
+			console.log('results_data:', results_data);
 			results_data[0][perf] = {
 				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
-				y: values[index],
-				name: equation[index],
+				y: calculated_value[index],
+				name: equation_array[index],
 			};
 			console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
 		});
@@ -349,7 +353,7 @@
 			},
 		);
 		let result = await res.json();
-		//console.log(result);
+		console.log('result in submit_equation:', result);
 		if (plotdata != undefined) {
 			calculated_value = result.calculated_value.slice(
 				0,
@@ -364,7 +368,7 @@
 			calculated_value = result.calculated_value.slice(0);
 		}
 		console.log(calculated_value);
-		calculated_value;
+		// return calculated_value; // maybe useless
 	}
 	equation = "x.where(y, 2.5){|x, y| x > 1e-6}";
 	$: {
@@ -381,7 +385,7 @@
 		if (performance_names != undefined) {
 			settings.performances = Array.isArray(performance_names)
 				? performance_names
-				: performance_names.split(",");
+				: performance_names.split(",").map((a) => a.trim());
 		}
 	}
 </script>
