@@ -12,11 +12,12 @@
 	// import Plot from "svelte-plotly.js";
 	import BodePlot from "./utils/bode_plot.svelte";
 	import SinglePlot from "./utils/single_plot.svelte";
+	import ResultsPlot from "./utils/results_plot.svelte";
 
 	let measdata = [];
 
 	let results_data = [];
-	results_data[0] = {};
+	results_data[0] = [];
 	let plotdata;
 	$: {
 		if (plotdata != undefined) {
@@ -285,10 +286,10 @@
 	function get_sweep_values(plotdata) {
 		let values = [];
 		let sweep, value;
-		console.log('plotdata in get_sweep_values=', plotdata);
+		//console.log('plotdata in get_sweep_values=', plotdata);
 		plotdata.forEach((trace) => {
 			[sweep, value] = trace.name.split("=");
-			values.push(value);
+			values.push(Number(value));
 		});
 		return values;
 	}
@@ -313,16 +314,17 @@
 		);
 		console.log('values in calculate_equation:', calculated_value);
 		const equation_array = equation.split(',');
-		settings.performances.forEach(function (perf, index) {
-			console.log("perf, index=", [perf, index]);
-			console.log('results_data:', results_data);
-			results_data[0][perf] = {
+		performances.forEach(function (perf, index) {
+			//console.log("perf, index=", [perf, index]);
+			//console.log('results_data:', results_data);
+			results_data[0][perf].push {
 				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
 				y: get_performance(calculated_value,index),
 				name: equation_array[index],
 			};
-			console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
+			//console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
 		});
+		console.log('results_data=', results_data);
 	}
 
 	async function submit_equation(
@@ -362,7 +364,7 @@
 			},
 		);
 		let result = await res.json();
-		console.log('result in submit_equation:', result);
+		//console.log('result in submit_equation:', result);
 		if (plotdata != undefined) {
 			calculated_value = result.calculated_value.slice(
 				0,
@@ -389,14 +391,15 @@
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: settings.probes = probes;
-	let performance_names;
+	let performances;
 	$: {
-		if (performance_names != undefined) {
-			settings.performances = Array.isArray(performance_names)
-				? performance_names
-				: performance_names.split(",").map((a) => a.trim());
+		if (settings.performance_names != undefined) {
+			performances = Array.isArray(settings.performance_names)
+				? settings.performance_names
+				: settings.performance_names.split(",").map((a) => a.trim());
 		}
 	}
+	$: results_data = results_data;
 </script>
 
 <ConvertSchematic />
@@ -594,7 +597,7 @@
 	<label>
 		Performance name(s)
 		<input
-			bind:value={performance_names}
+			bind:value={settings.performance_names}
 			style="border:darkgray solid 1px;"
 		/>
 	</label>
@@ -617,6 +620,12 @@
 		{/if}
 	</label>
 </div>
+
+<!-- {#if results_data != undefined && results_data[0].length > 0} -->
+	{#each Object.entries(results_data[0]) as [performance, plot_data]}
+     <ResultsPlot plot_data={[plot_data]} title={performance} {performance} />
+{/each}
+<!-- {/if} -->
 
 <Experiment {results_data} />
 

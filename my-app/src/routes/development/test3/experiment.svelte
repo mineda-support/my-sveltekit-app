@@ -385,11 +385,12 @@
 
 </script>
 
-{#if results_data != undefined && results_data[0].length > 0}
+<!-- {#if results_data != undefined && results_data[0].length > 0}
 	{#each Object.entries(results_data[0]) as [performance, plot_data]}
      <ResultsPlot {plot_data} title={performance} {performance} />
 {/each}
-{/if}
+{/if} -->
+
 <div>Make Experiments</div>
 <SweepSource
 	source_title="1st source"
