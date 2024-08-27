@@ -290,6 +290,15 @@
 			[sweep, value] = trace.name.split("=");
 			values.push(value);
 		});
+		return values;
+	}
+
+	function get_performance(rows, index) {
+		let values = [];
+		rows.forEach(row => {
+			values.push(row[index]);
+		})
+		return values;
 	}
 
 	function calculate_equation() {
@@ -309,7 +318,7 @@
 			console.log('results_data:', results_data);
 			results_data[0][perf] = {
 				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
-				y: calculated_value[index],
+				y: get_performance(calculated_value,index),
 				name: equation_array[index],
 			};
 			console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
