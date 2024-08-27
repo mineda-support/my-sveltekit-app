@@ -7,7 +7,7 @@
     function get_sweep() {
         [sweep, value] = plot_data[0].name.split("=");
         sweep.trim();
-        console.log()
+        console.log('sweep=', sweep, 'title=', title, 'performance=', performance);
     }
 </script>
 

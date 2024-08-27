@@ -317,11 +317,16 @@
 		performances.forEach(function (perf, index) {
 			//console.log("perf, index=", [perf, index]);
 			//console.log('results_data:', results_data);
-			results_data[0][perf].push {
-				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
-				y: get_performance(calculated_value,index),
-				name: equation_array[index],
-			};
+			//if (calculated_value != undefined) {
+				if (results_data[0][perf] == undefined) {results_data[0][perf] = []}
+			    results_data[0][perf].push({
+				    x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
+		    		y: get_performance(calculated_value,index),
+			    	name: equation_array[index],
+			    });
+			//} else {
+			//	console.log('Error: calculate value is not available yet');
+			//}
 			//console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
 		});
 		console.log('results_data=', results_data);
@@ -623,7 +628,7 @@
 
 <!-- {#if results_data != undefined && results_data[0].length > 0} -->
 	{#each Object.entries(results_data[0]) as [performance, plot_data]}
-     <ResultsPlot plot_data={[plot_data]} title={performance} {performance} />
+     <ResultsPlot plot_data={plot_data} title={performance} {performance} />
 {/each}
 <!-- {/if} -->
 
