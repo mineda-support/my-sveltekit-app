@@ -626,11 +626,11 @@
 	</label>
 </div>
 
-<!-- {#if results_data != undefined && results_data[0].length > 0} -->
+<!-- {#if results_data != undefined && results_data[0].length > 0}>
 	{#each Object.entries(results_data[0]) as [performance, plot_data]}
      <ResultsPlot plot_data={plot_data} title={performance} {performance} />
 {/each}
-<!-- {/if} -->
+<{/if} -->
 
 <Experiment {results_data} />
 

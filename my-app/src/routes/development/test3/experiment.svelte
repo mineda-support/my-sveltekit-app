@@ -97,8 +97,16 @@
 	}
 	let plot_data2;
 	let result_data = [];
-	let result_number = 0;
-	result_data[result_number] = {};
+	settings.result_number = 0;
+	result_data[settings.result_number] = {};
+	function add_experiment() {
+		settings.result_number = settings.result_number + 1;
+	}
+	function clear_experiment() {
+		if (settings.result_number > 0) {
+			settings.result_number = settings.result_number - 1;
+		}
+	}
 	function execute_script(script, dir, settings, elements) {
 		eval(script);
 	}
@@ -200,14 +208,14 @@
 		}
 		let plot_trace = { x: [], y: [] };
 		let updates;
-        let count = 0;
+		let count = 0;
 		if (settings.src1_plus == undefined) {
 			settings.src1_plus = [];
 		}
 		if (settings.src2_plus == undefined) {
 			settings.src2_plus = [];
 		}
-		let preview_table = `count: ${settings.src2} ${settings.src2_plus.join(' ')}, ${settings.src1} ${settings.src1_plus.join(' ')}\n`;
+		let preview_table = `count: ${settings.src2} ${settings.src2_plus.join(" ")}, ${settings.src1} ${settings.src1_plus.join(" ")}\n`;
 		for (const value2 of settings.src2_values) {
 			//src, par_name, src_plus) {
 			[updates, target] = updates_plus(
@@ -216,8 +224,8 @@
 				settings.par_name2,
 				settings.src2_plus,
 			);
-			plot_trace.name = settings.src2 + ':' + value2;
-			console.log('plot_trace!!!', count, plot_trace);
+			plot_trace.name = settings.src2 + ":" + value2;
+			console.log("plot_trace!!!", count, plot_trace);
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
 			//preview_table = preview_table + settings.src2 + ':' + value2 + "\n";
 			//preview_table = preview_table + `plot_trace.name = ${settings.src2} + ':' + ${value2}\n`;
@@ -232,17 +240,18 @@
 				console.log("updates=", updates, `on ${dir}${target}.asc`);
 				// await update_elms(dir, target+'.asc', updates);
 				count = count + 1;
-				preview_table = preview_table + `${count}: ${value2}, ${value}\n`
+				preview_table =
+					preview_table + `${count}: ${value2}, ${value}\n`;
 			}
-			plot_data.push({...plot_trace});
-			console.log('plot_trace=', count, plot_trace);
+			plot_data.push({ ...plot_trace });
+			console.log("plot_trace=", count, plot_trace);
 		}
-		console.log('plot_data =', plot_data);
-		let blob = new Blob([preview_table], {type:"text/plain"});
-		const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'experiment_preview.txt';
-        link.click();	
+		console.log("plot_data =", plot_data);
+		let blob = new Blob([preview_table], { type: "text/plain" });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = "experiment_preview.txt";
+		link.click();
 	}
 
 	async function go(dir, settings, elements) {
@@ -268,7 +277,7 @@
 				settings.par_name2,
 				settings.src2_plus,
 			);
-			const trace_name = settings.src2.replace(/^.*:/, '') + ':' + value2;
+			const trace_name = settings.src2.replace(/^.*:/, "") + ":" + value2;
 			plot_trace.name = trace_name;
 			result_trace.name = trace_name;
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
@@ -304,8 +313,8 @@
 			console.log("pm=", pm);
 			plot_trace.y = gb;
 			result_trace.y = pm;
-			plot_data.push({...plot_trace});
-			plot_data2.push({...result_trace});
+			plot_data.push({ ...plot_trace });
+			plot_data2.push({ ...result_trace });
 			/*
 			console.log(
 					`${var_name}: ${keep.replace(/(\.par\S+ *\S+ *= *)(\S+)/, "$1" + value)}`,
@@ -348,12 +357,12 @@
 
 	function clear() {
 		plot_data = plot_data2 = undefined;
-		result_data[result_number] = undefined;
+		result_data[settings.result_number] = undefined;
 	}
 
 	async function save() {
 		const blob = JSON.stringify([settings, plot_data, plot_data2]);
-		const handle = await window.showSaveFilePicker(); 
+		const handle = await window.showSaveFilePicker();
 		const ws = await handle.createWritable();
 		await ws.write(blob);
 		await ws.close();
@@ -361,11 +370,13 @@
 
 	async function load() {
 		const pickerOpts = {
-          types: [{ description: 'JSON(.json)', accept: {'json/*': ['.json']} }],
-          multiple: false,
-		}
+			types: [
+				{ description: "JSON(.json)", accept: { "json/*": [".json"] } },
+			],
+			multiple: false,
+		};
 		let fileHandle;
-		[fileHandle] = await window.showOpenFilePicker(pickerOpts); 
+		[fileHandle] = await window.showOpenFilePicker(pickerOpts);
 		const file = await fileHandle.getFile();
 		/* const reader = new FileReader();
 		reader.readAsText(file, 'UTF-8');
@@ -376,22 +387,73 @@
 		let filedata = await file.text();
 		let tempsettings;
 		console.log(filedata);
-		console.log('before:', plot_data);
+		console.log("before:", plot_data);
 		[tempsettings, plot_data, plot_data2] = JSON.parse(filedata);
 		settings.result_title = tempsettings.result_title;
 		settings.sweep_title = tempsettings.sweep_title;
-		console.log('after:', plot_data);
-	} 
+		console.log("after:", plot_data);
+	}
 
+	function indicator(i) {
+		i = Math.abs(i);
+		var cent = i % 100;
+		if (cent >= 10 && cent <= 20) return "th";
+		var dec = i % 10;
+		if (dec === 1) return "st";
+		if (dec === 2) return "nd";
+		if (dec === 3) return "rd";
+		return "th";
+	}
+	settings.src = Array(0);
+	settings.par_name = Array(0);
+	settings.src_values = Array(0);
+	settings.src_plus = Array(0);
+	settings.sweep_type = Array(0);
+	settings.start_lin_val = Array(0);
+	settings.stop_lin_val = Array(0);
+	settings.lin_incr = Array(0);
+	settings.source_value = Array(0);
+	settings.start_dec_val = Array(0);
+	settings.stop_dec_val = Array(0);
+	settings.dec_points = Array(0);
+	settings.src_precision = Array(0);
 </script>
 
-<!-- {#if results_data != undefined && results_data[0].length > 0}
-	{#each Object.entries(results_data[0]) as [performance, plot_data]}
-     <ResultsPlot {plot_data} title={performance} {performance} />
+<!-- {#if results_data != undefined && results_data[0].length > 0} -->
+{#each Object.entries(results_data[0]) as [performance, plot_data]}
+	<ResultsPlot {plot_data} title={performance} {performance} />
 {/each}
-{/if} -->
+<!-- {/if} -->
 
 <div>Make Experiments</div>
+{#each Array(settings.result_number + 1) as _, i}
+	<SweepSource
+		source_title="{i + 1}{`${indicator(i + 1)} source`}"
+		bind:src={settings.src[i]}
+		bind:par_name={settings.par_name[i]}
+		bind:src_values={settings.src_values[i]}
+		bind:src_plus={settings.src_plus[i]}
+		bind:sweep_type={settings.sweep_type[i]}
+		bind:start_lin_val={settings.start_lin_val[i]}
+		bind:stop_lin_val={settings.stop_lin_val[i]}
+		bind:lin_incr={settings.lin_incr[i]}
+		bind:src_value={settings.source_value[i]}
+		bind:start_dec_val={settings.start_dec_val[i]}
+		bind:stop_dec_val={settings.stop_dec_val[i]}
+		bind:dec_incr={settings.dec_points[i]}
+		bind:src_precision={settings.src_precision[i]}
+		bind:elements
+	></SweepSource>
+{/each}
+<label>
+	<button on:click={add_experiment} class="button-1">Add experiment</button>
+</label>
+<label>
+	<button on:click={clear_experiment} class="button-1"
+		>Clear experiment</button
+	>
+</label>
+
 <SweepSource
 	source_title="1st source"
 	bind:src={settings.src1}
