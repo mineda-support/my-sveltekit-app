@@ -5,7 +5,7 @@
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
 	import ConvertSchematic from "./convertSchematic.svelte";
-	import Experiment from "./experiment.svelte";
+	import Experiment, { get_sweep_values, get_performance, set_trace_names } from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
@@ -132,6 +132,7 @@
 		);
 		let res2 = await response.json();
 		console.log(res2);
+		/*
 		plotdata = res2.traces;
 		console.log(`probes=${probes}`);
 		if (probes != null && probes.startsWith("frequency")) {
@@ -140,7 +141,11 @@
 			ph_data = res2.phase;
 			set_trace_names(ph_data);
 			console.log("db_data=", db_data);
+		} else {
+			set_trace_names(plotdata);
 		}
+		*/
+		set_trace_names(res2, probes);	
 		//return res2;
 		//calculate_equation();
 	}
@@ -193,7 +198,7 @@
 		console.log("src_values=", src_values);
 		return src_values;
 	}
-
+	/*
 	function set_trace_names(plotdata) {
 		console.log("plotdata in set_trace_names:", plotdata);
 		for (const [ckt_name, elms] of Object.entries(elements)) {
@@ -210,7 +215,7 @@
 			}
 		}
 	}
-
+	*/
 	export let data;
 	//probes_name.set(data.props.probes);
 	$: probes_name.set(probes);
@@ -282,7 +287,7 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-
+/*
 	function get_sweep_values(plotdata) {
 		let values = [];
 		let sweep, value;
@@ -301,7 +306,7 @@
 		})
 		return values;
 	}
-
+*/
 	function calculate_equation() {
 		submit_equation(
 			equation,
