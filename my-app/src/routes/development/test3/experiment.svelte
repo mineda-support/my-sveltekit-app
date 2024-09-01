@@ -1,3 +1,36 @@
+<script context="module">
+	export function set_trace_names(res2, probes, elements, step_precision) {
+		const plotdata = res2.traces;
+		const db_data = res2.db;
+		const ph_data = res2.phase;
+		//console.log('probes in set_trace_names=', probes);
+		if (probes != null && probes.startsWith("frequency")) {
+			set_trace_names2(db_data, elements);
+			set_trace_names2(ph_data, elements);
+			//console.log("db_data in set_trace_names=", db_data);
+		} else {
+			set_trace_names2(plotdata, elements);
+		}
+		return [plotdata, db_data, ph_data];
+	}
+
+	function set_trace_names2(plotdata, elements, step_precision) {
+		console.log("plotdata in set_trace_names:", plotdata);
+		for (const [ckt_name, elms] of Object.entries(elements)) {
+			for (const [elm, props] of Object.entries(elms)) {
+				//console.log([elm, props]);
+				if (elm == "step") {
+					parse_step_command(props, step_precision).forEach(
+						function (src_value, index) {
+							plotdata[index].name = src_value;
+						},
+					);
+					return;
+				}
+			}
+		}
+	}
+</script>
 <script>
 	import Plot from "svelte-plotly.js";
 	import InputValue from "./Utils/input_value.svelte";
@@ -42,30 +75,24 @@
 		settings = value;
 	});
 
-	//	settings.src1 = "V2";
-	//	settings.src1_values =
-	//		"PULSE(2.4 2.6 200n 100n 100n 200n 700n), PULSE(2.45 2.55 200n 100n 100n 200n 700n), PULSE(2.475 2.525 200n 100n 100n 200n 700n)";
-	//	let src2, src2_values;
-	//	function wrap_with_apostrophe(a) {
-	//		if (a != undefined && a != null) {
-	//			return a
-	//				.split(/, */)
-	//				.map((x) => `'${x}'`)
-	//				.join(", ");
-	//		}
-	//	}
-	//	$: settings.program = `new_traces = []
-	//src1_values = [${wrap_with_apostrophe(settings.src1_values)}]
-	//src1_values.each{|p|
-	//  ckt.set ${settings.src1}: p
-	//  puts "${settings.src1} = #{ckt.get('${settings.src1}')}"
-	//  ckt.simulate
-	//  vars, traces =ckt.get_traces ${wrap_with_apostrophe(probes)}
-	//  traces[0][:name] = p.sub ' 200n 100n 100n 200n 700n', ''
-	//  new_traces << traces[0]
-	//}
-	//new_traces
-	//`;
+	function get_sweep_values(plotdata) {
+		let values = [];
+		let sweep, value;
+		console.log('plotdata in get_sweep_values=', plotdata);
+		plotdata.forEach((trace) => {
+			[sweep, value] = trace.name.split("=");
+			values.push(Number(value));
+		});
+		return values;
+	}
+
+	function get_performance(rows, index) {
+		let values = [];
+		rows.forEach(row => {
+			values.push(row[index]);
+		})
+		return values;
+	}
 
 	async function submit_program(program, dir, file) {
 		const encoded_params = `dir=${encodeURIComponent(
@@ -160,38 +187,6 @@
 		return src_values;
 	}
 
-	export function set_trace_names(res2, probes) {
-		const plotdata = res2.traces;
-		const db_data = res2.db;
-		const ph_data = res2.phase;
-		//console.log('probes in set_trace_names=', probes);
-		if (probes != null && probes.startsWith("frequency")) {
-			set_trace_names2(db_data);
-			set_trace_names2(ph_data);
-			//console.log("db_data in set_trace_names=", db_data);
-		} else {
-			set_trace_names2(plotdata);
-		}
-		return [plotdata, db_data, ph_data];
-	}
-
-	function set_trace_names2(plotdata) {
-		console.log("plotdata in set_trace_names:", plotdata);
-		for (const [ckt_name, elms] of Object.entries(elements)) {
-			for (const [elm, props] of Object.entries(elms)) {
-				//console.log([elm, props]);
-				if (elm == "step") {
-					parse_step_command(props, settings.step_precision).forEach(
-						function (src_value, index) {
-							plotdata[index].name = src_value;
-						},
-					);
-					return;
-				}
-			}
-		}
-	}
-
 	async function goLTspice2(ckt) {
 		console.log(`openLTspice dir='${dir}' file='${file}'`);
 		/* dispatch("elm_update", { text: "Update elements" });
@@ -213,7 +208,7 @@
 		console.log("res2=", res2);
 		// plotdata = res2.traces;
 		let plotdata, db_data, ph_data;
-		[plotdata, db_data, ph_data] = set_trace_names(res2, probes);
+		[plotdata, db_data, ph_data] = set_trace_names(res2, probes, elements, settings.step_precision);
 		//dispatch("sim_end", { text: "LTspice simulation ended!" });
 		// plotdata = get_results();
 		const calculated_value = await res2.calculated_value;
@@ -279,25 +274,6 @@
 		}
 	}
 
-	export function get_sweep_values(plotdata) {
-		let values = [];
-		let sweep, value;
-		console.log('plotdata in get_sweep_values=', plotdata);
-		plotdata.forEach((trace) => {
-			[sweep, value] = trace.name.split("=");
-			values.push(Number(value));
-		});
-		return values;
-	}
-
-	export function get_performance(rows, index) {
-		let values = [];
-		rows.forEach(row => {
-			values.push(row[index]);
-		})
-		return [ ...values ];
-	}
-
 	async function go_experiments(dir, settings, elements) {
 
 		if (settings.src == undefined || settings.src_values[0] == undefined) {
@@ -354,6 +330,7 @@
 			for (let [perf, plotdata] of Object.entries(results_data[0])) {
               plotdata = plotdata;
 			}
+			results_data = results_data;
 		}
 		console.log("results_data=", results_data);
 	}

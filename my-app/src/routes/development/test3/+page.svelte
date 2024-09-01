@@ -5,7 +5,9 @@
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
 	import ConvertSchematic from "./convertSchematic.svelte";
-	import Experiment, { get_sweep_values, get_performance, set_trace_names } from "./experiment.svelte";
+	import Experiment, {
+		set_trace_names,
+	} from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
@@ -41,7 +43,7 @@
 		settings_store,
 	} from "./stores.js";
 	import { stringify } from "postcss";
-    import { A } from "plotly.js-dist";
+	import { A } from "plotly.js-dist";
 	let file;
 	let dir;
 	let probes;
@@ -132,22 +134,7 @@
 		);
 		let res2 = await response.json();
 		console.log(res2);
-		/*
-		plotdata = res2.traces;
-		console.log(`probes=${probes}`);
-		if (probes != null && probes.startsWith("frequency")) {
-			db_data = res2.db;
-			set_trace_names(db_data);
-			ph_data = res2.phase;
-			set_trace_names(ph_data);
-			console.log("db_data=", db_data);
-		} else {
-			set_trace_names(plotdata);
-		}
-		*/
-		set_trace_names(res2, probes);	
-		//return res2;
-		//calculate_equation();
+		[plotdata, db_data, ph_data] = set_trace_names(res2, probes, elements, settings.step_precision);
 	}
 
 	function eng2f(str) {
@@ -287,11 +274,11 @@
 		ckt_store.set(ckt);
 		elements_store.set(elements);
 	}
-/*
+
 	function get_sweep_values(plotdata) {
 		let values = [];
 		let sweep, value;
-		//console.log('plotdata in get_sweep_values=', plotdata);
+		console.log('plotdata in get_sweep_values=', plotdata);
 		plotdata.forEach((trace) => {
 			[sweep, value] = trace.name.split("=");
 			values.push(Number(value));
@@ -306,7 +293,7 @@
 		})
 		return values;
 	}
-*/
+
 	function calculate_equation() {
 		submit_equation(
 			equation,
@@ -317,24 +304,26 @@
 			ph_data,
 			measdata.filter((trace) => trace.checked),
 		);
-		console.log('values in calculate_equation:', calculated_value);
-		const equation_array = equation.split(',');
+		console.log("values in calculate_equation:", calculated_value);
+		const equation_array = equation.split(",");
 		performances.forEach(function (perf, index) {
 			//console.log("perf, index=", [perf, index]);
 			//console.log('results_data:', results_data);
 			//if (calculated_value != undefined) {
-				if (results_data[0][perf] == undefined) {results_data[0][perf] = []}
-			    results_data[0][perf].push({
-				    x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
-		    		y: get_performance(calculated_value,index),
-			    	name: equation_array[index],
-			    });
+			if (results_data[0][perf] == undefined) {
+				results_data[0][perf] = [];
+			}
+			results_data[0][perf].push({
+				x: get_sweep_values(plotdata != undefined ? plotdata : db_data),
+				y: get_performance(calculated_value, index),
+				name: equation_array[index],
+			});
 			//} else {
 			//	console.log('Error: calculate value is not available yet');
 			//}
 			//console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
 		});
-		console.log('results_data=', results_data);
+		console.log("results_data=", results_data);
 	}
 
 	async function submit_equation(
