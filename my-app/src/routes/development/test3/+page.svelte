@@ -137,54 +137,6 @@
 		[plotdata, db_data, ph_data] = set_trace_names(res2, probes, elements, settings.step_precision);
 	}
 
-	function eng2f(str) {
-		const s = str.toLowerCase();
-		let i;
-		let e;
-		if ((i = s.indexOf("t")) != -1) {
-			e = 1.0e12;
-		} else if ((i = s.indexOf("g")) != -1) {
-			e = 1.0e9;
-		} else if ((i = s.indexOf("meg")) != -1) {
-			e = 1.0e6;
-		} else if ((i = s.indexOf("k")) != -1) {
-			e = 1.0e3;
-		} else if ((i = s.indexOf("f")) != -1) {
-			e = 1.0e-15;
-		} else if ((i = s.indexOf("p")) != -1) {
-			e = 1.0e-12;
-		} else if ((i = s.indexOf("n")) != -1) {
-			e = 1.0e-9;
-		} else if ((i = s.indexOf("u")) != -1) {
-			e = 1.0e-6;
-		} else if ((i = s.indexOf("m")) != -1) {
-			e = 1.0e-3;
-		} else {
-			return Number(s);
-		}
-		console.log("i=", i, "e=", e);
-		console.log(s.substring(0, i), Number(s.substring(0, i)));
-		return Number(s.substring(0, i)) * e;
-	}
-
-	function parse_step_command(props, precision) {
-		// like '.step param ccap 0.2p 2p 0.5p'
-		const items = props.split(/ +/);
-		const name = items[2];
-		const start = eng2f(items[3]);
-		const stop = eng2f(items[4]);
-		const step = eng2f(items[5]);
-		console.log("step=", [name, start, stop, step]);
-		let src_values = [];
-		for (let v = start; v < stop; v = v + step) {
-			src_values.push(`${name}=${v.toPrecision(precision)}`);
-		}
-		if (stop > start + step * (src_values.length - 1)) {
-			src_values.push(`${name}=${stop.toPrecision(precision)}`);
-		}
-		console.log("src_values=", src_values);
-		return src_values;
-	}
 	/*
 	function set_trace_names(plotdata) {
 		console.log("plotdata in set_trace_names:", plotdata);

@@ -31,6 +31,7 @@
 		}
 	}
 </script>
+
 <script>
 	import Plot from "svelte-plotly.js";
 	import InputValue from "./Utils/input_value.svelte";
@@ -78,7 +79,7 @@
 	function get_sweep_values(plotdata) {
 		let values = [];
 		let sweep, value;
-		console.log('plotdata in get_sweep_values=', plotdata);
+		console.log("plotdata in get_sweep_values=", plotdata);
 		plotdata.forEach((trace) => {
 			[sweep, value] = trace.name.split("=");
 			values.push(Number(value));
@@ -88,9 +89,9 @@
 
 	function get_performance(rows, index) {
 		let values = [];
-		rows.forEach(row => {
+		rows.forEach((row) => {
 			values.push(row[index]);
-		})
+		});
 		return values;
 	}
 
@@ -178,12 +179,14 @@
 		//console.log("step=", [name, start, stop, step]);
 		let src_values = [];
 		for (let v = start; v < stop; v = v + step) {
-			src_values.push(`${name}=${v.toPrecision(precision)}`);
+			let v2 = v.toPrecision(precision);
+			console.log('v, v2=', v, v2);
+			src_values.push(`${name}=${v2}`);
 		}
 		if (stop > start + step * (src_values.length - 1)) {
 			src_values.push(`${name}=${stop.toPrecision(precision)}`);
 		}
-		//console.log("src_values=", src_values);
+		console.log("src_values in parse_step_command=", src_values);
 		return src_values;
 	}
 
@@ -208,7 +211,12 @@
 		console.log("res2=", res2);
 		// plotdata = res2.traces;
 		let plotdata, db_data, ph_data;
-		[plotdata, db_data, ph_data] = set_trace_names(res2, probes, elements, settings.step_precision);
+		[plotdata, db_data, ph_data] = set_trace_names(
+			res2,
+			probes,
+			elements,
+			settings.step_precision,
+		);
 		//dispatch("sim_end", { text: "LTspice simulation ended!" });
 		// plotdata = get_results();
 		const calculated_value = await res2.calculated_value;
@@ -275,9 +283,8 @@
 	}
 
 	async function go_experiments(dir, settings, elements) {
-
 		if (settings.src == undefined || settings.src_values[0] == undefined) {
-			alert('ERROR: src is not set');
+			alert("ERROR: src is not set");
 			return;
 		}
 		let updates, target;
@@ -300,7 +307,8 @@
 
 			dispatch("sim_start", { text: "LTspice simulation started!" });
 			let calculated_value, plotdata, db_data, ph_data;
-			[calculated_value, plotdata, db_data, ph_data] = await goLTspice2(ckt);
+			[calculated_value, plotdata, db_data, ph_data] =
+				await goLTspice2(ckt);
 			performances.forEach(function (perf, index) {
 				if (results_data[0][perf] == undefined) {
 					results_data[0][perf] = [];
@@ -308,12 +316,12 @@
 				if (Array.isArray(calculated_value[0])) {
 					let result = {
 						x: get_sweep_values(
-							plotdata != undefined ? plotdata : db_data
+							plotdata != undefined ? plotdata : db_data,
 						),
 						y: get_performance(calculated_value, index),
 						name: trace_name,
 					};
-					console.log('result=', result);
+					console.log("result=", result);
 					results_data[0][perf].push(result);
 				} else {
 					results_data[0][perf].push(undefined);
@@ -328,7 +336,7 @@
 			//plot_data.push({ ...plot_trace });
 			//plot_data2.push({ ...result_trace });
 			for (let [perf, plotdata] of Object.entries(results_data[0])) {
-              plotdata = plotdata;
+				plotdata = plotdata;
 			}
 			results_data = results_data;
 		}
@@ -337,68 +345,47 @@
 	// plot_data = [{x:[1,2,3,4], y:[1,2,4,3]}];
 
 	function preview_experiments(dir, settings, elements) {
-		plot_data = [];
-		let var_name;
-		let target;
-		console.log("probes=", probes);
-		console.log("equation=", equation);
-		console.log("src1=", settings.src1);
-		console.log("src1_plus=", settings.src1_plus);
-		console.log("src1_values=", settings.src1_values);
-		settings.sweep_title = settings.src1;
-		settings.result_title = file;
-		console.log("sweep_title=", settings.sweep_title);
-		console.log("result_title=", settings.result_title);
-
-		[target, var_name] = settings.src1.split(":");
-		// console.log(target, var_name);
-		if (
-			elements[target] == undefined ||
-			elements[target][var_name] == undefined
-		) {
+		if (settings.src == undefined || settings.src_values[0] == undefined) {
+			alert("ERROR: src is not set");
 			return;
 		}
-		let plot_trace = { x: [], y: [] };
-		let updates;
+		let updates, target;
+		if (settings.src_plus[0] == undefined) {
+			settings.src_plus[0] = [];
+		}
+		console.log("probes=", probes);
+		console.log("equation=", equation);
+		console.log("src[0]=", settings.src[0]);
+		console.log("src_plus[0]=", settings.src_plus[0]);
+		console.log("src_values[0]=", settings.src_values[0]);
+		settings.sweep_title = settings.src[0];
+		console.log("sweep_title=", settings.sweep_title[0]);
+		console.log("result_title=", settings.result_title[0]);
+		results_data = [];
+		results_data[0] = [];
+		let preview_table = `count: ${settings.src[0]} ${settings.src_plus[0].join(" ")}}\n`;
 		let count = 0;
-		if (settings.src1_plus == undefined) {
-			settings.src1_plus = [];
-		}
-		if (settings.src2_plus == undefined) {
-			settings.src2_plus = [];
-		}
-		let preview_table = `count: ${settings.src2} ${settings.src2_plus.join(" ")}, ${settings.src1} ${settings.src1_plus.join(" ")}\n`;
-		for (const value2 of settings.src2_values) {
+		for (const value2 of settings.src_values[0]) {
 			//src, par_name, src_plus) {
 			[updates, target] = updates_plus(
 				value2,
-				settings.src2,
-				settings.par_name2,
-				settings.src2_plus,
+				settings.src[0],
+				settings.par_name[0],
+				settings.src_plus[0],
 			);
-			plot_trace.name = settings.src2 + ":" + value2;
-			console.log("plot_trace!!!", count, plot_trace);
+			const trace_name =
+				settings.src[0].replace(/^.*:/, "") + ":" + value2;
+			//plot_trace.name = trace_name;
+			//result_trace.name = trace_name;
 			console.log("updates=", updates, `on ${dir}${target}.asc`);
-			//preview_table = preview_table + settings.src2 + ':' + value2 + "\n";
-			//preview_table = preview_table + `plot_trace.name = ${settings.src2} + ':' + ${value2}\n`;
-
-			for (const value of settings.src1_values) {
-				[updates, target] = updates_plus(
-					value,
-					settings.src1,
-					settings.par_name1,
-					settings.src1_plus,
-				);
-				console.log("updates=", updates, `on ${dir}${target}.asc`);
-				// await update_elms(dir, target+'.asc', updates);
-				count = count + 1;
-				preview_table =
-					preview_table + `${count}: ${value2}, ${value}\n`;
-			}
-			plot_data.push({ ...plot_trace });
-			console.log("plot_trace=", count, plot_trace);
+			//await update_elms(dir, target + ".asc", updates);
+			//dispatch("sim_start", { text: "LTspice simulation started!" });
+			count = count + 1;
+			preview_table = preview_table + `${count}: ${value2}\n`;
+			//let calculated_value, plotdata, db_data, ph_data;
+			//[calculated_value, plotdata, db_data, ph_data] = await goLTspice2(ckt);
+			//dispatch("sim_end", { text: "LTspice simulation ended!" });
 		}
-		console.log("plot_data =", plot_data);
 		let blob = new Blob([preview_table], { type: "text/plain" });
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
@@ -550,8 +537,7 @@
 				console.log("updates=", updates, `on ${dir}${target}.asc`);
 				// await update_elms(dir, target+'.asc', updates);
 				count = count + 1;
-				preview_table =
-					preview_table + `${count}: ${value2}, ${value}\n`;
+				preview_table = preview_table + `${count}: ${value2}\n`;
 			}
 			plot_data.push({ ...plot_trace });
 			console.log("plot_trace=", count, plot_trace);
@@ -679,7 +665,7 @@
 <div>
 	<label>
 		<button
-			on:click={preview_updates(dir, settings, elements)}
+			on:click={preview_experiments(dir, settings, elements)}
 			class="button-1">Dry run</button
 		>
 	</label>
@@ -700,7 +686,7 @@
 	</label>
 </div>
 
-<SweepSource
+<!-- SweepSource
 	source_title="1st source"
 	bind:src={settings.src1}
 	bind:par_name={settings.par_name1}
@@ -716,8 +702,8 @@
 	bind:dec_incr={settings.dec_points1}
 	bind:src_precision={settings.src_precision1}
 	bind:elements
-></SweepSource>
-<SweepSource
+></SweepSource -->
+<!-- SweepSource
 	source_title="2nd source"
 	bind:src={settings.src2}
 	bind:par_name={settings.par_name2}
@@ -733,8 +719,8 @@
 	bind:dec_incr={settings.dec_points2}
 	bind:src_precision={settings.src_precision2}
 	bind:elements
-></SweepSource>
-<div>
+></SweepSource -->
+<!-- div>
 	<label>
 		<button
 			on:click={preview_updates(dir, settings, elements)}
@@ -755,7 +741,7 @@
 	<label>
 		<button on:click={load} class="button-1">Load</button>
 	</label>
-</div>
+</div -->
 <div>
 	<!-- label>
 		<button
