@@ -3,29 +3,32 @@
 		const plotdata = res2.traces;
 		const db_data = res2.db;
 		const ph_data = res2.phase;
+		let sweep_name;
 		//console.log('probes in set_trace_names=', probes);
 		if (probes != null && probes.startsWith("frequency")) {
-			set_trace_names2(db_data, elements);
-			set_trace_names2(ph_data, elements);
+			sweep_name = set_trace_names2(db_data, elements, step_precision);
+			sweep_name = set_trace_names2(ph_data, elements, step_precision);
 			//console.log("db_data in set_trace_names=", db_data);
 		} else {
-			set_trace_names2(plotdata, elements);
+			sweep_name = set_trace_names2(plotdata, elements, step_precision);
 		}
-		return [plotdata, db_data, ph_data];
+		return [plotdata, db_data, ph_data, sweep_name];
 	}
 
 	function set_trace_names2(plotdata, elements, step_precision) {
+		let sweep_name, src_values;
 		console.log("plotdata in set_trace_names:", plotdata);
 		for (const [ckt_name, elms] of Object.entries(elements)) {
 			for (const [elm, props] of Object.entries(elms)) {
 				//console.log([elm, props]);
 				if (elm == "step") {
-					parse_step_command(props, step_precision).forEach(
+					[sweep_name, src_values] = parse_step_command(props, step_precision);
+					src_values.forEach(
 						function (src_value, index) {
 							plotdata[index].name = src_value;
 						},
 					);
-					return;
+					return(sweep_name);
 				}
 			}
 		}
@@ -114,6 +117,8 @@
 		console.log(plot_data);
 	}
 	let plot_data;
+	let sweep_name;
+	$: settings.sweep_name = sweep_name;
 	let src1;
 	$: settings.src1 = src1;
 
@@ -124,9 +129,8 @@
 		eval(settings.postprocess);
 	}
 	let plot_data2;
-	let result_data = [];
 	settings.result_number = 0;
-	result_data[settings.result_number] = {};
+	results_data[settings.result_number] = {};
 	function add_experiment() {
 		settings.result_number = settings.result_number + 1;
 	}
@@ -172,22 +176,20 @@
 	function parse_step_command(props, precision) {
 		// like '.step param ccap 0.2p 2p 0.5p'
 		const items = props.split(/ +/);
-		const name = items[2];
+	    const name = items[2];
 		const start = eng2f(items[3]);
 		const stop = eng2f(items[4]);
 		const step = eng2f(items[5]);
 		//console.log("step=", [name, start, stop, step]);
 		let src_values = [];
 		for (let v = start; v < stop; v = v + step) {
-			let v2 = v.toPrecision(precision);
-			console.log('v, v2=', v, v2);
-			src_values.push(`${name}=${v2}`);
+			src_values.push(`${name}=${v.toPrecision(precision)}`);
 		}
 		if (stop > start + step * (src_values.length - 1)) {
 			src_values.push(`${name}=${stop.toPrecision(precision)}`);
 		}
 		console.log("src_values in parse_step_command=", src_values);
-		return src_values;
+		return [name, src_values];
 	}
 
 	async function goLTspice2(ckt) {
@@ -211,7 +213,7 @@
 		console.log("res2=", res2);
 		// plotdata = res2.traces;
 		let plotdata, db_data, ph_data;
-		[plotdata, db_data, ph_data] = set_trace_names(
+		[plotdata, db_data, ph_data, sweep_name] = set_trace_names(
 			res2,
 			probes,
 			elements,
@@ -220,7 +222,7 @@
 		//dispatch("sim_end", { text: "LTspice simulation ended!" });
 		// plotdata = get_results();
 		const calculated_value = await res2.calculated_value;
-		return [calculated_value, plotdata, db_data, ph_data];
+		return [calculated_value, plotdata, db_data, ph_data, sweep_name];
 	}
 
 	function create_updates(keep, var_name, par_name, value) {
@@ -307,7 +309,7 @@
 
 			dispatch("sim_start", { text: "LTspice simulation started!" });
 			let calculated_value, plotdata, db_data, ph_data;
-			[calculated_value, plotdata, db_data, ph_data] =
+			[calculated_value, plotdata, db_data, ph_data, sweep_name] =
 				await goLTspice2(ckt);
 			performances.forEach(function (perf, index) {
 				if (results_data[0][perf] == undefined) {
@@ -391,6 +393,44 @@
 		link.href = URL.createObjectURL(blob);
 		link.download = "experiment_preview.txt";
 		link.click();
+	}
+
+	function clear_experiments() {
+		results_data[settings.result_number] = undefined;
+	}
+
+	async function save_experiments() {
+		const blob = JSON.stringify([settings, results_data]);
+		const handle = await window.showSaveFilePicker();
+		const ws = await handle.createWritable();
+		await ws.write(blob);
+		await ws.close();
+	}
+
+	async function load_experiments() {
+		const pickerOpts = {
+			types: [
+				{ description: "JSON(.json)", accept: { "json/*": [".json"] } },
+			],
+			multiple: false,
+		};
+		let fileHandle;
+		[fileHandle] = await window.showOpenFilePicker(pickerOpts);
+		const file = await fileHandle.getFile();
+		/* const reader = new FileReader();
+		reader.readAsText(file, 'UTF-8');
+		let filedata;
+		reader.onload = (event) => {
+			filedata = (event.target.result);
+		}*/
+		let filedata = await file.text();
+		let tempsettings;
+		console.log(filedata);
+		//console.log("before:", plot_data);
+		[tempsettings, results_data] = JSON.parse(filedata);
+		settings.result_title = tempsettings.result_title;
+		settings.sweep_title = tempsettings.sweep_title;
+		//console.log("after:", plot_data);
 	}
 
 	async function go(dir, settings, elements) {
@@ -565,7 +605,7 @@
 
 	function clear() {
 		plot_data = plot_data2 = undefined;
-		result_data[settings.result_number] = undefined;
+		results_data[settings.result_number] = undefined;
 	}
 
 	async function save() {
@@ -629,7 +669,7 @@
 
 <!-- {#if results_data != undefined && results_data[0].length > 0} -->
 {#each Object.entries(results_data[0]) as [performance, plot_data]}
-	<ResultsPlot {plot_data} title={performance} {performance} />
+	<ResultsPlot {plot_data} title={performance} {performance} {sweep_name}/>
 {/each}
 <!-- {/if} -->
 
@@ -676,13 +716,13 @@
 		>
 	</label>
 	<label>
-		<button on:click={clear} class="button-1">clear</button>
+		<button on:click={clear_experiments} class="button-1">clear</button>
 	</label>
 	<label>
-		<button on:click={save} class="button-1">Save</button>
+		<button on:click={save_experiments} class="button-1">Save</button>
 	</label>
 	<label>
-		<button on:click={load} class="button-1">Load</button>
+		<button on:click={load_experiments} class="button-1">Load</button>
 	</label>
 </div>
 

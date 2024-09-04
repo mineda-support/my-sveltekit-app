@@ -2,27 +2,21 @@
     import Plot from "svelte-plotly.js";
     export let plot_data;
     export let title, performance;
-    let sweep, value;
-
-    function get_sweep() {
-        [sweep, value] = plot_data[0].name.split("=");
-        sweep.trim();
-        console.log('sweep=', sweep, 'title=', title, 'performance=', performance);
-    }
+    export let sweep_name;
 </script>
 
 <Plot
     data={plot_data}
     layout={{
-        title: { title },
+        title: title,
         xaxis: {
-            title: { get_sweep },
+            title:  sweep_name ,
             autorange: "true",
             linewidth: 1,
             mirror: true,
         },
         yaxis: {
-            title: { performance },
+            title: performance,
             autorange: "true",
             linewidth: 1,
             mirror: true,

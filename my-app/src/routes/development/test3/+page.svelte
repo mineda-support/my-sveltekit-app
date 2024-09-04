@@ -5,9 +5,7 @@
 	// import { plot_result } from "./test_plot.svelte";
 	import Simulate from "./simulate.svelte";
 	import ConvertSchematic from "./convertSchematic.svelte";
-	import Experiment, {
-		set_trace_names,
-	} from "./experiment.svelte";
+	import Experiment, { set_trace_names } from "./experiment.svelte";
 	// import OpenLTspice, {update_elements} from "./openLTspice.svelte";
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
@@ -28,6 +26,7 @@
 	}
 	let db_data;
 	let ph_data;
+	let sweep_name;
 	export function handleMessage(event) {
 		console.log("handleMessage");
 		alert(event.detail.text);
@@ -134,27 +133,14 @@
 		);
 		let res2 = await response.json();
 		console.log(res2);
-		[plotdata, db_data, ph_data] = set_trace_names(res2, probes, elements, settings.step_precision);
+		[plotdata, db_data, ph_data, sweep_name] = set_trace_names(
+			res2,
+			probes,
+			elements,
+			settings.step_precision,
+		);
 	}
 
-	/*
-	function set_trace_names(plotdata) {
-		console.log("plotdata in set_trace_names:", plotdata);
-		for (const [ckt_name, elms] of Object.entries(elements)) {
-			for (const [elm, props] of Object.entries(elms)) {
-				//console.log([elm, props]);
-				if (elm == "step") {
-					parse_step_command(props, settings.step_precision).forEach(
-						function (src_value, index) {
-							plotdata[index].name = src_value;
-						},
-					);
-					return;
-				}
-			}
-		}
-	}
-	*/
 	export let data;
 	//probes_name.set(data.props.probes);
 	$: probes_name.set(probes);
@@ -230,7 +216,7 @@
 	function get_sweep_values(plotdata) {
 		let values = [];
 		let sweep, value;
-		console.log('plotdata in get_sweep_values=', plotdata);
+		console.log("plotdata in get_sweep_values=", plotdata);
 		plotdata.forEach((trace) => {
 			[sweep, value] = trace.name.split("=");
 			values.push(Number(value));
@@ -240,9 +226,9 @@
 
 	function get_performance(rows, index) {
 		let values = [];
-		rows.forEach(row => {
+		rows.forEach((row) => {
 			values.push(row[index]);
-		})
+		});
 		return values;
 	}
 
@@ -275,6 +261,7 @@
 			//}
 			//console.log(`results_data[0][${perf}]=`, results_data[0][perf]);
 		});
+		results_data[0] = results_data[0];
 		console.log("results_data=", results_data);
 	}
 
@@ -561,13 +548,21 @@
 		<button on:click={calculate_equation(results_data[0])} class="button-1">
 			Calculate</button
 		>
-		=>
 		{#if Array.isArray(calculated_value)}
-			{#each calculated_value as val}
-				<div>
-					{val}
-				</div>
-			{/each}
+			<table>
+				<tr>
+					{#each performances as perf}
+						<th>{perf}</th>
+					{/each}
+				</tr>
+				{#each calculated_value as vals}
+					<tr>
+						{#each vals as val}
+						<td>{val}</td>
+						{/each}
+					</tr>
+				{/each}
+			</table>
 		{/if}
 	</label>
 </div>
@@ -578,7 +573,7 @@
 {/each}
 <{/if} -->
 
-<Experiment {results_data} />
+<Experiment {results_data} {sweep_name}/>
 
 <style>
 	.button-1 {
