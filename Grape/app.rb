@@ -94,7 +94,7 @@ module Test
           ckt = LTspiceControl.new(File.basename(ckt_name), true)
           ckt.open(File.basename(ckt_name), true) if params[:showup]
           puts ckt.elements
-          {"elements" => ckt.elements, "info" => ckt.info}
+          {"elements" => ckt.elements, "info" => ckt.info, "models" => ckt.models}
         } 
       end
       desc 'Simulate'

@@ -7,3 +7,4 @@ export const equation_name = writable(undefined);
 export const ckt_store = writable({});
 export const elements_store = writable({});
 export const settings_store = writable({});
+export const models_store = writable({});
