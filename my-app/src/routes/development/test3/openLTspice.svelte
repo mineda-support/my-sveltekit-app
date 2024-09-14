@@ -17,7 +17,7 @@
 
   async function openLTspice(dir, file, showup) {
     if (file == undefined) {
-      alert("Please choose circuit to open");
+      alert("Please choose the circuit to open");
       return;
     }
     ckt_name.set(file);
@@ -160,7 +160,7 @@
     on:click={openLTspice(data.props.wdir, scoops, showup)}
     class="button-1"
   >
-    Click here to Open LTspice</button
+    Click here to read-in</button
   >
   <label>
     <input type="checkbox" bind:checked={showup} />

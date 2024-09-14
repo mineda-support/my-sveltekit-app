@@ -1,8 +1,31 @@
+<script context="module">
+    export function update_models(ckt, models) {
+        let update_mdls = {};
+        for (const [model_name, model_params] of Object.entries(ckt.models)) {
+            for (const [par, value] of Object.entries(model_params[1])) {
+                if (models[model_name][par] != value) {
+                    update_mdls[model_name] ||= {};
+                    update_mdls[model_name][par] = models[model_name][par];
+                }
+            }
+            if (update_mdls[model_name] != undefined) {
+                let target = ckt_name + ".asc";
+                console.log("let me update model_name=",
+                model_name, "with:", update_mdls[model_name]);
+                //update_mdls = encodeURIComponent(`{${update_mdls}}`);
+            }
+        }
+        return update_mdls;
+    }
+</script>
+
 <script>
-    import { ckt_name, dir_name, ckt_store } from "./stores.js";
+    import { ckt_name, dir_name, ckt_store, models_store } from "./stores.js";
     let file;
     let dir;
     let ckt;
+    let models;
+    //let models;
     //    let elements;
     ckt_name.subscribe((value) => {
         file = value;
@@ -13,40 +36,48 @@
     ckt_store.subscribe((value) => {
         ckt = value;
     });
-    /*
-    elements_store.subscribe((value) => {
-        elements = value;
+    models_store.subscribe((value) => {
+        models = value;
     });
-    */
+
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
 
     export async function goLTspice() {
+        if (ckt == undefined) {
+            alert("Please read-in the circuit before simulation");
+        }
         console.log(`openLTspice dir='${dir}' file='${file}'`);
         dispatch("elm_update", { text: "Update elements" });
-        const my_sleep = (ms) =>
-            new Promise((resolve) => setTimeout(resolve, ms));
-        await my_sleep(3000);
-        const encoded_params = `dir=${encodeURIComponent(
-            dir
+        //const my_sleep = (ms) =>
+        //    new Promise((resolve) => setTimeout(resolve, ms));
+        //await my_sleep(3000);
+        let encoded_params = `dir=${encodeURIComponent(
+            dir,
         )}&file=${encodeURIComponent(file)}`;
+        const models_update = update_models(ckt, models);
+        if (models_update != {}) {
+            encoded_params =
+                encoded_params +
+                `&models=${encodeURIComponent(JSON.stringify(models_update))}`;
+        }
         dispatch("sim_start", { text: "LTspice simulation started!" });
         let response = await fetch(
             `http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
-            {}
+            {},
         );
         let res2 = await response.json();
         console.log(res2);
         //if (ckt.info == null) {
-            response = await fetch(
-                `http://localhost:9292/api/ltspctl/info?${encoded_params}`,
-                {}
-            );
-            res2 = await response.json();
-            ckt.info = res2.info;
-            // console.log(ckt.info);
-            ckt_store.set(ckt);
-            //}
+        response = await fetch(
+            `http://localhost:9292/api/ltspctl/info?${encoded_params}`,
+            {},
+        );
+        res2 = await response.json();
+        ckt.info = res2.info;
+        // console.log(ckt.info);
+        ckt_store.set(ckt);
+        //}
         dispatch("sim_end", { text: "LTspice simulation ended!" });
         // plotdata = get_results();
         return res2;

@@ -40,6 +40,7 @@
 		ckt_store,
 		elements_store,
 		settings_store,
+		//models_store,
 	} from "./stores.js";
 	import { stringify } from "postcss";
 	import { A } from "plotly.js-dist";
@@ -49,6 +50,7 @@
 	let equation;
 	let ckt;
 	let elements;
+	//let models;
 
 	ckt_name.subscribe((value) => {
 		file = value;
@@ -69,6 +71,10 @@
 		elements = value;
 	});
 	elements_store.set({});
+	//models_store.subscribe((value) => {
+	//	models = value;
+	//});
+	//models_store.set({});
 	let settings = {}; //let title, title_x, title_y;
 	settings_store.subscribe((value) => {
 		settings = value;
@@ -118,6 +124,10 @@
 		console.log(
 			`Plot results@dir='${dir}' file='${file}' probes=${probes}`,
 		);
+		if (probes == undefined) {
+			alert("Simulation completed but probes for plot are not defined");
+			return;
+		}
 		if (probes != probes.trim()) {
 			alert("probes have unwanted leading space(s)");
 			return;
@@ -164,6 +174,7 @@
 			trace.checked = true;
 		}
 	}
+
 	async function update_elements(dir) {
 		for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
 			if (ckt_name[0] == ".") {
@@ -558,7 +569,7 @@
 				{#each calculated_value as vals}
 					<tr>
 						{#each vals as val}
-						<td>{val}</td>
+							<td>{val}</td>
 						{/each}
 					</tr>
 				{/each}
@@ -573,7 +584,7 @@
 {/each}
 <{/if} -->
 
-<Experiment {results_data} {sweep_name}/>
+<Experiment {results_data} {sweep_name} />
 
 <style>
 	.button-1 {
