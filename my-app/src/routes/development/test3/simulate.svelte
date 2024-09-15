@@ -55,7 +55,7 @@
         let encoded_params = `dir=${encodeURIComponent(
             dir,
         )}&file=${encodeURIComponent(file)}`;
-        const models_update = update_models(ckt, models);
+    const models_update = update_models>(ckt, models);
         if (models_update != {}) {
             encoded_params =
                 encoded_params +

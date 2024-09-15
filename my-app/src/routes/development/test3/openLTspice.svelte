@@ -197,12 +197,7 @@
         {/each}
       {/each}
     </div>
-    <input
-      id="TAB-02"
-      type="radio"
-      name="TAB"
-      class="tab-switch"
-    />
+    <input id="TAB-02" type="radio" name="TAB" class="tab-switch" />
     <label class="tab-label" for="TAB-02">SPICE models</label>
     <div class="tab-content" style="border:green solid 2px;">
       {#each Object.entries(models) as [model_name, model_params]}
