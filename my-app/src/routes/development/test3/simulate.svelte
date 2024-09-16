@@ -55,11 +55,11 @@
         let encoded_params = `dir=${encodeURIComponent(
             dir,
         )}&file=${encodeURIComponent(file)}`;
-    const models_update = update_models>(ckt, models);
+        const models_update = update_models(ckt, models);
         if (models_update != {}) {
             encoded_params =
                 encoded_params +
-                `&models=${encodeURIComponent(JSON.stringify(models_update))}`;
+                `&models_update=${encodeURIComponent(JSON.stringify(models_update))}`;
         }
         dispatch("sim_start", { text: "LTspice simulation started!" });
         let response = await fetch(
