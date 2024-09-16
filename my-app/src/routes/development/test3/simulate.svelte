@@ -49,9 +49,9 @@
         }
         console.log(`openLTspice dir='${dir}' file='${file}'`);
         dispatch("elm_update", { text: "Update elements" });
-        //const my_sleep = (ms) =>
-        //    new Promise((resolve) => setTimeout(resolve, ms));
-        //await my_sleep(3000);
+        const my_sleep = (ms) =>
+            new Promise((resolve) => setTimeout(resolve, ms));
+        await my_sleep(3000);
         let encoded_params = `dir=${encodeURIComponent(
             dir,
         )}&file=${encodeURIComponent(file)}`;

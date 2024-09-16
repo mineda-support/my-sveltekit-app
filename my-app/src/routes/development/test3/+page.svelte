@@ -317,7 +317,7 @@
 		if (plotdata != undefined) {
 			calculated_value = result.calculated_value.slice(
 				0,
-				plotdata.length,
+				plotdb_datadata.length,
 			);
 			if (measdata.length > 0) {
 				alert(
@@ -349,6 +349,7 @@
 		}
 	}
 	$: results_data = results_data;
+	let toggle = true;
 </script>
 
 <ConvertSchematic />
@@ -362,6 +363,8 @@
 	/>
 	<!-- Testplot / -->
 </div>
+<button on:click={() => (toggle = !toggle)} class="button-2">Show/hide</button>
+{#if toggle}
 <div>
 	{#if data.props != undefined}
 		<button
@@ -457,6 +460,7 @@
 		</label>
 	{/if}
 </div>
+{/if}
 {#if plotdata !== undefined}
 	<SinglePlot {plotdata} {measdata} {settings} />
 	<!-- Plot
@@ -593,5 +597,10 @@
 		text-align: left;
 		padding: 5px 10px;
 		border: 5px solid #ddd;
+	}
+	.button-2 {
+		background: lightgray;
+		text-align: left;
+		border: 2px solid #ddd;		
 	}
 </style>
