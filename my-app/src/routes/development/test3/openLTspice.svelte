@@ -76,6 +76,8 @@
     ckt_store.set(ckt);
     elements_store.set(elements);
     models_store.set(models);
+    alter = [{}];
+    alter_src = undefined;
     return res2;
   }
   let files;
@@ -130,6 +132,23 @@
     //const handle = await window.showDirectoryPicker();
     //wdir = handle.name; # does not return path
     goto("/development/test3?wdir=" + wdir);
+  }
+  let alter_src;
+  let alter=[{}];
+  let c, e;
+  $: {
+    if (alter_src != undefined) {
+      [c, e] = alter_src.split(':');
+      if (alter[0][alter_src] == undefined){
+        alter[0][alter_src]  = elements[c][e];
+      }
+    }
+  }
+
+  function add_alter() {}
+
+  function check_alter() {
+    console.log('alter=', alter)
   }
 </script>
 
@@ -205,7 +224,7 @@
         {#each Object.entries(model_params) as [param]}
           <label
             >{param}:
-            <input
+            <input 
               style="border:darkgray solid 1px;"
               bind:value={models[model_name][param]}
             /><br /></label
@@ -213,6 +232,26 @@
         {/each}
       {/each}
     </div>
+    <input id="TAB-03" type="radio" name="TAB" class="tab-switch" />
+    <label class="tab-label" for="TAB-03">Alter</label>
+    <div class="tab-content" style="border:blue solid 2px;">
+      <div>Add Alter</div>
+      <select bind:value={alter_src} style="border:darkgray solid 1px;">
+        {#each Object.entries(elements) as [ckt_name, elms]}
+            {#each Object.keys(elms) as elm}
+                <option value={[ckt_name, elm].join(":")}
+                    >{[ckt_name, elm].join(":")}</option
+                >
+            {/each}
+        {/each}
+      </select>  
+      <input
+      style="border:darkgray solid 1px;"
+      bind:value={alter[0][alter_src]} 
+    /><br/>
+      <button on:click={add_alter} class="button-item">New Tab</button>
+      <button on:click={check_alter} class="button-item">Check Alter</button>
+    </div>    
   </div>
   <!-- div class="grid">
     <textarea bind:value={elements_text} />
