@@ -37,6 +37,7 @@
 
 <script>
 	import Plot from "svelte-plotly.js";
+	import { update_elements } from "./simulate.svelte";
 	import InputValue from "./Utils/input_value.svelte";
 	import SweepSource from "./utils/sweep_source.svelte";
 	import ResultsPlot from "./utils/results_plot.svelte";
@@ -194,8 +195,9 @@
 
 	async function goLTspice2(ckt) {
 		console.log(`openLTspice dir='${dir}' file='${file}'`);
+        update_elements(dir, ckt, elements);
 		/* dispatch("elm_update", { text: "Update elements" });
-        const my_sleep = (ms) =>
+		const my_sleep = (ms) =>
             new Promise((resolve) => setTimeout(resolve, ms));
         await my_sleep(3000); */
 		console.log("equation=", equation);

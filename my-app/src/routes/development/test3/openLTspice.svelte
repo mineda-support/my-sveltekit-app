@@ -10,8 +10,7 @@
 </script>
 
 <script>
-  import { end_hydrating } from "svelte/internal";
-  // import ConvertSchematic from "./convertSchematic.svelte";
+  // import { end_hydrating } from "svelte/internal";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
 

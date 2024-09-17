@@ -3,22 +3,26 @@
 
     export let plotdata;
     export let measdata;
-    export let settings;
+    export let title;
+    export let title_x;
+    export let title_y;
+    export let xaxis_is_log;
+    export let yaxis_is_log;    
 </script>
 
 <Plot
 data={plotdata.concat(measdata.filter((trace) => trace.checked))}
 layout={{
-    title: settings.title,
+    title: title,
     xaxis: {
-        type: settings.xaxis_is_log ? "log" : "",
+        type: xaxis_is_log ? "log" : "",
         autorange: "true",
-        title: settings.title_x,
+        title: title_x,
     },
     yaxis: {
-        type: settings.yaxis_is_log ? "log" : "",
+        type: yaxis_is_log ? "log" : "",
         autorange: "true",
-        title: settings.title_y,
+        title: title_y,
     },
     margin: { t: 30 },
 }}

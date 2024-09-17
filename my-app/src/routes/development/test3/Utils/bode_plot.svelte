@@ -4,12 +4,16 @@
     export let settings;
     export let db_data;
     export let ph_data;
+    export let title;
+    export let title_x;
+    export let title_y1;
+    export let title_y2;
 </script>
 
 <Plot
     data={db_data}
     layout={{
-        title: settings.title,
+        title: title,
         xaxis: {
             type: "log",
             autorange: "true",
@@ -20,7 +24,7 @@
             autorange: "true",
             linewidth: 1,
             mirror: true,
-            title: settings.title_y1,
+            title: title_y1,
         },
         margin: { t: 30 },
     }}
@@ -35,13 +39,13 @@
             autorange: "true",
             linewidth: 1,
             mirror: true,
-            title: settings.title_x,
+            title: title_x,
         },
         yaxis: {
             autorange: "true",
             linewidth: 1,
             mirror: true,
-            title: settings.title_y2,
+            title: title_y2,
         },
         margin: { t: 30 },
     }}

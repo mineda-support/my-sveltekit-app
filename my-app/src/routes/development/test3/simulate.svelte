@@ -1,5 +1,55 @@
 <script context="module">
-    export function update_models(ckt, models) {
+
+export async function update_elements(dir, ckt, elements) {
+		for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
+			if (ckt_name[0] == ".") {
+				continue;
+			}
+			let target = ckt_name + ".asc";
+			console.log(
+				"update elements=",
+				elements,
+				` here @ dir= ${dir} file=${target}`,
+			);
+			let update_elms = "";
+			for (const [elm, props] of Object.entries(elms)) {
+				if (elements[ckt_name][elm] != get_control(props)) {
+					update_elms =
+						update_elms +
+						elm +
+						":'" +
+						elements[ckt_name][elm] +
+						"',";
+				}
+			}
+			if (update_elms != "") {
+				console.log("let me update ", target, " with:", update_elms);
+				update_elms = encodeURIComponent(`{${update_elms}}`);
+				let encoded_params = `dir=${encodeURIComponent(
+					dir,
+				)}&file=${encodeURIComponent(target)}`;
+				const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
+				console.log(command);
+				let response = await fetch(command, {});
+				let ckt = await response.json(); // ckt = {elements}
+				console.log("ckt=", ckt);
+
+				for (const [elm, props] of Object.entries(ckt.elements)) {
+					if (elements[ckt_name][elm] != get_control(props)) {
+						console.log(
+							`Update error! ${elm}: ${get_control(props)}vs.${
+								elements[ckt_name][elm]
+							}`,
+						);
+					}
+				}
+			}
+		}
+		ckt_store.set(ckt);
+		elements_store.set(elements);
+	}
+
+export function update_models(ckt, models) {
         let update_mdls = {};
         for (const [model_name, model_params] of Object.entries(ckt.models)) {
             for (const [par, value] of Object.entries(model_params[1])) {
@@ -20,10 +70,12 @@
 </script>
 
 <script>
-    import { ckt_name, dir_name, ckt_store, models_store } from "./stores.js";
+   	import { get_control } from "./openLTspice.svelte";
+    import { ckt_name, dir_name, ckt_store, elements_store, models_store } from "./stores.js";
     let file;
     let dir;
     let ckt;
+    let elements;
     let models;
     //let models;
     //    let elements;
@@ -35,6 +87,9 @@
     });
     ckt_store.subscribe((value) => {
         ckt = value;
+    });
+    elements_store.subscribe((value) => {
+        elements = value;
     });
     models_store.subscribe((value) => {
         models = value;
@@ -48,10 +103,11 @@
             alert("Please read-in the circuit before simulation");
         }
         console.log(`openLTspice dir='${dir}' file='${file}'`);
-        dispatch("elm_update", { text: "Update elements" });
-        const my_sleep = (ms) =>
-            new Promise((resolve) => setTimeout(resolve, ms));
-        await my_sleep(3000);
+        //dispatch("elm_update", { text: "Update elements" });
+        update_elements(dir, ckt, elements);
+        //const my_sleep = (ms) =>
+        //    new Promise((resolve) => setTimeout(resolve, ms));
+        //await my_sleep(3000);
         let encoded_params = `dir=${encodeURIComponent(
             dir,
         )}&file=${encodeURIComponent(file)}`;

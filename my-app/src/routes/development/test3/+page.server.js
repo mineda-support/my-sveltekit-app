@@ -17,7 +17,6 @@ export function load({ url }) {
     home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     let wdir = url.searchParams.get('wdir') || home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     let ckt = url.searchParams.get('ckt');
-    let probes = url.searchParams.get('probes');
     console.log(`wdir: ${wdir}`);
     if (!wdir.endsWith('/')) wdir = wdir + '/';
     if (fs.existsSync(wdir)) {
@@ -35,7 +34,7 @@ export function load({ url }) {
         console.log(setting_files);
         return {
             props: {
-                wdir: wdir, ckt: ckt, probes: probes, files: files.map(a => path.basename(a)), //, probes: probes
+                wdir: wdir, ckt: ckt, files: files.map(a => path.basename(a)), //, probes: probes
                 setting_names: setting_files.map(a => path.basename(a).replace('_settings.json', ''))
             }
         };
