@@ -22,13 +22,14 @@
 			for (const [elm, props] of Object.entries(elms)) {
 				//console.log([elm, props]);
 				if (elm == "step") {
-					[sweep_name, src_values] = parse_step_command(props, step_precision);
-					src_values.forEach(
-						function (src_value, index) {
-							plotdata[index].name = src_value;
-						},
+					[sweep_name, src_values] = parse_step_command(
+						props,
+						step_precision,
 					);
-					return(sweep_name);
+					src_values.forEach(function (src_value, index) {
+						plotdata[index].name = src_value;
+					});
+					return sweep_name;
 				}
 			}
 		}
@@ -44,28 +45,21 @@
 	import {
 		ckt_name,
 		dir_name,
-		probes_name,
-		equation_name,
 		ckt_store,
 		elements_store,
 		settings_store,
 	} from "./stores.js";
 	import { bindAll, dot$1, number, update } from "plotly.js-dist";
 	let ckt;
-	let file, dir, probes, equation;
+	let file, dir, equation;
 	export let results_data;
+	export let probes;
 
 	ckt_name.subscribe((value) => {
 		file = value;
 	});
 	dir_name.subscribe((value) => {
 		dir = value;
-	});
-	probes_name.subscribe((value) => {
-		probes = value;
-	});
-	equation_name.subscribe((value) => {
-		equation = value;
 	});
 	ckt_store.subscribe((value) => {
 		ckt = value;
@@ -75,7 +69,6 @@
 		elements = value;
 	});
 	let settings = {};
-	//settings.start_dec_val2 = unknown
 	settings_store.subscribe((value) => {
 		settings = value;
 	});
@@ -177,7 +170,7 @@
 	function parse_step_command(props, precision) {
 		// like '.step param ccap 0.2p 2p 0.5p'
 		const items = props.split(/ +/);
-	    const name = items[2];
+		const name = items[2];
 		const start = eng2f(items[3]);
 		const stop = eng2f(items[4]);
 		const step = eng2f(items[5]);
@@ -195,7 +188,7 @@
 
 	async function goLTspice2(ckt) {
 		console.log(`openLTspice dir='${dir}' file='${file}'`);
-        update_elements(dir, ckt, elements);
+		update_elements(dir, ckt, elements);
 		/* dispatch("elm_update", { text: "Update elements" });
 		const my_sleep = (ms) =>
             new Promise((resolve) => setTimeout(resolve, ms));
@@ -671,7 +664,7 @@
 
 <!-- {#if results_data != undefined && results_data[0].length > 0} -->
 {#each Object.entries(results_data[0]) as [performance, plot_data]}
-	<ResultsPlot {plot_data} title={performance} {performance} {sweep_name}/>
+	<ResultsPlot {plot_data} title={performance} {performance} {sweep_name} />
 {/each}
 <!-- {/if} -->
 

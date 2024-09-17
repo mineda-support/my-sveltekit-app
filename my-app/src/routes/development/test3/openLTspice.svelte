@@ -12,6 +12,9 @@
 <script>
   // import { end_hydrating } from "svelte/internal";
   import { createEventDispatcher } from "svelte";
+  export let data;
+  export let probes;
+
   const dispatch = createEventDispatcher();
 
   async function openLTspice(dir, file, showup) {
@@ -79,8 +82,7 @@
     alter_src = undefined;
     return res2;
   }
-  let files;
-  export let data;
+
   function fakeOpen(file) {
     alert(`you have chosen ${file}`);
   }
@@ -91,15 +93,10 @@
   import {
     ckt_name,
     dir_name,
-    probes_name,
     ckt_store,
     elements_store,
     models_store,
   } from "./stores.js";
-  let probes;
-  probes_name.subscribe((value) => {
-    probes = value;
-  });
   let ckt;
   ckt_store.subscribe((value) => {
     ckt = value;
@@ -125,7 +122,6 @@
     } else {
       probes = probes + ", " + node;
     }
-    probes_name.set(probes);
   }
   function switch_wdir(wdir) {
     //const handle = await window.showDirectoryPicker();
@@ -133,13 +129,13 @@
     goto("/development/test3?wdir=" + wdir);
   }
   let alter_src;
-  let alter=[{}];
+  let alter = [{}];
   let c, e;
   $: {
     if (alter_src != undefined) {
-      [c, e] = alter_src.split(':');
-      if (alter[0][alter_src] == undefined){
-        alter[0][alter_src]  = elements[c][e];
+      [c, e] = alter_src.split(":");
+      if (alter[0][alter_src] == undefined) {
+        alter[0][alter_src] = elements[c][e];
       }
     }
   }
@@ -147,7 +143,7 @@
   function add_alter() {}
 
   function check_alter() {
-    console.log('alter=', alter)
+    console.log("alter=", alter);
   }
 </script>
 
@@ -223,7 +219,7 @@
         {#each Object.entries(model_params) as [param]}
           <label
             >{param}:
-            <input 
+            <input
               style="border:darkgray solid 1px;"
               bind:value={models[model_name][param]}
             /><br /></label
@@ -237,20 +233,20 @@
       <div>Add Alter</div>
       <select bind:value={alter_src} style="border:darkgray solid 1px;">
         {#each Object.entries(elements) as [ckt_name, elms]}
-            {#each Object.keys(elms) as elm}
-                <option value={[ckt_name, elm].join(":")}
-                    >{[ckt_name, elm].join(":")}</option
-                >
-            {/each}
+          {#each Object.keys(elms) as elm}
+            <option value={[ckt_name, elm].join(":")}
+              >{[ckt_name, elm].join(":")}</option
+            >
+          {/each}
         {/each}
-      </select>  
+      </select>
       <input
-      style="border:darkgray solid 1px;"
-      bind:value={alter[0][alter_src]} 
-    /><br/>
+        style="border:darkgray solid 1px;"
+        bind:value={alter[0][alter_src]}
+      /><br />
       <button on:click={add_alter} class="button-item">New Tab</button>
       <button on:click={check_alter} class="button-item">Check Alter</button>
-    </div>    
+    </div>
   </div>
   <!-- div class="grid">
     <textarea bind:value={elements_text} />

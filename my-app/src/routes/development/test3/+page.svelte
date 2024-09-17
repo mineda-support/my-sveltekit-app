@@ -10,8 +10,7 @@
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
 	// import Plot from "svelte-plotly.js";
-    import PlotResults from "./plotResults.svelte"
-	import ResultsPlot from "./utils/results_plot.svelte";
+	import PlotResults from "./plotResults.svelte";
 
 	import {
 		ckt_name,
@@ -75,29 +74,54 @@
 	}
 	$: results_data = results_data;
 
-	function plot_results() {
-
-	}
+	function plot_results() {}
 	function clear_all_plots() {
-		ckt_data = {measdata: [], plotdata: [], 
-			db_data: [], ph_data: [], calculated_value: []};
+		ckt_data = {
+			measdata: [],
+			plotdata: [],
+			db_data: [],
+			ph_data: [],
+			calculated_value: [],
+		};
 	}
 
-	settings = {plot_number: 0, plot_showhide: [],
-		measfile: [], step_precison: [], 
-		step_precision: [], title: [], title_x: [], title_y: [],
-		title_y1: [], title_y2: [], yaxis_is_log: [], xaxis_is_log: [],
-		equation: [], performance_names: [], probes: [],
-		reject: [], reverse: [], tracemode: []
+	settings = {
+		plot_number: 0,
+		plot_showhide: [],
+		measfile: [],
+		step_precison: [],
+		step_precision: [],
+		title: [],
+		title_x: [],
+		title_y: [],
+		title_y1: [],
+		title_y2: [],
+		yaxis_is_log: [],
+		xaxis_is_log: [],
+		equation: [],
+		performance_names: [],
+		probes: [],
+		reject: [],
+		reverse: [],
+		tracemode: [],
 	};
-	let ckt_data = {measdata: [], plotdata: [], db_data: [],
-		ph_data: [], calculated_value: []
+	let ckt_data = {
+		measdata: [],
+		plotdata: [],
+		db_data: [],
+		ph_data: [],
+		calculated_value: [],
 	};
-settings.plot_showhide[settings.plot_number] = true;
+	settings.plot_showhide[settings.plot_number] = true;
+	ckt_data.measdata[settings.plot_number] = [];
 </script>
 
 <ConvertSchematic />
-<OpenLTspice {data} on:open_end={plot_results} />
+<OpenLTspice
+	{data}
+	bind:probes={settings.probes[settings.plot_number]}
+	plot_on:open_end={plot_results}
+/>
 <Settings {data} {ckt} />
 <div>
 	<Simulate on:sim_end={plot_results} on:sim_start={clear_all_plots} />
@@ -105,30 +129,32 @@ settings.plot_showhide[settings.plot_number] = true;
 </div>
 {#each Array(settings.plot_number + 1) as _, i}
 	<PlotResults
-	    bind:plot_showhide = {settings.plot_showhide[i]}
-		bind:results_data = {results_data}
-		bind:dir = {data.props.dir}
-		bind:file = {data.props.file}
-		bind:measfile = {settings.measfile[i]}
-        bind:step_precision = {settings.step_precision[i]}
-		bind:title = {settings.title[i]}
-		bind:title_x = {settings.title_x[i]}
-		bind:title_y = {settings.title_y[i]}
-		bind:title_y1 = {settings.title_y1[i]}
-		bind:title_y2 = {settings.title_y2[i]}		
-		bind:yaxis_is_log = {settings.y_axis_is_log}
-		bind:xaxis_is_log = {settings.x_axis_is_log}
-        bind:equation = {settings.equation[i]}
-		bind:performance_names = {settings.performance_names[i]}
+    	{sweep_name}
+		bind:plot_showhide={settings.plot_showhide[i]}
+		bind:results_data
+		bind:dir={dir}
+		bind:file={file}
+		bind:elements={elements}
+		bind:measfile={settings.measfile[i]}
+		bind:step_precision={settings.step_precision[i]}
+		bind:title={settings.title[i]}
+		bind:title_x={settings.title_x[i]}
+		bind:title_y={settings.title_y[i]}
+		bind:title_y1={settings.title_y1[i]}
+		bind:title_y2={settings.title_y2[i]}
+		bind:yaxis_is_log={settings.yaxis_is_log}
+		bind:xaxis_is_log={settings.xaxis_is_log}
+		bind:equation={settings.equation[i]}
+		bind:performance_names={settings.performance_names[i]}
 		bind:probes={settings.probes[i]}
-		bind:plotdata = {ckt_data.plotdata[i]}
-		bind:db_data = {ckt_data.db_data[i]}
-		bind:ph_data = {ckt_data.ph_data[i]}
-		bind:measdata = {ckt_data.measdata[i]}
-		bind:calculated_value = {ckt_data.calculated_value[i]}	
-		bind:reject = {settings.reject[i]}
-		bind:reverse = {settings.reverse[i]}
-		bind:tracemode = {settings.tracemode[i]}
+		bind:plotdata={ckt_data.plotdata[i]}
+		bind:db_data={ckt_data.db_data[i]}
+		bind:ph_data={ckt_data.ph_data[i]}
+		bind:measdata={ckt_data.measdata[i]}
+		bind:calculated_value={ckt_data.calculated_value[i]}
+		bind:reject={settings.reject[i]}
+		bind:reverse={settings.reverse[i]}
+		bind:tracemode={settings.tracemode[i]}
 	></PlotResults>
 {/each}
 
@@ -138,4 +164,8 @@ settings.plot_showhide[settings.plot_number] = true;
 {/each}
 <{/if} -->
 
-<Experiment {results_data} {sweep_name} />
+<Experiment
+	{results_data}
+	{sweep_name}
+	bind:probes={settings.probes[settings.plot_number]}
+/>

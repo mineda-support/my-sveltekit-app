@@ -1,12 +1,7 @@
 <script>
-  import { probes_name, equation_name, settings_store } from "./stores.js";
-  let probes, equation, settings;
-  probes_name.subscribe((value) => {
-    probes = value;
-  });
-  equation_name.subscribe((value) => {
-    equation = value;
-  });
+  import { settings_store } from "./stores.js";
+  let settings;
+
   settings_store.subscribe((value) => {
     settings = value;
   });
@@ -15,12 +10,12 @@
     const props = data.props;
     props.settings_name = settings_name;
     props.ckt = ckt;
-    console.log('settings=', settings);
+    console.log("settings=", settings);
     props.settings = {};
     for (const [item, value] of Object.entries(settings)) {
       props.settings[item] = value;
     }
-    console.log('props=', props);
+    console.log("props=", props);
     const response = await fetch("/development/test3/settings", {
       method: "POST",
       body: JSON.stringify(props),
@@ -46,16 +41,16 @@
     // const result = await response.json();
     const new_settings = await response.json();
     // probes_name.set(probes);
-    console.log('new_settings=', new_settings);
+    console.log("new_settings=", new_settings);
     console.log([new_settings.equation, new_settings.probes]);
     equation_name.set(new_settings.equation);
     probes_name.set(new_settings.probes);
     // settings = {};
-    for (const [item, value] of Object.entries(new_settings['settings'])) {
+    for (const [item, value] of Object.entries(new_settings["settings"])) {
       settings[item] = value;
     }
     settings_store.set(settings);
-    console.log('settings=', settings);
+    console.log("settings=", settings);
   }
   let settings_name = "default";
   export let data, ckt;
@@ -85,9 +80,9 @@
   </button>
   <select bind:value={settings_name} style="border:darkgray solid 1px;">
     {#if data.props != undefined}
-    {#each data.props.setting_names as setting}
-      <option value={setting}>{setting}</option>
-    {/each}
+      {#each data.props.setting_names as setting}
+        <option value={setting}>{setting}</option>
+      {/each}
     {/if}
   </select>
 </div>

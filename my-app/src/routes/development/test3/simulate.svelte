@@ -1,55 +1,54 @@
 <script context="module">
+    export async function update_elements(dir, ckt, elements) {
+        for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
+            if (ckt_name[0] == ".") {
+                continue;
+            }
+            let target = ckt_name + ".asc";
+            console.log(
+                "update elements=",
+                elements,
+                ` here @ dir= ${dir} file=${target}`,
+            );
+            let update_elms = "";
+            for (const [elm, props] of Object.entries(elms)) {
+                if (elements[ckt_name][elm] != get_control(props)) {
+                    update_elms =
+                        update_elms +
+                        elm +
+                        ":'" +
+                        elements[ckt_name][elm] +
+                        "',";
+                }
+            }
+            if (update_elms != "") {
+                console.log("let me update ", target, " with:", update_elms);
+                update_elms = encodeURIComponent(`{${update_elms}}`);
+                let encoded_params = `dir=${encodeURIComponent(
+                    dir,
+                )}&file=${encodeURIComponent(target)}`;
+                const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
+                console.log(command);
+                let response = await fetch(command, {});
+                let ckt = await response.json(); // ckt = {elements}
+                console.log("ckt=", ckt);
 
-export async function update_elements(dir, ckt, elements) {
-		for (const [ckt_name, elms] of Object.entries(ckt.elements)) {
-			if (ckt_name[0] == ".") {
-				continue;
-			}
-			let target = ckt_name + ".asc";
-			console.log(
-				"update elements=",
-				elements,
-				` here @ dir= ${dir} file=${target}`,
-			);
-			let update_elms = "";
-			for (const [elm, props] of Object.entries(elms)) {
-				if (elements[ckt_name][elm] != get_control(props)) {
-					update_elms =
-						update_elms +
-						elm +
-						":'" +
-						elements[ckt_name][elm] +
-						"',";
-				}
-			}
-			if (update_elms != "") {
-				console.log("let me update ", target, " with:", update_elms);
-				update_elms = encodeURIComponent(`{${update_elms}}`);
-				let encoded_params = `dir=${encodeURIComponent(
-					dir,
-				)}&file=${encodeURIComponent(target)}`;
-				const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
-				console.log(command);
-				let response = await fetch(command, {});
-				let ckt = await response.json(); // ckt = {elements}
-				console.log("ckt=", ckt);
+                for (const [elm, props] of Object.entries(ckt.elements)) {
+                    if (elements[ckt_name][elm] != get_control(props)) {
+                        console.log(
+                            `Update error! ${elm}: ${get_control(props)}vs.${
+                                elements[ckt_name][elm]
+                            }`,
+                        );
+                    }
+                }
+            }
+        }
+        ckt_store.set(ckt);
+        elements_store.set(elements);
+    }
 
-				for (const [elm, props] of Object.entries(ckt.elements)) {
-					if (elements[ckt_name][elm] != get_control(props)) {
-						console.log(
-							`Update error! ${elm}: ${get_control(props)}vs.${
-								elements[ckt_name][elm]
-							}`,
-						);
-					}
-				}
-			}
-		}
-		ckt_store.set(ckt);
-		elements_store.set(elements);
-	}
-
-export function update_models(ckt, models) {
+    export function update_models(ckt, models) {
         let update_mdls = {};
         for (const [model_name, model_params] of Object.entries(ckt.models)) {
             for (const [par, value] of Object.entries(model_params[1])) {
@@ -60,8 +59,12 @@ export function update_models(ckt, models) {
             }
             if (update_mdls[model_name] != undefined) {
                 let target = ckt_name + ".asc";
-                console.log("let me update model_name=",
-                model_name, "with:", update_mdls[model_name]);
+                console.log(
+                    "let me update model_name=",
+                    model_name,
+                    "with:",
+                    update_mdls[model_name],
+                );
                 //update_mdls = encodeURIComponent(`{${update_mdls}}`);
             }
         }
@@ -70,8 +73,14 @@ export function update_models(ckt, models) {
 </script>
 
 <script>
-   	import { get_control } from "./openLTspice.svelte";
-    import { ckt_name, dir_name, ckt_store, elements_store, models_store } from "./stores.js";
+    import { get_control } from "./openLTspice.svelte";
+    import {
+        ckt_name,
+        dir_name,
+        ckt_store,
+        elements_store,
+        models_store,
+    } from "./stores.js";
     let file;
     let dir;
     let ckt;

@@ -1,7 +1,6 @@
 <script>
     import Plot from "svelte-plotly.js";
-    
-    export let settings;
+
     export let db_data;
     export let ph_data;
     export let title;
