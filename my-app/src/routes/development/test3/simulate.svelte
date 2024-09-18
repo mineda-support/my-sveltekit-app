@@ -154,11 +154,4 @@
 >
 
 <style>
-    .button-1 {
-        /* width: 25%; */
-        background: lightblue;
-        text-align: left;
-        padding: 5px 10px;
-        border: 5px solid #ddd;
-    }
 </style>

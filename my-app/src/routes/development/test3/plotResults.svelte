@@ -24,14 +24,24 @@
     import SinglePlot from "./utils/single_plot.svelte";
     import { set_trace_names } from "./experiment.svelte";
 
-    export let dir, file, measfile, plot_showhide;
+    export let dir, file, measfile, plot_showhide, plot_number;
     export let reject, reverse, tracemode;
-    export let equation, probes, performance_names;
     export let title, title_x, title_y, title_y1, title_y2;
+    export let equation, probes, performance_names;
     export let xaxis_is_log, yaxis_is_log;
     export let step_precision, calculated_value;
     export let plotdata, db_data, ph_data, measdata;
-    export let results_data, elements, sweep_name;
+    export let results_data, elements;
+
+	let sweep_name;
+    let performances;
+	$: {
+		if (performance_names != undefined) {
+			performances = Array.isArray(performance_names)
+				? performance_names
+				: performance_names.split(",").map((a) => a.trim());
+		}
+	}
 
     const options = {
         types: [
@@ -127,10 +137,14 @@
             plotdata,
             db_data,
             ph_data,
-            measdata.filter((trace) => trace.checked),
+            (measdata == undefined) ? [] : measdata.filter((trace) => trace.checked),
         );
         console.log("values in calculate_equation:", calculated_value);
         const equation_array = equation.split(",");
+        if (performances == undefined) {
+            alert('Performance name(s) for equation(s) not defined');
+            return;
+        }
         performances.forEach(function (perf, index) {
             //console.log("perf, index=", [perf, index]);
             //console.log('results_data:', results_data);
@@ -328,6 +342,7 @@
     </div>
 {/if}
 {#if plot_showhide}
+    <button on:click={() => (plot_number = plot_number + 1)} class="button-2">Add plot</button>
     <div>
         <label>
             Performance name(s)
@@ -366,19 +381,8 @@
             {/if}
         </label>
     </div>
+    <hr>
 {/if}
 
 <style>
-    .button-1 {
-        /* width: 25%; */
-        background: lightblue;
-        text-align: left;
-        padding: 5px 10px;
-        border: 5px solid #ddd;
-    }
-    .button-2 {
-        background: lightgray;
-        text-align: left;
-        border: 2px solid #ddd;
-    }
 </style>

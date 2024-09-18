@@ -1,10 +1,13 @@
 <script>
+  /*
   import { settings_store } from "./stores.js";
   let settings;
 
   settings_store.subscribe((value) => {
     settings = value;
   });
+  */
+  export let settings;
 
   async function save_settings(data, settings_name, ckt) {
     const props = data.props;
@@ -24,7 +27,7 @@
       },
     });
     const setting_names = await response.json();
-    console.log("settings:", setting_names);
+    console.log("setting names:", setting_names);
     if (setting_names.includes(settings_name)) {
       alert(`${settings_name} saved`);
       data.props.setting_names = setting_names;
@@ -43,17 +46,16 @@
     // probes_name.set(probes);
     console.log("new_settings=", new_settings);
     console.log([new_settings.equation, new_settings.probes]);
-    equation_name.set(new_settings.equation);
-    probes_name.set(new_settings.probes);
+    equation = new_settings.equation;
+    probes = new_settings.probes;
     // settings = {};
     for (const [item, value] of Object.entries(new_settings["settings"])) {
       settings[item] = value;
     }
-    settings_store.set(settings);
     console.log("settings=", settings);
   }
   let settings_name = "default";
-  export let data, ckt;
+  export let data, ckt, equation, probes;
 </script>
 
 <div>
@@ -88,11 +90,4 @@
 </div>
 
 <style>
-  .button-1 {
-    /* width: 25%; */
-    background: lightblue;
-    text-align: left;
-    padding: 5px 10px;
-    border: 5px solid #ddd;
-  }
 </style>

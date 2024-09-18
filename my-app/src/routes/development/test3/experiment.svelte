@@ -34,11 +34,30 @@
 			}
 		}
 	}
+
+	function parse_step_command(props, precision) {
+		// like '.step param ccap 0.2p 2p 0.5p'
+		const items = props.split(/ +/);
+		const name = items[2];
+		const start = eng2f(items[3]);
+		const stop = eng2f(items[4]);
+		const step = eng2f(items[5]);
+		//console.log("step=", [name, start, stop, step]);
+		let src_values = [];
+		for (let v = start; v < stop; v = v + step) {
+			src_values.push(`${name}=${v.toPrecision(precision)}`);
+		}
+		if (stop > start + step * (src_values.length - 1)) {
+			src_values.push(`${name}=${stop.toPrecision(precision)}`);
+		}
+		console.log("src_values in parse_step_command=", src_values);
+		return [name, src_values];
+	}
 </script>
 
 <script>
 	import Plot from "svelte-plotly.js";
-	import { update_elements } from "./simulate.svelte";
+	import { update_elements, update_models } from "./simulate.svelte";
 	import InputValue from "./Utils/input_value.svelte";
 	import SweepSource from "./utils/sweep_source.svelte";
 	import ResultsPlot from "./utils/results_plot.svelte";
@@ -46,14 +65,19 @@
 		ckt_name,
 		dir_name,
 		ckt_store,
-		elements_store,
-		settings_store,
+		models_store,
 	} from "./stores.js";
 	import { bindAll, dot$1, number, update } from "plotly.js-dist";
 	let ckt;
-	let file, dir, equation;
+	let file, dir;
+	let models;
+
+	export let settings;
 	export let results_data;
+	export let elements;
 	export let probes;
+	export let equation; 
+	export let performance_names;
 
 	ckt_name.subscribe((value) => {
 		file = value;
@@ -64,14 +88,9 @@
 	ckt_store.subscribe((value) => {
 		ckt = value;
 	});
-	let elements;
-	elements_store.subscribe((value) => {
-		elements = value;
-	});
-	let settings = {};
-	settings_store.subscribe((value) => {
-		settings = value;
-	});
+    models_store.subscribe((value) => {
+        models = value;
+    });
 
 	function get_sweep_values(plotdata) {
 		let values = [];
@@ -167,25 +186,6 @@
 		return Number(s.substring(0, i)) * e;
 	}
 
-	function parse_step_command(props, precision) {
-		// like '.step param ccap 0.2p 2p 0.5p'
-		const items = props.split(/ +/);
-		const name = items[2];
-		const start = eng2f(items[3]);
-		const stop = eng2f(items[4]);
-		const step = eng2f(items[5]);
-		//console.log("step=", [name, start, stop, step]);
-		let src_values = [];
-		for (let v = start; v < stop; v = v + step) {
-			src_values.push(`${name}=${v.toPrecision(precision)}`);
-		}
-		if (stop > start + step * (src_values.length - 1)) {
-			src_values.push(`${name}=${stop.toPrecision(precision)}`);
-		}
-		console.log("src_values in parse_step_command=", src_values);
-		return [name, src_values];
-	}
-
 	async function goLTspice2(ckt) {
 		console.log(`openLTspice dir='${dir}' file='${file}'`);
 		update_elements(dir, ckt, elements);
@@ -194,11 +194,17 @@
             new Promise((resolve) => setTimeout(resolve, ms));
         await my_sleep(3000); */
 		console.log("equation=", equation);
-		const encoded_params = `dir=${encodeURIComponent(
+		let encoded_params = `dir=${encodeURIComponent(
 			dir,
 		)}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
 			probes,
 		)}&equation=${encodeURIComponent(equation)}`;
+		const models_update = update_models(ckt, models);
+        if (models_update != {}) {
+            encoded_params =
+                encoded_params +
+                `&models_update=${encodeURIComponent(JSON.stringify(models_update))}`;
+        }
 		// dispatch("sim_start", { text: "LTspice simulation started!" });
 		let response = await fetch(
 			`http://localhost:9292/api/ltspctl/simulate?${encoded_params}`,
@@ -355,8 +361,9 @@
 		console.log("src[0]=", settings.src[0]);
 		console.log("src_plus[0]=", settings.src_plus[0]);
 		console.log("src_values[0]=", settings.src_values[0]);
-		settings.sweep_title = settings.src[0];
+		//settings.sweep_title = settings.src[0];
 		console.log("sweep_title=", settings.sweep_title[0]);
+		//settings.result_title = [];
 		console.log("result_title=", settings.result_title[0]);
 		results_data = [];
 		results_data[0] = [];
@@ -667,12 +674,12 @@
 	<ResultsPlot {plot_data} title={performance} {performance} {sweep_name} />
 {/each}
 <!-- {/if} -->
-
 <div>Make Experiments</div>
 {#each Array(settings.result_number + 1) as _, i}
 	<SweepSource
 		source_title="{i + 1}{`${indicator(i + 1)} source`}"
 		bind:src={settings.src[i]}
+		bind:src_precision={settings.src_precision[i]}
 		bind:par_name={settings.par_name[i]}
 		bind:src_values={settings.src_values[i]}
 		bind:src_plus={settings.src_plus[i]}
@@ -683,13 +690,15 @@
 		bind:src_value={settings.source_value[i]}
 		bind:start_dec_val={settings.start_dec_val[i]}
 		bind:stop_dec_val={settings.stop_dec_val[i]}
-		bind:dec_incr={settings.dec_points[i]}
-		bind:src_precision={settings.src_precision[i]}
-		bind:elements
+		bind:dec_points={settings.dec_points[i]}
+		bind:start_oct_val={settings.start_dec_val[i]}
+		bind:stop_oct_val={settings.stop_dec_val[i]}
+		bind:oct_points={settings.dec_points[i]}
+		bind:elements={elements}
 	></SweepSource>
 {/each}
 <label>
-	<button on:click={add_experiment} class="button-1">Add experiment</button>
+	<button on:click={add_experiment} class="button-2">Add experiment</button>
 </label>
 <label>
 	<button on:click={clear_experiment} class="button-1"
@@ -864,11 +873,4 @@ width: 90%;"
 {/if}
 
 <style>
-	.button-1 {
-		/* width: 25%; */
-		background: lightblue;
-		text-align: left;
-		padding: 5px 10px;
-		border: 5px solid #ddd;
-	}
 </style>

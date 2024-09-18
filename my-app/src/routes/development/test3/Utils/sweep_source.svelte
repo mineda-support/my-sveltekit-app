@@ -2,19 +2,19 @@
     import InputValue from "./input_value.svelte";
     export let src;
     export let par_name;
+    export let src_values;
     export let src_plus;
-    export let sweep_type;
+    export let sweep_type='Linear';
     export let start_lin_val;
     export let stop_lin_val;
     export let lin_incr;
+    export let src_value;
     export let start_dec_val;
     export let stop_dec_val;
     export let dec_points;
     export let start_oct_val;
     export let stop_oct_val;
     export let oct_points;
-    export let value_list;
-    export let src_values;
     export let elements;
     export let source_title;
     export let src_precision=3;
@@ -67,6 +67,7 @@
         src_plus.pop();
         console.log("src_plus=", src_plus);
     }
+    let value_list=[];
 </script>
 
 <div>
@@ -146,11 +147,4 @@
 </div>
 
 <style>
-    .button-1 {
-        /* width: 25%; */
-        background: lightblue;
-        text-align: left;
-        padding: 5px 10px;
-        border: 5px solid #ddd;
-    }
 </style>

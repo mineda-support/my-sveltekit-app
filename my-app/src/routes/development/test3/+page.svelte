@@ -55,7 +55,7 @@
 
 	let results_data = [];
 	results_data[0] = [];
-	let sweep_name;
+
 	export function handleMessage(event) {
 		console.log("handleMessage");
 		alert(event.detail.text);
@@ -64,14 +64,6 @@
 
 	let calculated_value;
 	// $: calculated_value = calculated_value;
-	let performances;
-	$: {
-		if (settings.performance_names != undefined) {
-			performances = Array.isArray(settings.performance_names)
-				? settings.performance_names
-				: settings.performance_names.split(",").map((a) => a.trim());
-		}
-	}
 	$: results_data = results_data;
 
 	function plot_results() {}
@@ -89,7 +81,6 @@
 		plot_number: 0,
 		plot_showhide: [],
 		measfile: [],
-		step_precison: [],
 		step_precision: [],
 		title: [],
 		title_x: [],
@@ -104,6 +95,26 @@
 		reject: [],
 		reverse: [],
 		tracemode: [],
+		par_name: [],
+		sweep_type: [],
+		start_lin_val: [],
+		stop_lin_val: [],
+		lin_incr: [],
+		src_value: [],
+		start_dec_val: [],
+		stop_dec_val: [],
+		dec_points: [],
+		start_oct_val: [],
+		stop_oct_val: [],
+		oct_points: [],
+		src_title: [],
+		src_precision: [],
+
+		src: [],
+		src_plus: [],
+		src_values: [],
+		sweep_title: [],
+		result_title: [],
 	};
 	let ckt_data = {
 		measdata: [],
@@ -113,6 +124,7 @@
 		calculated_value: [],
 	};
 	settings.plot_showhide[settings.plot_number] = true;
+	settings.probes[settings.plot_number] = "";
 	ckt_data.measdata[settings.plot_number] = [];
 </script>
 
@@ -122,19 +134,25 @@
 	bind:probes={settings.probes[settings.plot_number]}
 	plot_on:open_end={plot_results}
 />
-<Settings {data} {ckt} />
+<Settings
+	{data}
+	{ckt}
+	bind:equation={settings.equation}
+	bind:probes={settings.probes}
+	bind:settings
+/>
 <div>
 	<Simulate on:sim_end={plot_results} on:sim_start={clear_all_plots} />
 	<!-- Testplot / -->
 </div>
 {#each Array(settings.plot_number + 1) as _, i}
 	<PlotResults
-    	{sweep_name}
+		bind:plot_number={settings.plot_number}
 		bind:plot_showhide={settings.plot_showhide[i]}
 		bind:results_data
-		bind:dir={dir}
-		bind:file={file}
-		bind:elements={elements}
+		bind:dir
+		bind:file
+		bind:elements
 		bind:measfile={settings.measfile[i]}
 		bind:step_precision={settings.step_precision[i]}
 		bind:title={settings.title[i]}
@@ -165,7 +183,10 @@
 <{/if} -->
 
 <Experiment
-	{results_data}
-	{sweep_name}
+	bind:settings={settings}
+	bind:results_data={results_data}
+	{elements}
 	bind:probes={settings.probes[settings.plot_number]}
+	bind:equation={settings.equation[settings.plot_number]}
+	bind:performance_names={settings.performance_names[settings.plot_number]}
 />

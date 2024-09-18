@@ -281,13 +281,6 @@
     padding: 2px 3px;
     border: 2px solid yellow;
   }
-  .button-1 {
-    /* width: 25%; */
-    background: lightblue;
-    text-align: left;
-    padding: 5px 10px;
-    border: 5px solid #ddd;
-  }
   .tab-wrap {
     display: flex;
     flex-wrap: wrap;

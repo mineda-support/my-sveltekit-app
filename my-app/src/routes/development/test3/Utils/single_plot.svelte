@@ -11,7 +11,7 @@
 </script>
 
 <Plot
-data={plotdata.concat(measdata.filter((trace) => trace.checked))}
+data={plotdata.concat((measdata == undefined)? [] : measdata.filter((trace) => trace.checked))}
 layout={{
     title: title,
     xaxis: {
