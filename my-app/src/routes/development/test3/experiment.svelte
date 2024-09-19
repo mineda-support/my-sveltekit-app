@@ -58,7 +58,6 @@
 <script>
 	import Plot from "svelte-plotly.js";
 	import { update_elements, update_models } from "./simulate.svelte";
-	import InputValue from "./Utils/input_value.svelte";
 	import SweepSource from "./utils/sweep_source.svelte";
 	import ResultsPlot from "./utils/results_plot.svelte";
 	import {

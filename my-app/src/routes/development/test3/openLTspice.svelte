@@ -12,6 +12,8 @@
 <script>
   // import { end_hydrating } from "svelte/internal";
   import { createEventDispatcher } from "svelte";
+  import InputValue from "./Utils/input_value.svelte";
+
   export let data;
   export let probes;
 
@@ -80,6 +82,16 @@
     models_store.set(models);
     alter = [{}];
     alter_src = undefined;
+    for (const [ckt_name, elms] of Object.entries(elements)) {
+      for (const [elm, props] of Object.entries(elms)) {
+        if (elm.match(/#$/)) {
+          if (variations[elm] == undefined) {
+            variations[elm] = [elements[ckt_name][elm]];
+          }
+        }
+      }
+    }
+    console.log("initial variations =", variations);
     return res2;
   }
 
@@ -145,7 +157,13 @@
   function check_alter() {
     console.log("alter=", alter);
   }
-  let variations={};
+  let variations = {};
+
+  function add_variation(elm) {
+    let array = variations[elm];
+    array.push(array[array.length - 1]);
+  }
+  function remove_variation() {}
 </script>
 
 <h2>
@@ -253,21 +271,21 @@
     <div class="tab-content" style="border:yellow solid 2px;">
       <div>Add Variation</div>
       <div>
-        {#each Object.entries(elements) as [ckt_name, elms]}
-          {#each Object.entries(elms) as [elm]}
-            {#if elm.match(/#$/)}
-              <div>{elm}</div>
-            {/if}
+        <div>
+          {#each Object.entries(variations) as elms}
+            {#each elms as elm, i}
+              <button on:click={remove_variation(elm)} class="td-button"
+                >-</button
+              >
+              <InputValue lab={elm + i} val={props} />
+            {/each}
           {/each}
-        {/each}
+        </div>
+        <div>
+          <button on:click={add_variation(elm)} class="td-button">+</button>
+        </div>
       </div>
-      <input
-        style="border:darkgray solid 1px;"
-        bind:value={alter[0][alter_src]}
-      /><br />
-      <button on:click={add_alter} class="button-item">New Tab</button>
-      <button on:click={check_alter} class="button-item">Check Alter</button>
-    </div>    
+    </div>
   </div>
   <!-- div class="grid">
     <textarea bind:value={elements_text} />

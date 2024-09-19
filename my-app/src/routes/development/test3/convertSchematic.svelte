@@ -74,11 +74,4 @@ cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./Xschem')
     <option value='Edif'>Edif</option>
 </select -->
 <style>
-    .button-2 {
-        /* width: 25%; */
-        background: lightgreen;
-        text-align: right;
-        padding: 5px 10px;
-        border: 5px solid #ddd;
-    }
 </style>
