@@ -145,6 +145,7 @@
   function check_alter() {
     console.log("alter=", alter);
   }
+  let variations={};
 </script>
 
 <h2>
@@ -247,6 +248,26 @@
       <button on:click={add_alter} class="button-item">New Tab</button>
       <button on:click={check_alter} class="button-item">Check Alter</button>
     </div>
+    <input id="TAB-04" type="radio" name="TAB" class="tab-switch" />
+    <label class="tab-label" for="TAB-04">Variation</label>
+    <div class="tab-content" style="border:yellow solid 2px;">
+      <div>Add Variation</div>
+      <div>
+        {#each Object.entries(elements) as [ckt_name, elms]}
+          {#each Object.entries(elms) as [elm]}
+            {#if elm.match(/#$/)}
+              <div>{elm}</div>
+            {/if}
+          {/each}
+        {/each}
+      </div>
+      <input
+        style="border:darkgray solid 1px;"
+        bind:value={alter[0][alter_src]}
+      /><br />
+      <button on:click={add_alter} class="button-item">New Tab</button>
+      <button on:click={check_alter} class="button-item">Check Alter</button>
+    </div>    
   </div>
   <!-- div class="grid">
     <textarea bind:value={elements_text} />
