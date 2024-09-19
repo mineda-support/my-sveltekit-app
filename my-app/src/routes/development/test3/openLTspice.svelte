@@ -16,6 +16,7 @@
 
   export let data;
   export let probes;
+  export let variations = {};
 
   const dispatch = createEventDispatcher();
 
@@ -85,9 +86,7 @@
     for (const [ckt_name, elms] of Object.entries(elements)) {
       for (const [elm, props] of Object.entries(elms)) {
         if (elm.match(/#$/)) {
-          if (variations[elm] == undefined) {
-            variations[elm] = [elements[ckt_name][elm]];
-          }
+          variations[elm] = [elements[ckt_name][elm]];
         }
       }
     }
@@ -109,6 +108,7 @@
     elements_store,
     models_store,
   } from "./stores.js";
+  import { element } from "svelte/internal";
   let ckt;
   ckt_store.subscribe((value) => {
     ckt = value;
@@ -157,13 +157,21 @@
   function check_alter() {
     console.log("alter=", alter);
   }
-  let variations = {};
 
   function add_variation(elm) {
     let array = variations[elm];
+    console.log("array=", array);
     array.push(array[array.length - 1]);
+    variations = variations;
   }
-  function remove_variation() {}
+  function remove_variation(elm, index) {
+    let array = variations[elm];
+    console.log("array=", array);
+    if (array.length > 1) {
+      array.splice(index, 1);
+    }
+    variations = variations;
+  }
 </script>
 
 <h2>
@@ -272,24 +280,23 @@
       <div>Add Variation</div>
       <div>
         <div>
-          {#each Object.entries(variations) as elms}
-            {#each elms as elm, i}
-              <button on:click={remove_variation(elm)} class="td-button"
-                >-</button
-              >
-              <InputValue lab={elm + i} val={props} />
+          {#each Object.entries(variations) as [elm, vals]}
+            {#each vals as val, i}
+              <div>
+                <button on:click={remove_variation(elm, i)} class="td-button"
+                  >-</button
+                >
+                <InputValue lab={elm + String(i + 1)} {val} />
+              </div>
             {/each}
+            <div>
+              <button on:click={add_variation(elm)} class="td-button">+</button>
+            </div>
           {/each}
-        </div>
-        <div>
-          <button on:click={add_variation(elm)} class="td-button">+</button>
         </div>
       </div>
     </div>
   </div>
-  <!-- div class="grid">
-    <textarea bind:value={elements_text} />
-  </div -->
   <div class="sample">
     {#each ckt.info as node}
       <button on:click={push_button(node)} class="button-item">{node}</button>

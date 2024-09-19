@@ -23,6 +23,7 @@
     import BodePlot from "./utils/bode_plot.svelte";
     import SinglePlot from "./utils/single_plot.svelte";
     import { set_trace_names } from "./experiment.svelte";
+    import Settings from "./settings.svelte";
 
     export let dir, file, measfile, plot_showhide, plot_number;
     export let reject, reverse, tracemode;
@@ -225,7 +226,7 @@
 
 <button on:click={() => (plot_showhide = !plot_showhide)} class="button-2"
     >Show/hide</button
->
+> {plot_number}
 {#if plot_showhide}
     <div>
         <button

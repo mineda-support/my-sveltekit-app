@@ -119,7 +119,9 @@
         //await my_sleep(3000);
         let encoded_params = `dir=${encodeURIComponent(
             dir,
-        )}&file=${encodeURIComponent(file)}`;
+        )}&file=${encodeURIComponent(
+            file,
+        )}&variations=${encodeURIComponent(variations)}`;
         const models_update = update_models(ckt, models);
         if (models_update != {}) {
             encoded_params =
@@ -147,6 +149,7 @@
         // plotdata = get_results();
         return res2;
     }
+    export let variations;
 </script>
 
 <button on:click={goLTspice} class="button-1">

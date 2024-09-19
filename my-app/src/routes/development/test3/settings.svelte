@@ -9,10 +9,11 @@
   */
   export let settings;
 
-  async function save_settings(data, settings_name, ckt) {
+  async function save_settings(data, settings_name, ckt, variations) {
     const props = data.props;
     props.settings_name = settings_name;
     props.ckt = ckt;
+    props.variations = variations;
     console.log("settings=", settings);
     props.settings = {};
     for (const [item, value] of Object.entries(settings)) {
@@ -42,24 +43,20 @@
       )}&settings_name=${settings_name}`,
     );
     // const result = await response.json();
-    const new_settings = await response.json();
+    const props = await response.json();
     // probes_name.set(probes);
-    console.log("new_settings=", new_settings);
-    console.log([new_settings.equation, new_settings.probes]);
-    equation = new_settings.equation;
-    probes = new_settings.probes;
+    console.log("props=", props);
     // settings = {};
-    for (const [item, value] of Object.entries(new_settings["settings"])) {
-      settings[item] = value;
+    settings = props.settings;
+    variations = props.variations;
     }
     console.log("settings=", settings);
-  }
-  let settings_name = "default";
-  export let data, ckt, equation, probes;
+    let settings_name = "default";
+    export let data, ckt, variations;
 </script>
 
 <div>
-  <button on:click={save_settings(data, settings_name, ckt)} class="button-1">
+  <button on:click={save_settings(data, settings_name, ckt, variations)} class="button-1">
     Save settings in:</button
   >
   <label>

@@ -66,7 +66,21 @@
 	// $: calculated_value = calculated_value;
 	$: results_data = results_data;
 
-	function plot_results() {}
+	function plot_results() {
+		if (variations == {}) {return;}
+		let vals;
+		for (const [ckt_name, elms] of Object.entries(elements)) {
+          for (const [elm, props] of Object.entries(elms)) {
+            if (elm.match(/#$/) && (vals = variations[elm])) {
+               vals.forEach(val => {
+                 settings.plot_number = settings.plot_number + 1;
+			   })
+			   return;
+			}
+          }
+        }
+    }		
+
 	function clear_all_plots() {
 		ckt_data = {
 			measdata: [],
@@ -126,23 +140,23 @@
 	settings.plot_showhide[settings.plot_number] = true;
 	settings.probes[settings.plot_number] = "";
 	ckt_data.measdata[settings.plot_number] = [];
+	let variations = {};
 </script>
 
 <ConvertSchematic />
 <OpenLTspice
 	{data}
 	bind:probes={settings.probes[settings.plot_number]}
+	{variations}
 	plot_on:open_end={plot_results}
 />
-<Settings
-	{data}
-	{ckt}
-	bind:equation={settings.equation}
-	bind:probes={settings.probes}
-	bind:settings
-/>
+<Settings {data} {ckt} bind:variations bind:settings />
 <div>
-	<Simulate on:sim_end={plot_results} on:sim_start={clear_all_plots} />
+	<Simulate
+		{variations}
+		on:sim_end={plot_results}
+		on:sim_start={clear_all_plots}
+	/>
 	<!-- Testplot / -->
 </div>
 {#each Array(settings.plot_number + 1) as _, i}
@@ -183,8 +197,8 @@
 <{/if} -->
 
 <Experiment
-	bind:settings={settings}
-	bind:results_data={results_data}
+	bind:settings
+	bind:results_data
 	{elements}
 	bind:probes={settings.probes[settings.plot_number]}
 	bind:equation={settings.equation[settings.plot_number]}
