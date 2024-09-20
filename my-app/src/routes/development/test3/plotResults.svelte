@@ -343,7 +343,6 @@
     </div>
 {/if}
 {#if plot_showhide}
-    <button on:click={() => (plot_number = plot_number + 1)} class="button-2">Add plot</button>
     <div>
         <label>
             Performance name(s)

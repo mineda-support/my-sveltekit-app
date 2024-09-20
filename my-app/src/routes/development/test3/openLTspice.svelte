@@ -172,6 +172,7 @@
     }
     variations = variations;
   }
+  $: variations = variations;
 </script>
 
 <h2>

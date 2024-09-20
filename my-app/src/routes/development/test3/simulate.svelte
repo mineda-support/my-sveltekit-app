@@ -121,7 +121,7 @@
             dir,
         )}&file=${encodeURIComponent(
             file,
-        )}&variations=${encodeURIComponent(variations)}`;
+        )}&variations=${encodeURIComponent(JSON.stringify(variations))}`;
         const models_update = update_models(ckt, models);
         if (models_update != {}) {
             encoded_params =

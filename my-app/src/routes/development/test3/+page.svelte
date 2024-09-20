@@ -147,7 +147,7 @@
 <OpenLTspice
 	{data}
 	bind:probes={settings.probes[settings.plot_number]}
-	{variations}
+	bind:variations={variations}
 	plot_on:open_end={plot_results}
 />
 <Settings {data} {ckt} bind:variations bind:settings />
@@ -161,13 +161,13 @@
 </div>
 {#each Array(settings.plot_number + 1) as _, i}
 	<PlotResults
-		bind:plot_number={settings.plot_number}
+		plot_number={i}
 		bind:plot_showhide={settings.plot_showhide[i]}
 		bind:results_data
 		bind:dir
 		bind:file
 		bind:elements
-		bind:measfile={settings.measfile[i]}
+		bind:measfile={settings.measfile[i+1]}
 		bind:step_precision={settings.step_precision[i]}
 		bind:title={settings.title[i]}
 		bind:title_x={settings.title_x[i]}
@@ -190,11 +190,8 @@
 	></PlotResults>
 {/each}
 
-<!-- {#if results_data != undefined && results_data[0].length > 0}>
-	{#each Object.entries(results_data[0]) as [performance, plot_data]}
-     <ResultsPlot plot_data={plot_data} title={performance} {performance} />
-{/each}
-<{/if} -->
+<button on:click={() => (settings.plot_number = settings.plot_number + 1)} class="button-2">Add plot</button>
+<button on:click={() => (settings.plot_number = settings.plot_number - 1)} class="button-2">Remove plot</button>
 
 <Experiment
 	bind:settings
