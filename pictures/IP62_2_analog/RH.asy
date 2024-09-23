@@ -16,7 +16,7 @@ SYMATTR Value RH
 WINDOW 0 30 10 Left 2
 WINDOW 2 30 35 Left 2
 PIN 32 48 NONE 0
-PINATTR PinName [:name, :SUB, [:display, [:figureGroupOverride, :pin, [:textHeight, 8]], [:justify, :CENTERRIGHT], [:orientation, :R0], [:origin, [:pt, 19, -30]]]]
+PINATTR PinName SUB
 PINATTR SpiceOrder 1
 PIN 0 96 NONE 0
 PINATTR PinName MINUS

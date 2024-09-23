@@ -153,7 +153,8 @@
 <Settings {data} {ckt} bind:variations bind:settings />
 <div>
 	<Simulate
-		{variations}
+		bind:probes={settings.probes[settings.plot_number]}
+		bind:variations={variations}		
 		on:sim_end={plot_results}
 		on:sim_start={clear_all_plots}
 	/>

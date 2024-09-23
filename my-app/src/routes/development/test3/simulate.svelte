@@ -24,9 +24,13 @@
             if (update_elms != "") {
                 console.log("let me update ", target, " with:", update_elms);
                 update_elms = encodeURIComponent(`{${update_elms}}`);
+
                 let encoded_params = `dir=${encodeURIComponent(
                     dir,
-                )}&file=${encodeURIComponent(target)}`;
+                    )}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
+                    probes,
+                    )}`;
+
                 const command = `http://localhost:9292/api/ltspctl/update?${encoded_params}&updates=${update_elms}`;
                 console.log(command);
                 let response = await fetch(command, {});
@@ -150,6 +154,7 @@
         return res2;
     }
     export let variations;
+    export let probes
 </script>
 
 <button on:click={goLTspice} class="button-1">

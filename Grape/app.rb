@@ -105,7 +105,10 @@ module Test
           ckt = LTspiceControl.new(File.basename ckt_name)
           puts "models_update: #{params[:models_update]}"
           puts "variations: #{params[:variations]}"
-          ckt.simulate models_update: eval(params[:models_update]), variations: eval(params[:variations])
+          variations = params[:variations] ? eval(params[:variations]) : {}
+          models_update = params[:variations] ? eval(params[:models_update]) : {}
+          ckt.simulate models_update: models_update, variations: variations
+          puts "probes=#{probes}"
           if probes
             vars, traces = ckt.get_traces *(probes.split(','))
             if probes.start_with? 'frequency'
