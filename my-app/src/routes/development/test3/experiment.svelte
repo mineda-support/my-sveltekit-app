@@ -45,6 +45,7 @@
 		//console.log("step=", [name, start, stop, step]);
 		let src_values = [];
 		for (let v = start; v < stop; v = v + step) {
+			console.log('precision=', precision);
 			src_values.push(`${name}=${v.toPrecision(precision)}`);
 		}
 		if (stop > start + step * (src_values.length - 1)) {
@@ -217,7 +218,7 @@
 			res2,
 			probes,
 			elements,
-			settings.step_precision,
+			settings.step_precision[settings.result_number],
 		);
 		//dispatch("sim_end", { text: "LTspice simulation ended!" });
 		// plotdata = get_results();
@@ -277,14 +278,18 @@
 
 	let performances;
 	$: {
-		if (settings.performance_names != undefined) {
-			performances = Array.isArray(settings.performance_names)
-				? settings.performance_names
-				: settings.performance_names.split(",").map((a) => a.trim());
+		let performance_names = settings.performance_names[settings.plot_number];
+		if (performance_names != undefined) {
+			console.log(`performance_names[${settings.plot_number}]=`, performance_names);
+			performances = performance_names.split(",").map((a) => a.trim());
+			console.log('performances=', performances);
 		}
 	}
 
 	async function go_experiments(dir, settings, elements) {
+		if (ckt == undefined) {
+            alert("Please read-in the circuit before experiment");
+        }
 		if (settings.src == undefined || settings.src_values[0] == undefined) {
 			alert("ERROR: src is not set");
 			return;
@@ -304,7 +309,7 @@
 				settings.src[0].replace(/^.*:/, "") + ":" + value2;
 			//plot_trace.name = trace_name;
 			//result_trace.name = trace_name;
-			console.log("updates=", updates, `on ${dir}${target}.asc`);
+			//console.log("updates=", updates, `on ${dir}${target}.asc`);
 			await update_elms(dir, target + ".asc", updates);
 
 			dispatch("sim_start", { text: "LTspice simulation started!" });

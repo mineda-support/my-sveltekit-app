@@ -154,7 +154,7 @@
         return res2;
     }
     export let variations;
-    export let probes
+    export let probes;
 </script>
 
 <button on:click={goLTspice} class="button-1">
