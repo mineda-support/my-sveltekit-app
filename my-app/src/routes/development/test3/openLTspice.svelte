@@ -173,6 +173,7 @@
     variations = variations;
   }
   $: variations = variations;
+  let src;
 </script>
 
 <h2>
@@ -278,7 +279,17 @@
     <input id="TAB-04" type="radio" name="TAB" class="tab-switch" />
     <label class="tab-label" for="TAB-04">Variation</label>
     <div class="tab-content" style="border:yellow solid 2px;">
-      <div>Add Variation</div>
+      <div>Add Variation
+        <select bind:value={src} style="border:darkgray solid 1px;">
+          {#each Object.entries(elements) as [ckt_name, elms]}
+              {#each Object.keys(elms) as elm}
+                  <option value={[ckt_name, elm].join(":")}
+                      >{[ckt_name, elm].join(":")}</option
+                  >
+              {/each}
+          {/each}
+      </select>
+      </div>
       <div>
         <div>
           {#each Object.entries(variations) as [elm, vals]}
