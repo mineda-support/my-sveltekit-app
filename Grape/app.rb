@@ -106,7 +106,7 @@ module Test
           puts "models_update: #{params[:models_update]}"
           puts "variations: #{params[:variations]}"
           variations = params[:variations] ? eval(params[:variations]) : {}
-          models_update = params[:models=update] ? eval(params[:models_update]) : {}
+          models_update = params[:models_update] ? eval(params[:models_update]) : {}
           ckt.simulate models_update: models_update, variations: variations
           puts "probes=#{probes}"
           if probes

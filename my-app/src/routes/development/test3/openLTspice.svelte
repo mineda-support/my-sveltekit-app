@@ -83,14 +83,7 @@
     models_store.set(models);
     alter = [{}];
     alter_src = undefined;
-    for (const [ckt_name, elms] of Object.entries(elements)) {
-      for (const [elm, props] of Object.entries(elms)) {
-        if (elm.match(/#$/)) {
-          variations[elm] = [elements[ckt_name][elm]];
-        }
-      }
-    }
-    console.log("initial variations =", variations);
+    nvar = 0;
     return res2;
   }
 
@@ -158,22 +151,58 @@
     console.log("alter=", alter);
   }
 
-  function add_variation(elm) {
-    let array = variations[elm];
-    console.log("array=", array);
-    array.push(array[array.length - 1]);
+  function add_variation_item(src) {
+    //console.log('src in add_variation_item=', src);
+    if (variations[src] != undefined) {
+      return;
+    }
+    variations[src] = [];
+    if (nvar == 0) {
+      add_variation_value(src);
+      nvar = 1;
+    }
+    variations = variations;
+    console.log("variations=", variations);
+  }
+
+  function add_variation_value(src) {
+    let ckt_name, elm;
+    [ckt_name, elm] = src.split(":");
+    console.log(`push elements[${ckt_name}][${elm}]=`, elements[ckt_name][elm]);
+    variations[src].push(elements[ckt_name][elm]);
+    console.log("variations=", variations);
+  }
+
+  function remove_variation_item(src) {
+    console.log(`remove ${src} from:`, variations);
+    const result = delete variations[src];
+    console.log(`remove result=${result}:`, variations);
     variations = variations;
   }
-  function remove_variation(elm, index) {
-    let array = variations[elm];
-    console.log("array=", array);
-    if (array.length > 1) {
-      array.splice(index, 1);
+
+  function add_variation() {
+    for (const [key, values] of Object.entries(variations)) {
+      add_variation_value(key);
     }
+    nvar = nvar + 1;
+    console.log("variation added:", variations);
+    variations = variations;
+  }
+
+  function remove_variation(index) {
+    alert(`remove_variation clicked!@index=${index}`);
+    for (const [key, values] of Object.entries(variations)) {
+      console.log("remove values=", values, "from:", key);
+      if (values.length > 1) {
+        values.splice(index, 1);
+      }
+    }
+    nvar = nvar - 1;
     variations = variations;
   }
   $: variations = variations;
   let src;
+  let nvar = 0;
 </script>
 
 <h2>
@@ -217,6 +246,63 @@
       <div>{elm}:{get_control(props)}({elements[elm]})</div>
     {/each}
   </div -->
+
+  <div>
+    Add Variation
+    <select bind:value={src} style="border:darkgray solid 1px;">
+      {#each Object.entries(elements) as [ckt_name, elms]}
+        {#each Object.keys(elms) as elm}
+          <option value={[ckt_name, elm].join(":")}
+            >{[ckt_name, elm].join(":")}</option
+          >
+        {/each}
+      {/each}
+    </select>
+    <button on:click={add_variation_item(src)} class="td-button">+</button>
+    <button on:click={remove_variation_item(src)} class="td-button"
+      >-</button
+    >
+    nvar={nvar}
+  </div>
+  <table>
+    <thead>
+      <tr
+        ><th>Name</th>
+        {#each Object.entries(variations) as [elm, vals]}
+          <th>{elm}</th>
+        {/each}
+      </tr>
+    </thead>
+    <tbody>
+      {#if nvar > 0}
+        {#each Array(nvar) as _, i}
+          <tr>
+            <td>
+              <button on:click={remove_variation(i)} class="button-1"
+                >MINUS</button
+              >
+            </td>
+            {#each Object.entries(variations) as [elm, vals]}
+              <td
+                ><InputValue
+                  lab={elm + "#" + String(i + 1)}
+                  val={vals[i]}
+                />
+              </td>
+            {/each}
+          </tr>
+        {/each}
+      {/if}
+      <tr>
+        <td
+          ><button on:click={add_variation()} class="button-1">PLUS</button
+          ></td
+        >
+      </tr>
+    </tbody>
+  </table>
+
+
   <div class="tab-wrap">
     <input
       id="TAB-01"
@@ -278,36 +364,61 @@
     </div>
     <input id="TAB-04" type="radio" name="TAB" class="tab-switch" />
     <label class="tab-label" for="TAB-04">Variation</label>
-    <div class="tab-content" style="border:yellow solid 2px;">
-      <div>Add Variation
+    <!-- div class="tab-content" style="border:yellow solid 2px;">
+      <div>
+        Add Variation
         <select bind:value={src} style="border:darkgray solid 1px;">
           {#each Object.entries(elements) as [ckt_name, elms]}
-              {#each Object.keys(elms) as elm}
-                  <option value={[ckt_name, elm].join(":")}
-                      >{[ckt_name, elm].join(":")}</option
-                  >
-              {/each}
-          {/each}
-      </select>
-      </div>
-      <div>
-        <div>
-          {#each Object.entries(variations) as [elm, vals]}
-            {#each vals as val, i}
-              <div>
-                <button on:click={remove_variation(elm, i)} class="td-button"
-                  >-</button
-                >
-                <InputValue lab={elm + String(i + 1)} {val} />
-              </div>
+            {#each Object.keys(elms) as elm}
+              <option value={[ckt_name, elm].join(":")}
+                >{[ckt_name, elm].join(":")}</option
+              >
             {/each}
-            <div>
-              <button on:click={add_variation(elm)} class="td-button">+</button>
-            </div>
           {/each}
-        </div>
+        </select>
+        <button on:click={add_variation_item(src)} class="td-button">+</button>
+        <button on:click={remove_variation_item(src)} class="td-button"
+          >-</button
+        >
       </div>
-    </div>
+      <table>
+        <thead>
+          <tr
+            ><th>Name</th>
+            {#each Object.entries(variations) as [elm, vals]}
+              <th>{elm}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#if nvar > 0}
+            {#each Array(nvar) as _, i}
+              <tr>
+                <td>
+                  <button on:click={remove_variation(i)} class="td-button"
+                    >-</button
+                  >
+                </td>
+                {#each Object.entries(variations) as [elm, vals]}
+                  <td
+                    ><InputValue
+                      lab={elm + "#" + String(i + 1)}
+                      val={vals[i]}
+                    />
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          {/if}
+          <tr>
+            <td
+              ><button on:click={add_variation()} class="td-button">+</button
+              ></td
+            >
+          </tr>
+        </tbody>
+      </table>
+    </div -->
   </div>
   <div class="sample">
     {#each ckt.info as node}
