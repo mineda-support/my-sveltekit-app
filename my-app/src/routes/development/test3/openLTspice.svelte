@@ -247,7 +247,7 @@
     {/each}
   </div -->
 
-  <div>
+  <!-- div>
     Add Variation
     <select bind:value={src} style="border:darkgray solid 1px;">
       {#each Object.entries(elements) as [ckt_name, elms]}
@@ -263,7 +263,7 @@
       >-</button
     >
     nvar={nvar}
-  </div>
+  </div -->
   <table>
     <thead>
       <tr
@@ -278,9 +278,9 @@
         {#each Array(nvar) as _, i}
           <tr>
             <td>
-              <button on:click={remove_variation(i)} class="button-1"
+              <!-- button on:click={remove_variation(i)} class="button-1"
                 >MINUS</button
-              >
+              -->
             </td>
             {#each Object.entries(variations) as [elm, vals]}
               <td
@@ -364,7 +364,7 @@
     </div>
     <input id="TAB-04" type="radio" name="TAB" class="tab-switch" />
     <label class="tab-label" for="TAB-04">Variation</label>
-    <!-- div class="tab-content" style="border:yellow solid 2px;">
+    <div class="tab-content" style="border:yellow solid 2px;">
       <div>
         Add Variation
         <select bind:value={src} style="border:darkgray solid 1px;">
@@ -395,9 +395,9 @@
             {#each Array(nvar) as _, i}
               <tr>
                 <td>
-                  <button on:click={remove_variation(i)} class="td-button"
+                  <!-- button on:click={remove_variation(i)} class="td-button"
                     >-</button
-                  >
+                  -->
                 </td>
                 {#each Object.entries(variations) as [elm, vals]}
                   <td
@@ -418,7 +418,7 @@
           </tr>
         </tbody>
       </table>
-    </div -->
+    </div>
   </div>
   <div class="sample">
     {#each ckt.info as node}
