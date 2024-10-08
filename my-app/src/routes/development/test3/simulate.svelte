@@ -114,6 +114,7 @@
     export async function goLTspice() {
         if (ckt == undefined) {
             alert("Please read-in the circuit before simulation");
+            return;
         }
         console.log(`openLTspice dir='${dir}' file='${file}'`);
         //dispatch("elm_update", { text: "Update elements" });

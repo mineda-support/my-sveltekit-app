@@ -20,8 +20,8 @@
 		settings_store,
 		//models_store,
 	} from "./stores.js";
-	import { stringify } from "postcss";
-	import { A } from "plotly.js-dist";
+	//import { stringify } from "postcss";
+	//import { A } from "plotly.js-dist";
 	let file;
 	let dir;
 	let ckt;
@@ -67,19 +67,21 @@
 	$: results_data = results_data;
 
 	function plot_results() {
-		if (variations == {}) {return;}
+		if (variations == {}) {
+			return;
+		}
 		let vals;
 		for (const [ckt_name, elms] of Object.entries(elements)) {
-          for (const [elm, props] of Object.entries(elms)) {
-            if (elm.match(/#$/) && (vals = variations[elm])) {
-               vals.forEach(val => {
-                 settings.plot_number = settings.plot_number + 1;
-			   })
-			   return;
+			for (const [elm, props] of Object.entries(elms)) {
+				if (elm.match(/#$/) && (vals = variations[elm])) {
+					vals.forEach((val) => {
+						settings.plot_number = settings.plot_number + 1;
+					});
+					return;
+				}
 			}
-          }
-        }
-    }		
+		}
+	}
 
 	function clear_all_plots() {
 		ckt_data = {
@@ -147,58 +149,71 @@
 <OpenLTspice
 	{data}
 	bind:probes={settings.probes[settings.plot_number]}
-	bind:variations={variations}
-	plot_on:open_end={plot_results}
-/>
+	bind:variations
+	/>
+<!--	plot_on:open_end={plot_results} -->
 <Settings {data} {ckt} bind:variations bind:settings />
 <div>
 	<Simulate
 		bind:probes={settings.probes[settings.plot_number]}
-		bind:variations={variations}		
+		bind:variations
 		on:sim_end={plot_results}
 		on:sim_start={clear_all_plots}
 	/>
 	<!-- Testplot / -->
 </div>
-{#each Array(settings.plot_number + 1) as _, i}
+
+	{#each Array(settings.plot_number + 1) as _, i}
+	<!-- {#if ckt_data.plotdata[i] != undefined} -->
 	<PlotResults
-		plot_number={i}
-		bind:plot_showhide={settings.plot_showhide[i]}
+			plot_number={i}
+			bind:plot_showhide={settings.plot_showhide[i]}
+			bind:results_data
+			bind:dir
+			bind:file
+			bind:elements
+			bind:measfile={settings.measfile[i + 1]}
+			bind:step_precision={settings.step_precision[i]}
+			bind:title={settings.title[i]}
+			bind:title_x={settings.title_x[i]}
+			bind:title_y={settings.title_y[i]}
+			bind:title_y1={settings.title_y1[i]}
+			bind:title_y2={settings.title_y2[i]}
+			bind:yaxis_is_log={settings.yaxis_is_log}
+			bind:xaxis_is_log={settings.xaxis_is_log}
+			bind:equation={settings.equation[i]}
+			bind:performance_names={settings.performance_names[i]}
+			bind:probes={settings.probes[i]}
+			bind:plotdata={ckt_data.plotdata[i]}
+			bind:db_data={ckt_data.db_data[i]}
+			bind:ph_data={ckt_data.ph_data[i]}
+			bind:measdata={ckt_data.measdata[i]}
+			bind:calculated_value={ckt_data.calculated_value[i]}
+			bind:reject={settings.reject[i]}
+			bind:reverse={settings.reverse[i]}
+			bind:tracemode={settings.tracemode[i]}
+		></PlotResults>
+		<!-- {/if} -->
+		{/each}
+
+<button
+	on:click={() => (settings.plot_number = settings.plot_number + 1)}
+	class="button-2">Add plot</button
+>
+<button
+	on:click={() => (settings.plot_number = settings.plot_number - 1)}
+	class="button-2">Remove plot</button
+>
+
+{#if settings.equation[settings.plot_number] != undefined}
+	<Experiment
+		bind:settings
 		bind:results_data
-		bind:dir
-		bind:file
-		bind:elements
-		bind:measfile={settings.measfile[i+1]}
-		bind:step_precision={settings.step_precision[i]}
-		bind:title={settings.title[i]}
-		bind:title_x={settings.title_x[i]}
-		bind:title_y={settings.title_y[i]}
-		bind:title_y1={settings.title_y1[i]}
-		bind:title_y2={settings.title_y2[i]}
-		bind:yaxis_is_log={settings.yaxis_is_log}
-		bind:xaxis_is_log={settings.xaxis_is_log}
-		bind:equation={settings.equation[i]}
-		bind:performance_names={settings.performance_names[i]}
-		bind:probes={settings.probes[i]}
-		bind:plotdata={ckt_data.plotdata[i]}
-		bind:db_data={ckt_data.db_data[i]}
-		bind:ph_data={ckt_data.ph_data[i]}
-		bind:measdata={ckt_data.measdata[i]}
-		bind:calculated_value={ckt_data.calculated_value[i]}
-		bind:reject={settings.reject[i]}
-		bind:reverse={settings.reverse[i]}
-		bind:tracemode={settings.tracemode[i]}
-	></PlotResults>
-{/each}
-
-<button on:click={() => (settings.plot_number = settings.plot_number + 1)} class="button-2">Add plot</button>
-<button on:click={() => (settings.plot_number = settings.plot_number - 1)} class="button-2">Remove plot</button>
-
-<Experiment
-	bind:settings
-	bind:results_data
-	{elements}
-	bind:probes={settings.probes[settings.plot_number]}
-	bind:equation={settings.equation[settings.plot_number]}
-	bind:performance_names={settings.performance_names[settings.plot_number]}
-/>
+		{elements}
+		bind:probes={settings.probes[settings.plot_number]}
+		bind:equation={settings.equation[settings.plot_number]}
+		bind:performance_names={settings.performance_names[
+			settings.plot_number
+		]}
+	/>
+{/if}

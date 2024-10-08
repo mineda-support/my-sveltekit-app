@@ -6,5 +6,5 @@
 <label>{lab}
 <input
     bind:value={val}
-    style="border:darkgray solid 1px; width: 20%;"
+    style="border:darkgray solid 1px; width: 60%;"
 /></label>
