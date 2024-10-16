@@ -106,6 +106,10 @@
   ckt_store.subscribe((value) => {
     ckt = value;
   });
+  let dir;
+    dir_name.subscribe((value) => {
+        dir = value;
+    });
   let elements = {};
   elements_store.subscribe((value) => {
     elements = value;
@@ -212,6 +216,12 @@
   let src;
   let nvar = 0;
   let remove_index = 0;
+  $: {
+    dir = data.props.wdir;
+    dir_name.set(dir);
+    console.log('*** dir=', dir);
+  }
+
 </script>
 
 <h2>

@@ -1,11 +1,12 @@
 <script>
     import { enhance, applyAction } from "$app/forms";
     import { goto } from "$app/navigation";
-    import { dir_name } from "./stores.js";
-    let dir;
-    dir_name.subscribe((value) => {
-        dir = value;
-    });
+    //import { dir_name } from "./stores.js";
+    //let dir;
+    // dir_name.subscribe((value) => {
+    //    dir = value;
+    //});
+    export let dir;
 
     // function convertSchematic(selected) {
     //    alert("conversion to " + selected);
@@ -46,7 +47,11 @@ cdraw2target 'xschem', File.join(dir,'cdraw'), File.join(dir,'./Xschem')
             } else {
                 await applyAction(result);
             }
-        alert(`Xschem folder created under ${dir}`);
+            if (dir == undefined || dir == '') {
+                alert('Conversion failed --- please read-in the circuit data');
+            } else {
+                alert(`Xschem folder created under ${dir}`);
+            }
         };
     }}
     class="button-2"

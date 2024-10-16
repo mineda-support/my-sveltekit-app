@@ -145,7 +145,7 @@
 	let variations = {};
 </script>
 
-<ConvertSchematic />
+<ConvertSchematic {dir} />
 <OpenLTspice
 	{data}
 	bind:probes={settings.probes[settings.plot_number]}
