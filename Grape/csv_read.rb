@@ -1,6 +1,6 @@
 require 'csv'
 
-def valid_data c, ignore=[]
+def valid_data c, select=[0, 1], x_mult=1.0, y_mult=1.0
   start = stop = nil
   dd = []
   ddd = []
@@ -12,7 +12,7 @@ def valid_data c, ignore=[]
       next
     end
     start, stop = numbers_range(l, start, stop)
-    if start && stop && stop > start && i > 1 && c[i][start].to_f > c[i-1][start].to_f
+    if start && stop && stop > start && i > 1 && c[i][start].to_f*x_mult > c[i-1][start].to_f*x_mult
       if start >= 0 # && i > 1
         flag = true
         (0..start-1).each{|j| flag = false if c[i][j] != c[i-1][j]}
@@ -32,7 +32,7 @@ def valid_data c, ignore=[]
   data = []
   ddd.each_with_index{|dd, i|
     ee = dd.transpose
-    data << {x: ee[0], y: ee[1], name: remarks[i]? remarks[i].strip : i.to_s}
+    data << {x: ee[select[0]].map{|x| x*x_mult}, y: ee[select[1]].map{|y| y*y_mult}, name: remarks[i]? remarks[i].strip : i.to_s}
   }
   data
 end
@@ -80,10 +80,12 @@ if $0 == __FILE__
       puts numbers_range(l, nil, nil).inspect
   }
 
-  Dir.glob('Grape/csv_samples/58_A0_NFET_L6W24_VDID_5_29_2024_3_23_21_PM.csv').each{|f|
+  #Dir.glob('Grape/csv_samples/58_A0_NFET_L6W24_VDID_5_29_2024_3_23_21_PM.csv').each{|f|
+  #Dir.glob('Grape/csv_samples/#63 B1 PFET idvd 7_12_2024 4_48_08 PM.csv').each{|f|
+  Dir.glob('Grape/csv_samples/#63 B1 NFET idvd 7_12_2024 4_43_35 PM.csv').each{|f|
     puts f
     c = CSV.read f
-    d = valid_data c
+    d = valid_data c, [0, 2], 1, 1
     puts d.inspect
   }
 end

@@ -108,7 +108,7 @@
 		equation: [],
 		performance_names: [],
 		probes: [],
-		reject: [],
+		selection: [],
 		reverse: [],
 		tracemode: [],
 		par_name: [],
@@ -189,7 +189,7 @@
 			bind:ph_data={ckt_data.ph_data[i]}
 			bind:measdata={ckt_data.measdata[i]}
 			bind:calculated_value={ckt_data.calculated_value[i]}
-			bind:reject={settings.reject[i]}
+			bind:selection={settings.selection[i]}
 			bind:reverse={settings.reverse[i]}
 			bind:tracemode={settings.tracemode[i]}
 		></PlotResults>

@@ -78,10 +78,14 @@ module Test
       desc 'Get measured data'
       get :measured_data do
         measfile = params[:file]
-        reject_list = params[:reject].split(/[, ]/).map{|a| a.to_i - 1}
+        if selection = params[:selection]
+          select_list = selection.split(/[, ]/).map{|a| a.to_i}
+        else 
+          select_list = [0, 1]
+        end
         puts "Get measured data from #{measfile}"
         c = CSV.read(measfile)
-        d = valid_data c, reject_list
+        d = valid_data c, select_list, params[:invert_x] ? -1.0 : 1.0, params[:invert_y] ? -1.0 : 1.0
         {"traces" => d}
       end      
     end

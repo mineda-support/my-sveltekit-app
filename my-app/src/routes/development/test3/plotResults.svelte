@@ -26,7 +26,7 @@
     import Settings from "./settings.svelte";
 
     export let dir, file, measfile, plot_showhide, plot_number;
-    export let reject, reverse, tracemode;
+    export let selection, reverse, invert_x, invert_y, tracemode;
     export let title, title_x, title_y, title_y1, title_y2;
     export let equation, probes, performance_names;
     export let xaxis_is_log, yaxis_is_log;
@@ -38,9 +38,7 @@
     let performances;
 	$: {
 		if (performance_names != undefined) {
-			performances = Array.isArray(performance_names)
-				? performance_names
-				: performance_names.split(",").map((a) => a.trim());
+			performances = performance_names.split(",").map((a) => a.trim());
 		}
 	}
 
@@ -56,19 +54,27 @@
     };
     async function measurement_results(
         measfile,
-        reject_list,
+        selection,
         reverse,
+        invert_x,
+        invert_y,
         tracemode,
     ) {
         if (measfile == undefined || measfile == "") {
             const [handle] = await window.showOpenFilePicker(options);
         }
         console.log(measfile);
-        console.log(`reverse=${reverse}, tracemode: ${tracemode}`);
+        console.log(`reverse=${reverse}, invert_x=${invert_x}, invert_y=${invert_y}, tracemode: ${tracemode}`);
         //console.log(handle.name);
         //const file = await handle.getFile();
         //console.log(file);
-        const encoded_params = `dir=&file=${encodeURIComponent(measfile)}&reject=${reject_list}`;
+        let encoded_params = `dir=&file=${encodeURIComponent(measfile)}&selection=${selection}`;
+        if (invert_x != undefined) {
+          encoded_params = encoded_params + `&invert_x=${invert_x}`;
+        }
+        if (invert_y != undefined) {
+          encoded_params = encoded_params + `&invert_y=${invert_y}`;
+        }
         let response = await fetch(
             `http://localhost:9292/api/misc/measured_data?${encoded_params}`,
             {},
@@ -166,7 +172,17 @@
         results_data[0] = results_data[0];
         console.log("results_data=", results_data);
     }
-
+/*
+    function select(measdata, selection) {
+        const sel_list = selection.split(',');
+        let selected_data = [];
+        // performances = performance_names.split(",").map((a) => a.trim());
+        measdata.forEach((row => {
+            let new_row = sel_list.map((a) => row[a]);
+            selected_data.push(new_row);
+        }));
+    }
+*/
     async function submit_equation(
         equation,
         dir,
@@ -232,23 +248,28 @@
         <button
             on:click={measurement_results(
                 measfile.trim().replace(/^"/, "").replace(/"$/, ""),
-                reject,
+                selection,
                 reverse,
+                invert_x,
+                invert_y,
                 tracemode,
             )}
             class="button-1">Get measured data:</button
         >
         <input
             bind:value={measfile}
-            style="border:darkgray solid 1px;width: 40%;"
+            style="border:darkgray solid 1px; width:40%;"
         />
         <label
-            >Reject:<input
-                bind:value={reject}
-                style="border:darkgray solid 1px;"
+            >Selection:<input
+                bind:value={selection}
+                style="border:darkgray solid 1px; width:5%"
             /></label
         >
+        <br/>
         <label>Reverse<input type="checkbox" bind:checked={reverse} /></label>
+        <label>InvertX<input type="checkbox" bind:checked={invert_x} /></label>
+        <label>InvertY<input type="checkbox" bind:checked={invert_y} /></label>
         <button>Trace mode</button>
         <input name="tracemodes" value={tracemode} type="hidden" />
         <select bind:value={tracemode} style="border:darkgray solid 1px;">
