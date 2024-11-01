@@ -5,6 +5,7 @@ def valid_data c, select=[0, 1], x_mult=1.0, y_mult=1.0
   dd = []
   ddd = []
   remarks = []
+  # puts "valid_data x_mult=#{x_mult} y_mult=#{y_mult}"
   c.each_with_index{|l, i|
     # puts "#{i}: #{l}"
     if l[0] == 'MetaData' && l[1] == ' TestRecord.Remarks'
@@ -81,11 +82,11 @@ if $0 == __FILE__
   }
 
   #Dir.glob('Grape/csv_samples/58_A0_NFET_L6W24_VDID_5_29_2024_3_23_21_PM.csv').each{|f|
-  #Dir.glob('Grape/csv_samples/#63 B1 PFET idvd 7_12_2024 4_48_08 PM.csv').each{|f|
-  Dir.glob('Grape/csv_samples/#63 B1 NFET idvd 7_12_2024 4_43_35 PM.csv').each{|f|
+  Dir.glob('Grape/csv_samples/#63 B1 PFET idvd 7_12_2024 4_48_08 PM.csv').each{|f|
+  #Dir.glob('Grape/csv_samples/#63 B1 NFET idvd 7_12_2024 4_43_35 PM.csv').each{|f|
     puts f
     c = CSV.read f
-    d = valid_data c, [0, 2], 1, 1
+    d = valid_data c, [0, 2], -1, 1
     puts d.inspect
   }
 end
