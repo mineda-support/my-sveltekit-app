@@ -273,8 +273,8 @@
         <button>Trace mode</button>
         <input name="tracemodes" value={tracemode} type="hidden" />
         <select bind:value={tracemode} style="border:darkgray solid 1px;">
-            <option value="lines">lines</option>
             <option value="markers">markers</option>
+            <option value="lines">lines</option>
             <option value="lines+markers">lines+markers</option>
         </select>
     </div>

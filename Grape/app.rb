@@ -18,7 +18,7 @@ def eval_equation plot_data, equation
       results << eval(equation)
     rescue
       results << nil
-     end
+    end
   }
 end
 
@@ -78,12 +78,12 @@ module Test
       desc 'Get measured data'
       get :measured_data do
         measfile = params[:file]
-        if selection = params[:selection]
+        select_list = [0, 1]
+        if (selection = params[:selection]) && selection != ''
+          puts "selection=#{selection.inspect}"
           select_list = selection.split(/[, ]/).map{|a| a.to_i}
-        else 
-          select_list = [0, 1]
         end
-        puts "Get measured data from #{measfile}"
+        puts "Get measured data from #{measfile}; selection:#{selection.inspect} => #{select_list.inspect}"
         c = CSV.read(measfile)
         puts "params[:invert_x/y] = #{params[:invert_x].inspect}/#{params[:invert_y].inspect}"
         d = valid_data c, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0

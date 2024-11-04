@@ -5,7 +5,7 @@ def valid_data c, select=[0, 1], x_mult=1.0, y_mult=1.0
   dd = []
   ddd = []
   remarks = []
-  # puts "valid_data x_mult=#{x_mult} y_mult=#{y_mult}"
+  puts "valid_data x_mult=#{x_mult} y_mult=#{y_mult}"
   c.each_with_index{|l, i|
     # puts "#{i}: #{l}"
     if l[0] == 'MetaData' && l[1] == ' TestRecord.Remarks'
