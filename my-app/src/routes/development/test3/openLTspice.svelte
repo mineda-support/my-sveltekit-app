@@ -222,6 +222,18 @@
     console.log('*** dir=', dir);
   }
 
+  async function load_measurement_group_file() {
+    const pickerOpts = {
+			types: [
+				{ description: "CSV(.csv)", accept: { "csv/*": [".csv"] } },
+			],
+			multiple: false,
+		};
+		let fileHandle;
+		[fileHandle] = await window.showOpenFilePicker(pickerOpts);
+		const file = await fileHandle.getFile();
+		let filedata = await file.text();
+  }
 </script>
 
 <h2>
@@ -257,6 +269,7 @@
     <input type="checkbox" bind:checked={showup} />
     show schematic
   </label>
+  <button on:click={load_measurement_group_file} class="button-1">Load measurement group file</button>
   <!-- ConvertSchematic / -->
 </div>
 
