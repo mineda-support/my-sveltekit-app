@@ -269,7 +269,7 @@
     <input type="checkbox" bind:checked={showup} />
     show schematic
   </label>
-  <button on:click={load_measurement_group_file} class="button-1">Load measurement group file</button>
+  <button on:click={load_measurement_group_file} class="button-2">Load measurement group file</button>
   <!-- ConvertSchematic / -->
 </div>
 

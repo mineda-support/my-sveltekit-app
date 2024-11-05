@@ -278,6 +278,22 @@
             <option value="lines+markers">lines+markers</option>
         </select>
     </div>
+    {#if measdata != undefined && measdata != "" && measdata != []}
+    <div style="border:green solid 2px;">
+        {#each measdata as trace}
+            <label
+                >{trace.name}
+                <input
+                    style="border:darkgray solid 1px;"
+                    type="checkbox"
+                    bind:checked={trace.checked}
+                />
+            </label>
+        {/each}
+        <button on:click={checkall_measdata} class="button-1">check all</button>
+        <button on:click={clear_measdata} class="button-1">clear all</button>
+    </div>
+    {/if}
     <button on:click={plot_result} class="button-1">Plot with probes:</button>
     <input bind:value={probes} style="border:darkgray solid 1px;" />
     {#if probes == undefined || !probes.startsWith("frequency")}
@@ -347,22 +363,6 @@
     <BodePlot {db_data} {ph_data} {title} {title_x} {title_y1} {title_y2} />
 {/if}
 
-{#if measdata != undefined && measdata != "" && measdata != []}
-    <div style="border:green solid 2px;">
-        {#each measdata as trace}
-            <label
-                >{trace.name}
-                <input
-                    style="border:darkgray solid 1px;"
-                    type="checkbox"
-                    bind:checked={trace.checked}
-                />
-            </label>
-        {/each}
-        <button on:click={checkall_measdata} class="button-1">check all</button>
-        <button on:click={clear_measdata} class="button-1">clear all</button>
-    </div>
-{/if}
 {#if plot_showhide}
     <div>
         <label>
