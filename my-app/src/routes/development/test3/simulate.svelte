@@ -122,6 +122,7 @@
         //const my_sleep = (ms) =>
         //    new Promise((resolve) => setTimeout(resolve, ms));
         //await my_sleep(3000);
+        console.log('variations', variations);
         let encoded_params = `dir=${encodeURIComponent(
             dir,
         )}&file=${encodeURIComponent(

@@ -110,6 +110,8 @@
 		probes: [],
 		selection: [],
 		reverse: [],
+		invert_x: [],
+		invert_y: [],
 		tracemode: [],
 		par_name: [],
 		sweep_type: [],
@@ -191,6 +193,8 @@
 			bind:calculated_value={ckt_data.calculated_value[i]}
 			bind:selection={settings.selection[i]}
 			bind:reverse={settings.reverse[i]}
+			bind:invert_x={settings.invert_x[i]}
+			bind:invert_y={settings.invert_y[i]}						
 			bind:tracemode={settings.tracemode[i]}
 		></PlotResults>
 		<!-- {/if} -->
