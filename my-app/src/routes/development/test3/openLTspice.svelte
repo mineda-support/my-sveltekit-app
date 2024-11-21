@@ -179,9 +179,11 @@
   function add_variation_value(src) {
     let ckt_name, elm;
     [ckt_name, elm] = src.split(":");
-    console.log(`push elements[${ckt_name}][${elm}]=`, elements[ckt_name][elm]);
-    variations[src].push(elements[ckt_name][elm]);
-    console.log("variations=", variations);
+    //let new_elm = JSON.parse(JSON.stringify(elements[ckt_name][elm]));
+    const new_elm = elements[ckt_name][elm];
+    console.log(`push elements[${ckt_name}][${elm}]=`, new_elm);
+    variations[src].push(new_elm);
+    //console.log("variations=", variations);
   }
 
   function remove_variation_item(src) {
@@ -197,12 +199,13 @@
       add_variation_value(key);
     }
     nvar = nvar + 1;
-    console.log("variation added:", variations);
+    console.log("variation added:", variations, 'nvar=', nvar);
     variations = variations;
   }
 
   function remove_variation(index) {
-    alert(`remove_variation clicked!@index=${index}`);
+    //console.log("Before: ", variations, 'nvar=', nvar);
+    //alert(`remove_variation clicked!@index=${index}`);
     for (const [key, values] of Object.entries(variations)) {
       console.log("remove values=", values, "from:", key);
       if (values.length > 1) {
@@ -210,6 +213,7 @@
       }
     }
     nvar = nvar - 1;
+    //console.log("After: ", variations, 'nvar=', nvar);
     variations = variations;
   }
   $: variations = variations;
@@ -378,7 +382,7 @@
               </td>
               {#each Object.entries(variations) as [elm, vals]}
                 <td
-                  ><InputValue lab={elm + "#" + String(i + 1)} val={vals[i]} />
+                  ><InputValue lab={elm + "#" + String(i + 1)} bind:val={vals[i]} />
                 </td>
               {/each}
             </tr>
