@@ -145,6 +145,41 @@
 	settings.probes[settings.plot_number] = "";
 	ckt_data.measdata[settings.plot_number] = [];
 	let variations = {};
+
+	let meas_group;
+	async function load_measurement_group_file() {
+		const pickerOpts = {
+			types: [
+				{ description: "CSV(.csv)", accept: { "csv/*": [".csv"] } },
+			],
+			multiple: false,
+		};
+		let fileHandle;
+		[fileHandle] = await window.showOpenFilePicker(pickerOpts);
+		const file = await fileHandle.getFile();
+		const decoder = new TextDecoder("sjis");
+		const filedata = await file.arrayBuffer(); //text()
+		meas_group = decoder.decode(new Uint8Array(filedata)).split(/\n/);
+		//measgrp_filedata = await file.arrayBuffer();
+		console.log("measurement group file=", meas_group);
+	}
+
+	function setup_measurement_group() {
+		let line, file, sel, inv_x, inv_y, elm, val;
+		meas_group.forEach((line) => {
+			[file, sel, inv_x, inv_y, elm, val] = line.split(",");
+			settings.plot_number = settings.plot_number + 1;
+			settings.measfile[settings.plot_number] = file;
+			settings.selection[settings.plot_number] = sel;
+			settings.invert_x[settings.plot_number] = inv_x;
+			settings.invert_y[settings.plot_number] = inv_y;
+		});
+	}
+
+	function clear_measurement_group() {
+		meas_group = undefined;
+		settings.plot_number = 0;
+	}
 </script>
 
 <ConvertSchematic {dir} />
@@ -152,7 +187,7 @@
 	{data}
 	bind:probes={settings.probes[settings.plot_number]}
 	bind:variations
-	/>
+/>
 <!--	plot_on:open_end={plot_results} -->
 <Settings {data} {ckt} bind:variations bind:settings />
 <div>
@@ -164,41 +199,58 @@
 	/>
 	<!-- Testplot / -->
 </div>
-
-	{#each Array(settings.plot_number + 1) as _, i}
+<hr />
+<div>
+	<button on:click={load_measurement_group_file} class="button-2"
+		>Load measurement group file</button
+	>
+	<!-- ConvertSchematic / -->
+	{#if meas_group != undefined}
+		<button on:click={setup_measurement_group} class="button-1"
+			>Setup</button
+		>
+		<button on:click={clear_measurement_group} class="button-1"
+			>Clear</button
+		>
+		{#each meas_group as line}
+			<div>{line}</div>
+		{/each}
+	{/if}
+</div>
+{#each Array(settings.plot_number + 1) as _, i}
 	<!-- {#if ckt_data.plotdata[i] != undefined} -->
 	<PlotResults
-			plot_number={i}
-			bind:plot_showhide={settings.plot_showhide[i]}
-			bind:results_data
-			bind:dir
-			bind:file
-			bind:elements
-			bind:measfile={settings.measfile[i + 1]}
-			bind:step_precision={settings.step_precision[i]}
-			bind:title={settings.title[i]}
-			bind:title_x={settings.title_x[i]}
-			bind:title_y={settings.title_y[i]}
-			bind:title_y1={settings.title_y1[i]}
-			bind:title_y2={settings.title_y2[i]}
-			bind:yaxis_is_log={settings.yaxis_is_log}
-			bind:xaxis_is_log={settings.xaxis_is_log}
-			bind:equation={settings.equation[i]}
-			bind:performance_names={settings.performance_names[i]}
-			bind:probes={settings.probes[i]}
-			bind:plotdata={ckt_data.plotdata[i]}
-			bind:db_data={ckt_data.db_data[i]}
-			bind:ph_data={ckt_data.ph_data[i]}
-			bind:measdata={ckt_data.measdata[i]}
-			bind:calculated_value={ckt_data.calculated_value[i]}
-			bind:selection={settings.selection[i]}
-			bind:reverse={settings.reverse[i]}
-			bind:invert_x={settings.invert_x[i]}
-			bind:invert_y={settings.invert_y[i]}						
-			bind:tracemode={settings.tracemode[i]}
-		></PlotResults>
-		<!-- {/if} -->
-		{/each}
+		plot_number={i}
+		bind:plot_showhide={settings.plot_showhide[i]}
+		bind:results_data
+		bind:dir
+		bind:file
+		bind:elements
+		bind:measfile={settings.measfile[i + 1]}
+		bind:step_precision={settings.step_precision[i]}
+		bind:title={settings.title[i]}
+		bind:title_x={settings.title_x[i]}
+		bind:title_y={settings.title_y[i]}
+		bind:title_y1={settings.title_y1[i]}
+		bind:title_y2={settings.title_y2[i]}
+		bind:yaxis_is_log={settings.yaxis_is_log}
+		bind:xaxis_is_log={settings.xaxis_is_log}
+		bind:equation={settings.equation[i]}
+		bind:performance_names={settings.performance_names[i]}
+		bind:probes={settings.probes[i]}
+		bind:plotdata={ckt_data.plotdata[i]}
+		bind:db_data={ckt_data.db_data[i]}
+		bind:ph_data={ckt_data.ph_data[i]}
+		bind:measdata={ckt_data.measdata[i]}
+		bind:calculated_value={ckt_data.calculated_value[i]}
+		bind:selection={settings.selection[i]}
+		bind:reverse={settings.reverse[i]}
+		bind:invert_x={settings.invert_x[i]}
+		bind:invert_y={settings.invert_y[i]}
+		bind:tracemode={settings.tracemode[i]}
+	></PlotResults>
+	<!-- {/if} -->
+{/each}
 
 <button
 	on:click={() => (settings.plot_number = settings.plot_number + 1)}

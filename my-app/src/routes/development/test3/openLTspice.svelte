@@ -102,14 +102,15 @@
     models_store,
   } from "./stores.js";
   import { element } from "svelte/internal";
+  import { log } from "plotly.js-dist";
   let ckt;
   ckt_store.subscribe((value) => {
     ckt = value;
   });
   let dir;
-    dir_name.subscribe((value) => {
-        dir = value;
-    });
+  dir_name.subscribe((value) => {
+    dir = value;
+  });
   let elements = {};
   elements_store.subscribe((value) => {
     elements = value;
@@ -157,9 +158,9 @@
 
   function add_variation_item(src) {
     //console.log('src in add_variation_item=', src);
-    if (src == null){
-          alert('Please select elements to variate');
-          return;
+    if (src == null) {
+      alert("Please select elements to variate");
+      return;
     }
     if (variations[src] == undefined) {
       variations[src] = [];
@@ -167,14 +168,14 @@
         add_variation_value(src);
         nvar = 1;
       } else {
-        for (let i=0; i < nvar; i = i+1) {
-          add_variation_value(src)
+        for (let i = 0; i < nvar; i = i + 1) {
+          add_variation_value(src);
         }
       }
     }
     variations = variations;
     //console.log("variations=", variations);
-    }
+  }
 
   function add_variation_value(src) {
     let ckt_name, elm;
@@ -199,7 +200,7 @@
       add_variation_value(key);
     }
     nvar = nvar + 1;
-    console.log("variation added:", variations, 'nvar=', nvar);
+    console.log("variation added:", variations, "nvar=", nvar);
     variations = variations;
   }
 
@@ -223,20 +224,7 @@
   $: {
     dir = data.props.wdir;
     dir_name.set(dir);
-    console.log('*** dir=', dir);
-  }
-
-  async function load_measurement_group_file() {
-    const pickerOpts = {
-			types: [
-				{ description: "CSV(.csv)", accept: { "csv/*": [".csv"] } },
-			],
-			multiple: false,
-		};
-		let fileHandle;
-		[fileHandle] = await window.showOpenFilePicker(pickerOpts);
-		const file = await fileHandle.getFile();
-		let filedata = await file.text();
+    console.log("*** dir=", dir);
   }
 </script>
 
@@ -273,8 +261,6 @@
     <input type="checkbox" bind:checked={showup} />
     show schematic
   </label>
-  <button on:click={load_measurement_group_file} class="button-2">Load measurement group file</button>
-  <!-- ConvertSchematic / -->
 </div>
 
 <!-- div style="border:red solid 2px;">
@@ -375,25 +361,28 @@
         {#if nvar > 0}
           {#each Array(nvar) as _, i}
             <tr>
-              <td> {i}
+              <td>
+                {i}
                 <!--button on:click={remove_variation(i)} class="td-button"
                   >-</button
                 -->
               </td>
               {#each Object.entries(variations) as [elm, vals]}
                 <td
-                  ><InputValue lab={elm + "#" + String(i + 1)} bind:val={vals[i]} />
+                  ><InputValue
+                    lab={elm + "#" + String(i + 1)}
+                    bind:val={vals[i]}
+                  />
                 </td>
               {/each}
             </tr>
           {/each}
         {/if}
         <tr>
-          <td
-          ><button on:click={add_variation} class="td-button">+</button></td
-          >
+          <td><button on:click={add_variation} class="td-button">+</button></td>
           <button on:click={remove_variation(remove_index)} class="td-button"
-                  >-</button>
+            >-</button
+          >
           remove_index: <input bind:value={remove_index} />
         </tr>
       </tbody>
