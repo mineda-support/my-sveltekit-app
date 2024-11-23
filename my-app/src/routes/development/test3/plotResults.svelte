@@ -25,6 +25,7 @@
     import { set_trace_names } from "./experiment.svelte";
     import Settings from "./settings.svelte";
 
+    export let current_plot;
     export let dir, file, measfile, plot_showhide, plot_number;
     export let selection, reverse, invert_x, invert_y, tracemode;
     export let title, title_x, title_y, title_y1, title_y2;
@@ -244,6 +245,7 @@
     >Show/hide</button
 > {plot_number}
 {#if plot_showhide}
+    <button on:click={()=>(current_plot = plot_number)} class="button-2">Make current</button>
     <div>
         <button
             on:click={measurement_results(

@@ -65,7 +65,7 @@
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: results_data = results_data;
-
+    let current_plot;
 	function plot_results() {
 		if (variations == {}) {
 			return;
@@ -75,7 +75,7 @@
 			for (const [elm, props] of Object.entries(elms)) {
 				if (elm.match(/#$/) && (vals = variations[elm])) {
 					vals.forEach((val) => {
-						settings.plot_number = settings.plot_number + 1;
+						current_plot = current_plot + 1;
 					});
 					return;
 				}
@@ -96,6 +96,7 @@
 	settings = {
 		plot_number: 0,
 		plot_showhide: [],
+		meas_group: undefined,
 		measfile: [],
 		step_precision: [],
 		title: [],
@@ -141,12 +142,11 @@
 		ph_data: [],
 		calculated_value: [],
 	};
-	settings.plot_showhide[settings.plot_number] = true;
-	settings.probes[settings.plot_number] = "";
-	ckt_data.measdata[settings.plot_number] = [];
+	settings.plot_showhide = [true];
+	settings.probes = [""]
+	ckt_data.measdata = [[]];
 	let variations = {};
 
-	let meas_group;
 	async function load_measurement_group_file() {
 		const pickerOpts = {
 			types: [
@@ -159,40 +159,63 @@
 		const file = await fileHandle.getFile();
 		const decoder = new TextDecoder("sjis");
 		const filedata = await file.arrayBuffer(); //text()
-		meas_group = decoder.decode(new Uint8Array(filedata)).split(/\n/);
+		settings.meas_group = decoder.decode(new Uint8Array(filedata)).split(/\n/);
 		//measgrp_filedata = await file.arrayBuffer();
-		console.log("measurement group file=", meas_group);
+		console.log("measurement group file=", settings.meas_group);
 	}
 
 	function setup_measurement_group() {
 		let line, file, sel, inv_x, inv_y, elm, val;
-		meas_group.forEach((line) => {
+		current_plot = 0;
+		settings.meas_group.forEach((line) => {
 			[file, sel, inv_x, inv_y, elm, val] = line.split(",");
-			settings.plot_number = settings.plot_number + 1;
-			settings.measfile[settings.plot_number] = file;
-			settings.selection[settings.plot_number] = sel;
-			settings.invert_x[settings.plot_number] = inv_x;
-			settings.invert_y[settings.plot_number] = inv_y;
+			console.log('file=', file, 'sel=', sel);
+			settings.plot_showhide[current_plot] = true;
+			settings.measfile[current_plot] = file;
+			settings.selection[current_plot] = sel;
+			settings.invert_x[current_plot] = inv_x;
+			settings.invert_y[current_plot] = inv_y;
+			current_plot = current_plot + 1;
 		});
 	}
 
 	function clear_measurement_group() {
-		meas_group = undefined;
-		settings.plot_number = 0;
+		settings.meas_group = undefined;
+		current_plot = 0;
+	}
+
+	function add_plot() {
+		settings.plot_showhide.push(true);
+		console.log('settings.plot_showhide=', settings.plot_showhide);
+		// console.log('length=', settings.plot_showhide.length);
+		current_plot = settings.plot_showhide.length - 1;
+		settings = settings;
+		console.log('settings.plot_showhide=', settings.plot_showhide, 'current_plot=', current_plot);
+	}
+
+	function delete_plot() {
+		console.log('current_plot to delete=', current_plot);
+		for (const [obj] of Object.entries(settings)) {
+			// console.log(`settings.${obj}=`, settings[obj]);
+			if (Array.isArray(settings[obj])){
+				settings[obj].splice(current_plot, 1);
+			}
+		}
+		settings = settings;
 	}
 </script>
 
 <ConvertSchematic {dir} />
 <OpenLTspice
 	{data}
-	bind:probes={settings.probes[settings.plot_number]}
+	bind:probes={settings.probes[current_plot]}
 	bind:variations
 />
 <!--	plot_on:open_end={plot_results} -->
 <Settings {data} {ckt} bind:variations bind:settings />
 <div>
 	<Simulate
-		bind:probes={settings.probes[settings.plot_number]}
+		bind:probes={settings.probes[current_plot]}
 		bind:variations
 		on:sim_end={plot_results}
 		on:sim_start={clear_all_plots}
@@ -205,28 +228,28 @@
 		>Load measurement group file</button
 	>
 	<!-- ConvertSchematic / -->
-	{#if meas_group != undefined}
+	{#if settings.meas_group != undefined}
 		<button on:click={setup_measurement_group} class="button-1"
 			>Setup</button
 		>
 		<button on:click={clear_measurement_group} class="button-1"
 			>Clear</button
 		>
-		{#each meas_group as line}
+		{#each settings.meas_group as line}
 			<div>{line}</div>
 		{/each}
 	{/if}
 </div>
-{#each Array(settings.plot_number + 1) as _, i}
-	<!-- {#if ckt_data.plotdata[i] != undefined} -->
+{#each settings.plot_showhide as _, i}
 	<PlotResults
+	    bind:current_plot={current_plot}
 		plot_number={i}
 		bind:plot_showhide={settings.plot_showhide[i]}
 		bind:results_data
 		bind:dir
 		bind:file
 		bind:elements
-		bind:measfile={settings.measfile[i + 1]}
+		bind:measfile={settings.measfile[i]}
 		bind:step_precision={settings.step_precision[i]}
 		bind:title={settings.title[i]}
 		bind:title_x={settings.title_x[i]}
@@ -249,27 +272,26 @@
 		bind:invert_y={settings.invert_y[i]}
 		bind:tracemode={settings.tracemode[i]}
 	></PlotResults>
-	<!-- {/if} -->
 {/each}
 
 <button
-	on:click={() => (settings.plot_number = settings.plot_number + 1)}
+	on:click={add_plot}
 	class="button-2">Add plot</button
 >
 <button
-	on:click={() => (settings.plot_number = settings.plot_number - 1)}
-	class="button-2">Remove plot</button
+	on:click={delete_plot}
+	class="button-2">Delete plot</button
 >
 
-{#if settings.equation[settings.plot_number] != undefined}
+{#if settings.equation[current_plot] != undefined}
 	<Experiment
 		bind:settings
 		bind:results_data
 		{elements}
-		bind:probes={settings.probes[settings.plot_number]}
-		bind:equation={settings.equation[settings.plot_number]}
+		bind:probes={settings.probes[current_plot]}
+		bind:equation={settings.equation[current_plot]}
 		bind:performance_names={settings.performance_names[
-			settings.plot_number
+			current_plot
 		]}
 	/>
 {/if}
