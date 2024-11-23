@@ -17,6 +17,7 @@
   export let data;
   export let probes;
   export let variations = {};
+  export let nvar;
 
   const dispatch = createEventDispatcher();
 
@@ -174,7 +175,7 @@
       }
     }
     variations = variations;
-    //console.log("variations=", variations);
+    console.log("variations=", variations);
   }
 
   function add_variation_value(src) {
@@ -184,7 +185,7 @@
     const new_elm = elements[ckt_name][elm];
     console.log(`push elements[${ckt_name}][${elm}]=`, new_elm);
     variations[src].push(new_elm);
-    //console.log("variations=", variations);
+    console.log("variations=", variations);
   }
 
   function remove_variation_item(src) {
@@ -219,7 +220,7 @@
   }
   $: variations = variations;
   let src;
-  let nvar = 0;
+  // let nvar = 0;
   let remove_index = 0;
   $: {
     dir = data.props.wdir;

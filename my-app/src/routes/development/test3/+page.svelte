@@ -165,18 +165,29 @@
 	}
 
 	function setup_measurement_group() {
-		let line, file, sel, inv_x, inv_y, elm, val;
+		let line, file, sel, inv_x, inv_y, meas_elm, elm, val, key;
 		current_plot = 0;
-		settings.meas_group.forEach((line) => {
-			[file, sel, inv_x, inv_y, elm, val] = line.split(",");
+		settings.meas_group.forEach(function(line, index) {
+			[file, sel, inv_x, inv_y, meas_elm, val] = line.split(",");
 			console.log('file=', file, 'sel=', sel);
+			let result = /\((.*)\)/.exec(meas_elm);
+			elm = result[1];
+			key = Object.keys(ckt.elements)[0] + ':' + elm;
+			if (variations[key]	== undefined) {
+				variations[key] = []
+			}
+			variations[key][index] = val;
+			nvar = index + 1;
+			settings.probes[current_plot] = ckt.info[0] + ', ' + meas_elm.replace(elm, elm+'#'+(index+1));
 			settings.plot_showhide[current_plot] = true;
 			settings.measfile[current_plot] = file;
 			settings.selection[current_plot] = sel;
-			settings.invert_x[current_plot] = inv_x;
-			settings.invert_y[current_plot] = inv_y;
+			settings.invert_x[current_plot] = (inv_x == 'true')? true : false;
+			settings.invert_y[current_plot] = (inv_y == 'true')? true : false;
 			current_plot = current_plot + 1;
 		});
+		settings = settings;
+		console.log('variations=', variations, 'nvar=', nvar);
 	}
 
 	function clear_measurement_group() {
@@ -203,6 +214,7 @@
 		}
 		settings = settings;
 	}
+	let nvar = 0;
 </script>
 
 <ConvertSchematic {dir} />
@@ -210,6 +222,7 @@
 	{data}
 	bind:probes={settings.probes[current_plot]}
 	bind:variations
+	bind:nvar
 />
 <!--	plot_on:open_end={plot_results} -->
 <Settings {data} {ckt} bind:variations bind:settings />
