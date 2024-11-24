@@ -81,7 +81,7 @@ module Test
         select_list = [0, 1]
         if (selection = params[:selection]) && selection != ''
           puts "selection=#{selection.inspect}"
-          select_list = selection.split(/[, ]/).map{|a| a.to_i}
+          select_list = selection.gsub(/[, ] +/, ',').split(/[, ]/).map{|a| a.to_i}
         end
         puts "Get measured data from #{measfile}; selection:#{selection.inspect} => #{select_list.inspect}"
         c = CSV.read(measfile)
