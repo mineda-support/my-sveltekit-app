@@ -17,4 +17,4 @@ header.length.times{|i|
     end
   end
 }
-puts c.length
+#puts c.length
