@@ -7,6 +7,7 @@ puts "hello world from ruby"
 require 'j_pack'
 require 'byebug'
 require './csv_read'
+require './xls_read'
 
 def eval_equation plot_data, equation
   results = []
@@ -84,9 +85,14 @@ module Test
           select_list = selection.gsub(/[, ] +/, ',').split(/[, ]/).map{|a| a.to_i}
         end
         puts "Get measured data from #{measfile}; selection:#{selection.inspect} => #{select_list.inspect}"
-        c = CSV.read(measfile)
-        puts "params[:invert_x/y] = #{params[:invert_x].inspect}/#{params[:invert_y].inspect}"
-        d = valid_data c, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0
+        case File.extname(measfile).downcase
+        when '.csv'
+          c = CSV.read(measfile)
+          puts "params[:invert_x/y] = #{params[:invert_x].inspect}/#{params[:invert_y].inspect}"
+          d = valid_data c, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0
+        when '.xls'
+          c = xls_read(measfile, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0
+        end
         {"traces" => d}
       end      
     end
