@@ -8,24 +8,25 @@ def xls_read file, select=[0, 1], x_mult=1.0, y_mult=1.0
   first_name = $1
   nitem = header[1..-1].find_index{|f| f =~ /#{first_name}/} + 1
   puts "First #{nitem} data names:", header[0..nitem]
-  c = []
+  data = []
   header.length.times{|i|
     j = i % nitem
     k = sheet.header_line + 1
     if j == 0 
+      c = []
       while sheet.cell(k, i+1)
         c << sheet.row(k)[i..i+nitem-1]
         k = k + 1
       end
+      ee = c.transpose
+      data << {x: ee[select[0]].map{|x| x*x_mult}, 
+               y: ee[select[1]].map{|y| y*y_mult}, 
+               name: (i/nitem).to_s}
     end
-  }
-  data = []
-  c.transpose.each_with_index{|ee, i|
-    data << {x: ee[select[0]].map{|x| x*x_mult}, y: ee[select[1]].map{|y| y*y_mult}, name: remarks[i]? remarks[i].strip : i.to_s}
   }
   data
 end
 if $0 == __FILE__
-  file = "C:/Users/mined/work/SvelteKit/my-sveltekit-app/Grape/csv_samples/24R1A1_L_NL6W12Std.xls"
+  file = "Grape/csv_samples/24R1A1_L_NL6W12Std.xls"
   xls_read file, [1,0], x_mult=1.0, y_mult=1.0
 end

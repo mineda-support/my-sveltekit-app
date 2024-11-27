@@ -91,7 +91,7 @@ module Test
           puts "params[:invert_x/y] = #{params[:invert_x].inspect}/#{params[:invert_y].inspect}"
           d = valid_data c, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0
         when '.xls'
-          c = xls_read(measfile, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0
+          d = xls_read(measfile, select_list, (params[:invert_x] == 'true') ? -1.0 : 1.0, (params[:invert_y] == 'true') ? -1.0 : 1.0)
         end
         {"traces" => d}
       end      
