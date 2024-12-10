@@ -46,14 +46,59 @@
         );
         let res2 = await response.json();
         let measdata = reverse ? res2.traces.reverse() : res2.traces;
-        console.log('measdata=', measdata);
+        console.log("measdata=", measdata);
         for (const trace of measdata) {
             trace.checked = true;
             trace.mode = tracemode;
         }
         console.log("measdata:", measdata);
-        return(measdata);
+        return measdata;
     }
+
+    export async function plot_result(
+        dir,
+        file,
+        probes,
+        equation,
+        plotdata,
+        db_data,
+        ph_data,
+        elements,
+        step_precision,
+        sweep_name
+    ) {
+        // cookies.et('probes', probes, { path: '/conditions'});
+        console.log(
+            `Plot results@dir='${dir}' file='${file}' probes=${probes}`,
+        );
+        if (probes == undefined) {
+            alert("Simulation completed but probes for plot are not defined");
+            return;
+        }
+        if (probes != probes.trim()) {
+            alert("probes have unwanted leading space(s)");
+            return;
+        }
+        const encoded_params = `dir=${encodeURIComponent(
+            dir,
+        )}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
+            probes,
+        )}&equation=${encodeURIComponent(equation)}`;
+        let response = await fetch(
+            `http://localhost:9292/api/ltspctl/results?${encoded_params}`,
+            {},
+        );
+        let res2 = await response.json();
+        console.log(res2);
+        [plotdata, db_data, ph_data, sweep_name] = set_trace_names(
+            res2,
+            probes,
+            elements,
+            step_precision,
+        );
+        return [plotdata, db_data, ph_data, sweep_name];
+    }
+
 </script>
 
 <script>
@@ -111,38 +156,23 @@
             tracemode,
         );
     }
-    async function plot_result(event) {
-        // cookies.et('probes', probes, { path: '/conditions'});
-        console.log(
-            `Plot results@dir='${dir}' file='${file}' probes=${probes}`,
-        );
-        if (probes == undefined) {
-            alert("Simulation completed but probes for plot are not defined");
-            return;
-        }
-        if (probes != probes.trim()) {
-            alert("probes have unwanted leading space(s)");
-            return;
-        }
-        const encoded_params = `dir=${encodeURIComponent(
+
+    async function plot_result_clicked () {
+        let result = await plot_result(
             dir,
-        )}&file=${encodeURIComponent(file)}&probes=${encodeURIComponent(
+            file,
             probes,
-        )}&equation=${encodeURIComponent(equation)}`;
-        let response = await fetch(
-            `http://localhost:9292/api/ltspctl/results?${encoded_params}`,
-            {},
-        );
-        let res2 = await response.json();
-        console.log(res2);
-        [plotdata, db_data, ph_data, sweep_name] = set_trace_names(
-            res2,
-            probes,
+            equation,
+            plotdata,
+            db_data,
+            ph_data,
             elements,
             step_precision,
+            sweep_name
         );
+        [plotdata, db_data, ph_data, sweep_name] = result; 
     }
-
+    
     step_precision = 3;
     yaxis_is_log = false;
     xaxis_is_log = false;
@@ -326,7 +356,10 @@
             >
         </div>
     {/if}
-    <button on:click={plot_result} class="button-1">Plot with probes:</button>
+    <button
+        on:click={plot_result_clicked}
+        class="button-1">Plot with probes:</button
+    >
     <input bind:value={probes} style="border:darkgray solid 1px;" />
     {#if probes == undefined || !probes.startsWith("frequency")}
         <label>

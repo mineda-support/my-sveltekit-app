@@ -10,7 +10,10 @@
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
 	// import Plot from "svelte-plotly.js";
-	import PlotResults, { measurement_results } from "./plotResults.svelte";
+	import PlotResults, {
+		measurement_results,
+		plot_result,
+	} from "./plotResults.svelte";
 
 	import {
 		ckt_name,
@@ -191,7 +194,9 @@
 				meas_elm.replace(elm, elm + "#" + (index + 1));
 			settings.plot_showhide[current_plot] = true;
 			settings.title[current_plot] = val;
-			settings.measfile[current_plot] = file.replace(/^"/, "").replace(/"$/, "");
+			settings.measfile[current_plot] = file
+				.replace(/^"/, "")
+				.replace(/"$/, "");
 			settings.selection[current_plot] = sel;
 			settings.invert_x[current_plot] = inv_x == "true" ? true : false;
 			settings.invert_y[current_plot] = inv_y == "true" ? true : false;
@@ -216,6 +221,19 @@
 				invert_x,
 				invert_y,
 			);
+			let result = plot_result(
+				dir,
+				file,
+				settings.probes[i],
+				settings.equation[i],
+				ckt_data.plotdata[i],
+				ckt_data.db_data[i],
+				ckt_data.ph_data[i],
+				elements,
+				settings.step_precision[i],
+				''
+			);
+			[plotdata, db_data, ph_data, sweep_name] = result;
 		});
 		settings = settings;
 	}
@@ -283,8 +301,9 @@
 		<button on:click={setup_measurement_group} class="button-1"
 			>Setup</button
 		>
-		<button on:click={plot_measurement_group(ckt_data, settings)} class="button-2"
-			>Plot measurement group</button
+		<button
+			on:click={plot_measurement_group(ckt_data, settings)}
+			class="button-2">Plot measurement group</button
 		>
 		<button on:click={clear_measurement_group} class="button-1"
 			>Clear</button
