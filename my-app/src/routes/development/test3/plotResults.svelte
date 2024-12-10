@@ -17,6 +17,43 @@
         });
         return values;
     }
+
+    export async function measurement_results(
+        measfile,
+        selection,
+        reverse,
+        invert_x,
+        invert_y,
+        tracemode,
+    ) {
+        console.log(measfile);
+        console.log(
+            `reverse=${reverse}, invert_x=${invert_x}, invert_y=${invert_y}, tracemode: ${tracemode}`,
+        );
+        //console.log(handle.name);
+        //const file = await handle.getFile();
+        //console.log(file);
+        let encoded_params = `dir=&file=${encodeURIComponent(measfile)}&selection=${selection}`;
+        if (invert_x != undefined) {
+            encoded_params = encoded_params + `&invert_x=${invert_x}`;
+        }
+        if (invert_y != undefined) {
+            encoded_params = encoded_params + `&invert_y=${invert_y}`;
+        }
+        let response = await fetch(
+            `http://localhost:9292/api/misc/measured_data?${encoded_params}`,
+            {},
+        );
+        let res2 = await response.json();
+        let measdata = reverse ? res2.traces.reverse() : res2.traces;
+        console.log('measdata=', measdata);
+        for (const trace of measdata) {
+            trace.checked = true;
+            trace.mode = tracemode;
+        }
+        console.log("measdata:", measdata);
+        return(measdata);
+    }
 </script>
 
 <script>
@@ -35,13 +72,13 @@
     export let plotdata, db_data, ph_data, measdata;
     export let results_data, elements;
 
-	let sweep_name;
+    let sweep_name;
     let performances;
-	$: {
-		if (performance_names != undefined) {
-			performances = performance_names.split(",").map((a) => a.trim());
-		}
-	}
+    $: {
+        if (performance_names != undefined) {
+            performances = performance_names.split(",").map((a) => a.trim());
+        }
+    }
 
     const options = {
         types: [
@@ -53,7 +90,8 @@
             },
         ],
     };
-    async function measurement_results(
+
+    async function get_measurement_results(
         measfile,
         selection,
         reverse,
@@ -64,31 +102,15 @@
         if (measfile == undefined || measfile == "") {
             const [handle] = await window.showOpenFilePicker(options);
         }
-        console.log(measfile);
-        console.log(`reverse=${reverse}, invert_x=${invert_x}, invert_y=${invert_y}, tracemode: ${tracemode}`);
-        //console.log(handle.name);
-        //const file = await handle.getFile();
-        //console.log(file);
-        let encoded_params = `dir=&file=${encodeURIComponent(measfile)}&selection=${selection}`;
-        if (invert_x != undefined) {
-          encoded_params = encoded_params + `&invert_x=${invert_x}`;
-        }
-        if (invert_y != undefined) {
-          encoded_params = encoded_params + `&invert_y=${invert_y}`;
-        }
-        let response = await fetch(
-            `http://localhost:9292/api/misc/measured_data?${encoded_params}`,
-            {},
+        measdata = await measurement_results(
+            measfile,
+            selection,
+            reverse,
+            invert_x,
+            invert_y,
+            tracemode,
         );
-        let res2 = await response.json();
-        measdata = reverse ? res2.traces.reverse() : res2.traces;
-        for (const trace of measdata) {
-            trace.checked = true;
-            trace.mode = tracemode;
-        }
-        console.log("measdata:", measdata);
     }
-
     async function plot_result(event) {
         // cookies.et('probes', probes, { path: '/conditions'});
         console.log(
@@ -145,12 +167,14 @@
             plotdata,
             db_data,
             ph_data,
-            (measdata == undefined) ? [] : measdata.filter((trace) => trace.checked),
+            measdata == undefined
+                ? []
+                : measdata.filter((trace) => trace.checked),
         );
         console.log("values in calculate_equation:", calculated_value);
         const equation_array = equation.split(",");
         if (performances == undefined) {
-            alert('Performance name(s) for equation(s) not defined');
+            alert("Performance name(s) for equation(s) not defined");
             return;
         }
         performances.forEach(function (perf, index) {
@@ -173,7 +197,7 @@
         results_data[0] = results_data[0];
         console.log("results_data=", results_data);
     }
-/*
+    /*
     function select(measdata, selection) {
         const sel_list = selection.split(',');
         let selected_data = [];
@@ -243,12 +267,15 @@
 
 <button on:click={() => (plot_showhide = !plot_showhide)} class="button-2"
     >Show/hide</button
-> {plot_number}
+>
+{plot_number}
 {#if plot_showhide}
-    <button on:click={()=>(current_plot = plot_number)} class="button-2">Make current</button>
+    <button on:click={() => (current_plot = plot_number)} class="button-2"
+        >Make current</button
+    >
     <div>
         <button
-            on:click={measurement_results(
+            on:click={get_measurement_results(
                 measfile.trim().replace(/^"/, "").replace(/"$/, ""),
                 selection,
                 reverse,
@@ -268,7 +295,7 @@
                 style="border:darkgray solid 1px; width:5%"
             /></label
         >
-        <br/>
+        <br />
         <label>Reverse<input type="checkbox" bind:checked={reverse} /></label>
         <label>InvertX<input type="checkbox" bind:checked={invert_x} /></label>
         <label>InvertY<input type="checkbox" bind:checked={invert_y} /></label>
@@ -281,20 +308,23 @@
         </select>
     </div>
     {#if measdata != undefined && measdata != "" && measdata != []}
-    <div style="border:green solid 2px;">
-        {#each measdata as trace}
-            <label
-                >{trace.name}
-                <input
-                    style="border:darkgray solid 1px;"
-                    type="checkbox"
-                    bind:checked={trace.checked}
-                />
-            </label>
-        {/each}
-        <button on:click={checkall_measdata} class="button-1">check all</button>
-        <button on:click={clear_measdata} class="button-1">clear all</button>
-    </div>
+        <div style="border:green solid 2px;">
+            {#each measdata as trace}
+                <label
+                    >{trace.name}
+                    <input
+                        style="border:darkgray solid 1px;"
+                        type="checkbox"
+                        bind:checked={trace.checked}
+                    />
+                </label>
+            {/each}
+            <button on:click={checkall_measdata} class="button-1"
+                >check all</button
+            >
+            <button on:click={clear_measdata} class="button-1">clear all</button
+            >
+        </div>
     {/if}
     <button on:click={plot_result} class="button-1">Plot with probes:</button>
     <input bind:value={probes} style="border:darkgray solid 1px;" />
@@ -404,7 +434,7 @@
             {/if}
         </label>
     </div>
-    <hr>
+    <hr />
 {/if}
 
 <style>

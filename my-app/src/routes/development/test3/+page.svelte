@@ -10,7 +10,7 @@
 	import OpenLTspice, { get_control } from "./openLTspice.svelte";
 	import Settings from "./settings.svelte";
 	// import Plot from "svelte-plotly.js";
-	import PlotResults from "./plotResults.svelte";
+	import PlotResults, { measurement_results } from "./plotResults.svelte";
 
 	import {
 		ckt_name,
@@ -65,7 +65,7 @@
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: results_data = results_data;
-    let current_plot;
+	let current_plot;
 	function plot_results() {
 		if (variations == {}) {
 			return;
@@ -143,7 +143,7 @@
 		calculated_value: [],
 	};
 	settings.plot_showhide = [true];
-	settings.probes = [""]
+	settings.probes = [""];
 	ckt_data.measdata = [[]];
 	let variations = {};
 
@@ -159,56 +159,94 @@
 		const file = await fileHandle.getFile();
 		const decoder = new TextDecoder("sjis");
 		const filedata = await file.arrayBuffer(); //text()
-		settings.meas_group = decoder.decode(new Uint8Array(filedata)).split(/\n/);
+		settings.meas_group = decoder
+			.decode(new Uint8Array(filedata))
+			.split(/\n/);
 		//measgrp_filedata = await file.arrayBuffer();
 		console.log("measurement group file=", settings.meas_group);
 	}
 
 	function setup_measurement_group() {
+		if (ckt == undefined || ckt.elements == undefined) {
+			alert("Please read in circuit data first");
+		}
 		let line, file, sel, inv_x, inv_y, meas_elm, elm, val, key;
 		current_plot = 0;
-		settings.meas_group.forEach(function(line, index) {
-			[file, sel, inv_x, inv_y, meas_elm, val] = line.split(",");
-			console.log('file=', file, 'sel=', sel);
+		settings.meas_group.forEach(function (line, index) {
+			[file, sel, inv_x, inv_y, meas_elm, val] = line
+				.split(",")
+				.map((a) => a.trim());
+			console.log("file=", file, "sel=", sel);
 			let result = /\((.*)\)/.exec(meas_elm);
 			elm = result[1];
-			key = Object.keys(ckt.elements)[0] + ':' + elm;
-			if (variations[key]	== undefined) {
-				variations[key] = []
+			key = Object.keys(ckt.elements)[0] + ":" + elm;
+			if (variations[key] == undefined) {
+				variations[key] = [];
 			}
 			variations[key][index] = val;
 			nvar = index + 1;
-			settings.probes[current_plot] = ckt.info[0] + ', ' + meas_elm.replace(elm, elm+'#'+(index+1));
+			settings.probes[current_plot] =
+				ckt.info[0] +
+				", " +
+				meas_elm.replace(elm, elm + "#" + (index + 1));
 			settings.plot_showhide[current_plot] = true;
-			settings.measfile[current_plot] = file;
+			settings.title[current_plot] = val;
+			settings.measfile[current_plot] = file.replace(/^"/, "").replace(/"$/, "");
 			settings.selection[current_plot] = sel;
-			settings.invert_x[current_plot] = (inv_x == 'true')? true : false;
-			settings.invert_y[current_plot] = (inv_y == 'true')? true : false;
+			settings.invert_x[current_plot] = inv_x == "true" ? true : false;
+			settings.invert_y[current_plot] = inv_y == "true" ? true : false;
 			current_plot = current_plot + 1;
 		});
 		settings = settings;
-		console.log('variations=', variations, 'nvar=', nvar);
+		current_plot = 0;
+		console.log("variations=", variations, "nvar=", nvar);
+	}
+
+	function plot_measurement_group(ckt_data, settings) {
+		console.log("settings.measfile", settings.measfile);
+		settings.measfile.forEach(function (measfile, i) {
+			let selection = settings.selection[i];
+			let reverse = settings.reverse[i];
+			let invert_x = settings.invert_x[i];
+			let invert_y = settings.invert_y[i];
+			ckt_data.measdata = measurement_results(
+				measfile,
+				selection,
+				reverse,
+				invert_x,
+				invert_y,
+			);
+		});
+		settings = settings;
 	}
 
 	function clear_measurement_group() {
 		settings.meas_group = undefined;
+		settings.meas_file = [];
+		settings.selection = [];
+		settings.title = [];
 		current_plot = 0;
 	}
 
 	function add_plot() {
 		settings.plot_showhide.push(true);
-		console.log('settings.plot_showhide=', settings.plot_showhide);
+		console.log("settings.plot_showhide=", settings.plot_showhide);
 		// console.log('length=', settings.plot_showhide.length);
 		current_plot = settings.plot_showhide.length - 1;
 		settings = settings;
-		console.log('settings.plot_showhide=', settings.plot_showhide, 'current_plot=', current_plot);
+		console.log(
+			"settings.plot_showhide=",
+			settings.plot_showhide,
+			"current_plot=",
+			current_plot,
+		);
 	}
 
 	function delete_plot() {
-		console.log('current_plot to delete=', current_plot);
+		console.log("current_plot to delete=", current_plot);
 		for (const [obj] of Object.entries(settings)) {
 			// console.log(`settings.${obj}=`, settings[obj]);
-			if (Array.isArray(settings[obj])){
+			if (Array.isArray(settings[obj])) {
 				settings[obj].splice(current_plot, 1);
 			}
 		}
@@ -245,6 +283,9 @@
 		<button on:click={setup_measurement_group} class="button-1"
 			>Setup</button
 		>
+		<button on:click={plot_measurement_group(ckt_data, settings)} class="button-2"
+			>Plot measurement group</button
+		>
 		<button on:click={clear_measurement_group} class="button-1"
 			>Clear</button
 		>
@@ -255,7 +296,7 @@
 </div>
 {#each settings.plot_showhide as _, i}
 	<PlotResults
-	    bind:current_plot={current_plot}
+		bind:current_plot
 		plot_number={i}
 		bind:plot_showhide={settings.plot_showhide[i]}
 		bind:results_data
@@ -287,14 +328,8 @@
 	></PlotResults>
 {/each}
 
-<button
-	on:click={add_plot}
-	class="button-2">Add plot</button
->
-<button
-	on:click={delete_plot}
-	class="button-2">Delete plot</button
->
+<button on:click={add_plot} class="button-2">Add plot</button>
+<button on:click={delete_plot} class="button-2">Delete plot</button>
 
 {#if settings.equation[current_plot] != undefined}
 	<Experiment
@@ -303,8 +338,6 @@
 		{elements}
 		bind:probes={settings.probes[current_plot]}
 		bind:equation={settings.equation[current_plot]}
-		bind:performance_names={settings.performance_names[
-			current_plot
-		]}
+		bind:performance_names={settings.performance_names[current_plot]}
 	/>
 {/if}
