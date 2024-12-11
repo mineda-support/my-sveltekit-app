@@ -79,6 +79,7 @@ module Test
       desc 'Get measured data'
       get :measured_data do
         measfile = params[:file]
+        puts "Get measured data measfile=#{measfile} selectin = #{params[:selection]}"
         select_list = [0, 1]
         if (selection = params[:selection]) && selection != ''
           puts "selection=#{selection.inspect}"

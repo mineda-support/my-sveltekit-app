@@ -192,7 +192,7 @@
 				ckt.info[0] +
 				", " +
 				meas_elm.replace(elm, elm + "#" + (index + 1));
-			settings.plot_showhide[current_plot] = true;
+				settings.plot_showhide[current_plot] = true;
 			settings.title[current_plot] = val;
 			settings.measfile[current_plot] = file
 				.replace(/^"/, "")
@@ -209,17 +209,13 @@
 
 	function plot_measurement_group(ckt_data, settings) {
 		console.log("settings.measfile", settings.measfile);
-		settings.measfile.forEach(function (measfile, i) {
-			let selection = settings.selection[i];
-			let reverse = settings.reverse[i];
-			let invert_x = settings.invert_x[i];
-			let invert_y = settings.invert_y[i];
-			ckt_data.measdata = measurement_results(
+		settings.measfile.forEach(async function (measfile, i) {
+			ckt_data.measdata = await measurement_results(
 				measfile,
-				selection,
-				reverse,
-				invert_x,
-				invert_y,
+				settings.selection[i],
+				settings.reverse[i],
+				settings.invert_x[i],
+				settings.invert_y[i],
 			);
 			let result = plot_result(
 				dir,
@@ -233,9 +229,13 @@
 				settings.step_precision[i],
 				''
 			);
-			[plotdata, db_data, ph_data, sweep_name] = result;
-		});
+			settings.plot_showhide[current_plot] = false;
+			console.log('result=', result);
+			let sweep_name;
+			[ckt_data.plotdata[i], ckt_data.db_data[i], ckt_data.ph_data[i], sweep_name] = await result;
+			});
 		settings = settings;
+		ckt_data = ckt_data;
 	}
 
 	function clear_measurement_group() {

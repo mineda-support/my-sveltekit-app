@@ -46,7 +46,7 @@
         );
         let res2 = await response.json();
         let measdata = reverse ? res2.traces.reverse() : res2.traces;
-        console.log("measdata=", measdata);
+        // console.log("measdata=", measdata);
         for (const trace of measdata) {
             trace.checked = true;
             trace.mode = tracemode;
@@ -155,6 +155,8 @@
             invert_y,
             tracemode,
         );
+        measdata = measdata;
+        console.log('measdata =', measdata);
     }
 
     async function plot_result_clicked () {
@@ -172,7 +174,7 @@
         );
         [plotdata, db_data, ph_data, sweep_name] = result; 
     }
-    
+
     step_precision = 3;
     yaxis_is_log = false;
     xaxis_is_log = false;
