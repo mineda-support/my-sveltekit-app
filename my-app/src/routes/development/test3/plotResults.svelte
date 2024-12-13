@@ -190,7 +190,12 @@
             trace.checked = true;
         }
     }
-
+    function redraw() {
+        plotdata = plotdata;
+        db_data = db_data;
+        ph_data = ph_data;
+        console.log('plotdata', plotdata);
+    }
     function calculate_equation() {
         submit_equation(
             equation,
@@ -375,6 +380,9 @@
     {/if}
     <label>
         <button on:click={clear_plot} class="button-1">clear</button>
+    </label>
+    <label>
+        <button on:click={redraw} class="button-1">redraw</button>
     </label>
     <label
         >step precision:

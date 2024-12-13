@@ -36,7 +36,9 @@
   }
 
   async function load_settings(settings_name, dir) {
-    //alert(`load ${settings_name}`);
+		if (ckt == undefined || ckt.elements == undefined) {
+			alert("Please read in circuit data first");
+		}
     const response = await fetch(
       `/development/test3/settings?dir=${encodeURIComponent(
         dir,

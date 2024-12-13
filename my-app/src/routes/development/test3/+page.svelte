@@ -151,6 +151,10 @@
 	let variations = {};
 
 	async function load_measurement_group_file() {
+		if (ckt == undefined || ckt.elements == undefined) {
+			alert("Please read in circuit data first");
+			return;
+		}
 		const pickerOpts = {
 			types: [
 				{ description: "CSV(.csv)", accept: { "csv/*": [".csv"] } },
@@ -192,7 +196,7 @@
 				ckt.info[0] +
 				", " +
 				meas_elm.replace(elm, elm + "#" + (index + 1));
-				settings.plot_showhide[current_plot] = true;
+			settings.plot_showhide[current_plot] = true;
 			settings.title[current_plot] = val;
 			settings.measfile[current_plot] = file
 				.replace(/^"/, "")
@@ -207,16 +211,17 @@
 		console.log("variations=", variations, "nvar=", nvar);
 	}
 
-	function plot_measurement_group(ckt_data, settings) {
+	function plot_measurement_group() { // ckt_data, settings
 		console.log("settings.measfile", settings.measfile);
 		settings.measfile.forEach(async function (measfile, i) {
-			ckt_data.measdata = await measurement_results(
+			ckt_data.measdata[i] = await measurement_results(
 				measfile,
 				settings.selection[i],
 				settings.reverse[i],
 				settings.invert_x[i],
 				settings.invert_y[i],
 			);
+			//ckt_data.measdata[i] = ckt_data.measdata[i];
 			let result = plot_result(
 				dir,
 				file,
@@ -227,13 +232,21 @@
 				ckt_data.ph_data[i],
 				elements,
 				settings.step_precision[i],
-				''
+				"",
 			);
-			settings.plot_showhide[current_plot] = false;
-			console.log('result=', result);
+			settings.plot_showhide[i] = false;
 			let sweep_name;
-			[ckt_data.plotdata[i], ckt_data.db_data[i], ckt_data.ph_data[i], sweep_name] = await result;
-			});
+			[
+				ckt_data.plotdata[i],
+				ckt_data.db_data[i],
+				ckt_data.ph_data[i],
+				sweep_name,
+			] = await result;
+			ckt_data.plotdata[i] = ckt_data.plotdata[i];
+			const my_sleep = (ms) =>
+				new Promise((resolve) => setTimeout(resolve, ms));
+			await my_sleep(3000);
+		});
 		settings = settings;
 		ckt_data = ckt_data;
 	}
@@ -302,7 +315,7 @@
 			>Setup</button
 		>
 		<button
-			on:click={plot_measurement_group(ckt_data, settings)}
+			on:click={plot_measurement_group}
 			class="button-2">Plot measurement group</button
 		>
 		<button on:click={clear_measurement_group} class="button-1"
