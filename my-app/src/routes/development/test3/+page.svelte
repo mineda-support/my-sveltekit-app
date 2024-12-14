@@ -211,9 +211,12 @@
 		console.log("variations=", variations, "nvar=", nvar);
 	}
 
-	function plot_measurement_group() { // ckt_data, settings
+	async function plot_measurement_group() { // ckt_data, settings
 		console.log("settings.measfile", settings.measfile);
-		settings.measfile.forEach(async function (measfile, i) {
+		//settings.measfile.forEach(async function (measfile, i) {
+        //Note: await does not work inside forEach
+		for (let i = 0; i < settings.measfile.length; i++) {
+			let measfile = settings.measfile[i];
 			ckt_data.measdata[i] = await measurement_results(
 				measfile,
 				settings.selection[i],
@@ -243,10 +246,10 @@
 				sweep_name,
 			] = await result;
 			ckt_data.plotdata[i] = ckt_data.plotdata[i];
-			const my_sleep = (ms) =>
-				new Promise((resolve) => setTimeout(resolve, ms));
-			await my_sleep(3000);
-		});
+			// *const my_sleep = (ms) =>  ### sleep is useless
+			//	new Promise((resolve) => setTimeout(resolve, ms));
+			//await my_sleep(3000); 
+		};
 		settings = settings;
 		ckt_data = ckt_data;
 	}
