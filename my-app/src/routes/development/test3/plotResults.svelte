@@ -106,7 +106,11 @@
     import SinglePlot from "./utils/single_plot.svelte";
     import { set_trace_names } from "./experiment.svelte";
     import Settings from "./settings.svelte";
-
+    import { ckt_store } from "./stores";
+    let ckt;
+    ckt_store.subscribe((value) => {
+      ckt = value;
+    });
     export let current_plot;
     export let dir, file, measfile, plot_showhide, plot_number;
     export let selection, reverse, invert_x, invert_y, tracemode;
@@ -158,8 +162,23 @@
         measdata = measdata;
         console.log('measdata =', measdata);
     }
-
+    function check_probes_valid() {
+        const sweep_var = probes.match(/\w+,/)[0].replace(',', '')
+        if (probes.includes(sweep_var)) { // like 'frequency'
+            for (let match_string of probes.matchAll(/\w*\(\w+\)|\w+,|\w+$/g)) {
+                let node = match_string[0].replace(',','').trim();
+                console.log('node=', node);
+                if (! ckt.info.includes(node)) {
+                    alert(`${node} is not a valid probe name`);
+                    return(false);
+                }
+            }
+            return(true);
+        }
+        return(false);
+    }
     async function plot_result_clicked () {
+        if (!check_probes_valid()) return;
         let result = await plot_result(
             dir,
             file,
@@ -190,12 +209,12 @@
             trace.checked = true;
         }
     }
-    function redraw() {
+    /* function redraw() {
         plotdata = plotdata;
         db_data = db_data;
         ph_data = ph_data;
         console.log('plotdata', plotdata);
-    }
+    } */
     function calculate_equation() {
         submit_equation(
             equation,
@@ -378,16 +397,16 @@
             yaxis is log
         </label>
     {/if}
-    <label>
-        <button on:click={clear_plot} class="button-1">clear</button>
-    </label>
-    <label>
-        <button on:click={redraw} class="button-1">redraw</button>
-    </label>
     <label
         >step precision:
         <input bind:value={step_precision} />
     </label>
+    <label>
+        <button on:click={clear_plot} class="button-1">clear</button>
+    </label>
+    <!-- label>
+        <button on:click={redraw} class="button-1">redraw</button>
+    </label -->
     <div>
         <label
             >Title

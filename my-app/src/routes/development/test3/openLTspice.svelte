@@ -12,12 +12,13 @@
 <script>
   // import { end_hydrating } from "svelte/internal";
   import { createEventDispatcher } from "svelte";
-  import InputValue from "./Utils/input_value.svelte";
+  import InputWideValue from "./Utils/input_wide_value.svelte";
 
   export let data;
   export let probes;
   export let variations = {};
   export let nvar;
+  export let current_plot;
 
   const dispatch = createEventDispatcher();
 
@@ -85,6 +86,7 @@
     alter = [{}];
     alter_src = undefined;
     nvar = 0;
+    current_plot = 0;
     return res2;
   }
 
@@ -370,7 +372,7 @@
               </td>
               {#each Object.entries(variations) as [elm, vals]}
                 <td
-                  ><InputValue
+                  ><InputWideValue
                     lab={elm + "#" + String(i + 1)}
                     bind:val={vals[i]}
                   />

@@ -68,7 +68,7 @@
 	let calculated_value;
 	// $: calculated_value = calculated_value;
 	$: results_data = results_data;
-	let current_plot;
+	let current_plot; //  = 0;
 	function plot_results() {
 		if (variations == {}) {
 			return;
@@ -295,6 +295,7 @@
 	bind:probes={settings.probes[current_plot]}
 	bind:variations
 	bind:nvar
+	bind:current_plot
 />
 <!--	plot_on:open_end={plot_results} -->
 <Settings {data} {ckt} bind:variations bind:settings />
