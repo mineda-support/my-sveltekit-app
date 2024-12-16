@@ -215,6 +215,7 @@
 		console.log("settings.measfile", settings.measfile);
 		//settings.measfile.forEach(async function (measfile, i) {
         //Note: await does not work inside forEach
+		let sweep_name;
 		for (let i = 0; i < settings.measfile.length; i++) {
 			let measfile = settings.measfile[i];
 			ckt_data.measdata[i] = await measurement_results(
@@ -223,6 +224,7 @@
 				settings.reverse[i],
 				settings.invert_x[i],
 				settings.invert_y[i],
+				settings.tracemode[i]
 			);
 			//ckt_data.measdata[i] = ckt_data.measdata[i];
 			let result = plot_result(
@@ -238,18 +240,19 @@
 				"",
 			);
 			settings.plot_showhide[i] = false;
-			let sweep_name;
 			[
 				ckt_data.plotdata[i],
 				ckt_data.db_data[i],
 				ckt_data.ph_data[i],
 				sweep_name,
 			] = await result;
-			ckt_data.plotdata[i] = ckt_data.plotdata[i];
+			// ckt_data.plotdata[i] = ckt_data.plotdata[i];
 			// *const my_sleep = (ms) =>  ### sleep is useless
 			//	new Promise((resolve) => setTimeout(resolve, ms));
 			//await my_sleep(3000); 
 		};
+        console.log('ckt_data=', ckt_data);
+		console.log('sweep_name', sweep_name);
 		settings = settings;
 		ckt_data = ckt_data;
 	}

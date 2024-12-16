@@ -30,6 +30,8 @@
 						plotdata[index].name = src_value;
 					});
 					return sweep_name;
+				} else if (elm == "dc") {
+					
 				}
 			}
 		}
@@ -67,7 +69,7 @@
 		ckt_store,
 		models_store,
 	} from "./stores.js";
-	import { bindAll, dot$1, number, update } from "plotly.js-dist";
+	import { bindAll, dot$1, number, R, update } from "plotly.js-dist";
 	let ckt;
 	let file, dir;
 	let models;
