@@ -21,17 +21,16 @@
 		for (const [ckt_name, elms] of Object.entries(elements)) {
 			for (const [elm, props] of Object.entries(elms)) {
 				//console.log([elm, props]);
-				if (elm == "step") {
+				if (elm == "step" || elm == "dc") {
 					[sweep_name, src_values] = parse_step_command(
-						props,
+						props.replace(/\.dc +\S+ \S+ \S+ \S+ +/, '.step param '),
+						/* props could be like '.dc v3 0 3 0.01 V2 0 3 0.5' */
 						step_precision,
 					);
 					src_values.forEach(function (src_value, index) {
 						plotdata[index].name = src_value;
 					});
 					return sweep_name;
-				} else if (elm == "dc") {
-					
 				}
 			}
 		}

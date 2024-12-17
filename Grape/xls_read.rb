@@ -21,7 +21,7 @@ def xls_read file, select=[0, 1], x_mult=1.0, y_mult=1.0
       ee = c.transpose
       data << {x: ee[select[0]].map{|x| x*x_mult}, 
                y: ee[select[1]].map{|y| y*y_mult}, 
-               name: (i/nitem).to_s}
+               name: select[2] ? ee[select[2]][0] : (i/nitem).to_s}
     end
   }
   data
