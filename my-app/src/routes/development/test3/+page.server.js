@@ -14,7 +14,6 @@ export const actions = {
 export function load({ url }) {
     // const probes = cookies.get('probes')
     const home = process.env.HOME.replaceAll('\\', '/');
-    home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     let wdir = url.searchParams.get('wdir') || home + '/Seafile/PTS06_2022_8/BGR_TEG/';
     let ckt = url.searchParams.get('ckt');
     console.log(`wdir: ${wdir}`);
@@ -34,6 +33,7 @@ export function load({ url }) {
         console.log(setting_files);
         return {
             props: {
+                home: home,
                 wdir: wdir, ckt: ckt, files: files.map(a => path.basename(a)), //, probes: probes
                 setting_names: setting_files.map(a => path.basename(a).replace('_settings.json', ''))
             }

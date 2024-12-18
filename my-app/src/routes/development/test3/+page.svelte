@@ -200,7 +200,9 @@
 			settings.title[current_plot] = val;
 			settings.measfile[current_plot] = file
 				.replace(/^"/, "")
-				.replace(/"$/, "");
+				.replace(/"$/, "")
+				.replace('%HOMEPATH%', data.props.home)
+				.replace('$HOME', data.props.home);
 			settings.selection[current_plot] = sel;
 			settings.invert_x[current_plot] = inv_x == "true" ? true : false;
 			settings.invert_y[current_plot] = inv_y == "true" ? true : false;
